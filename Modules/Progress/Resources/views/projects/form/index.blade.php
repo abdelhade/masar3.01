@@ -1139,5 +1139,211 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Listen for add-work-item event
+    document.addEventListener('add-work-item', function(e) {
+        const item = e.detail.item;
+        addWorkItemToTable(item);
+    });
+    
+    // Function to add work item to table
+    function addWorkItemToTable(item) {
+        const container = document.getElementById('selected-items-container');
+        if (!container) return;
+        
+        const rowId = `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const rowIndex = container.querySelectorAll('tr').length;
+        
+        const row = document.createElement('tr');
+        row.setAttribute('data-item-id', rowId);
+        row.setAttribute('data-work-item-id', item.id);
+        row.className = 'item-row';
+        
+        row.innerHTML = `
+            <td class="text-center">
+                <i class="fas fa-grip-vertical drag-handle text-muted" style="cursor: move;"></i>
+            </td>
+            <td class="text-center">${rowIndex + 1}</td>
+            <td>
+                <input type="hidden" name="items[${rowId}][work_item_id]" value="${item.id}">
+                <input type="hidden" name="items[${rowId}][name]" value="${item.name}">
+                <strong>${item.name}</strong>
+                ${item.category ? `<br><small class="text-muted"><i class="fas fa-folder me-1"></i>${item.category.name}</small>` : ''}
+            </td>
+            <td>
+                <input type="text" name="items[${rowId}][unit]" class="form-control form-control-sm" value="${item.unit || ''}" readonly>
+            </td>
+            <td>
+                <input type="text" name="items[${rowId}][subproject_name]" class="form-control form-control-sm" placeholder="{{ __('general.optional') }}">
+            </td>
+            <td>
+                <input type="number" name="items[${rowId}][total_quantity]" class="form-control form-control-sm quantity-input" value="1" min="0" step="0.01" required>
+            </td>
+            <td>
+                <input type="number" name="items[${rowId}][estimated_daily_qty]" class="form-control form-control-sm daily-qty-input" value="1" min="0" step="0.01" required>
+            </td>
+            <td>
+                <input type="number" name="items[${rowId}][duration]" class="form-control form-control-sm duration-input" value="1" min="1" readonly>
+            </td>
+            <td>
+                <input type="date" name="items[${rowId}][start_date]" class="form-control form-control-sm" value="{{ $project->start_date ?? date('Y-m-d') }}">
+            </td>
+            <td>
+                <input type="date" name="items[${rowId}][end_date]" class="form-control form-control-sm" value="{{ $project->start_date ?? date('Y-m-d') }}">
+            </td>
+            <td>
+                <select name="items[${rowId}][predecessor]" class="form-select form-select-sm predecessor-select">
+                    <option value="">{{ __('general.none') }}</option>
+                </select>
+            </td>
+            <td>
+                <select name="items[${rowId}][dependency_type]" class="form-select form-select-sm">
+                    <option value="end_to_start">{{ __('general.end_to_start') }}</option>
+                    <option value="start_to_start">{{ __('general.start_to_start') }}</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" name="items[${rowId}][lag]" class="form-control form-control-sm" value="0">
+            </td>
+            <td class="text-center">
+                <div class="form-check form-switch">
+                    <input type="checkbox" name="items[${rowId}][is_measurable]" class="form-check-input" checked value="1">
+                </div>
+            </td>
+            <td>
+                <textarea name="items[${rowId}][notes]" class="form-control form-control-sm" rows="1"></textarea>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-danger remove-item-btn" title="{{ __('general.delete') }}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        
+        container.appendChild(row);
+        
+        // Update row numbers
+        updateRowNumbers();
+        
+        // Update predecessor dropdowns
+        updatePredecessorDropdowns();
+        
+        // Add event listeners for this row
+        addRowEventListeners(row);
+        
+        // Show success message
+        showToast('success', '{{ __('general.item_added_successfully') }}');
+    }
+    
+    // Update row numbers
+    function updateRowNumbers() {
+        const rows = document.querySelectorAll('#selected-items-container tr');
+        rows.forEach((row, index) => {
+            const numberCell = row.querySelector('td:nth-child(2)');
+            if (numberCell) {
+                numberCell.textContent = index + 1;
+            }
+        });
+    }
+    
+    // Update predecessor dropdowns
+    function updatePredecessorDropdowns() {
+        const rows = document.querySelectorAll('#selected-items-container tr');
+        const items = Array.from(rows).map((row, index) => ({
+            id: row.getAttribute('data-item-id'),
+            name: row.querySelector('input[name*="[name]"]')?.value || `البند ${index + 1}`,
+            index: index
+        }));
+        
+        rows.forEach((row, currentIndex) => {
+            const select = row.querySelector('.predecessor-select');
+            if (!select) return;
+            
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">{{ __('general.none') }}</option>';
+            
+            items.forEach((item, itemIndex) => {
+                if (itemIndex < currentIndex) { // Only show previous items
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = `${itemIndex + 1}. ${item.name}`;
+                    if (item.id === currentValue) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                }
+            });
+        });
+    }
+    
+    // Add event listeners to a row
+    function addRowEventListeners(row) {
+        // Remove button
+        const removeBtn = row.querySelector('.remove-item-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                if (confirm('{{ __('general.confirm_delete') }}')) {
+                    row.remove();
+                    updateRowNumbers();
+                    updatePredecessorDropdowns();
+                }
+            });
+        }
+        
+        // Calculate duration on quantity/daily change
+        const quantityInput = row.querySelector('.quantity-input');
+        const dailyQtyInput = row.querySelector('.daily-qty-input');
+        const durationInput = row.querySelector('.duration-input');
+        
+        function calculateDuration() {
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const dailyQty = parseFloat(dailyQtyInput.value) || 1;
+            
+            if (quantity > 0 && dailyQty > 0) {
+                const duration = Math.ceil(quantity / dailyQty);
+                durationInput.value = duration;
+            }
+        }
+        
+        if (quantityInput) quantityInput.addEventListener('input', calculateDuration);
+        if (dailyQtyInput) dailyQtyInput.addEventListener('input', calculateDuration);
+    }
+    
+    // Show toast notification
+    function showToast(type, message) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+            ${message}
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+    
+    // Initialize existing rows
+    document.querySelectorAll('#selected-items-container tr').forEach(row => {
+        addRowEventListeners(row);
+    });
+    
+    // Initialize Sortable if available
+    if (typeof Sortable !== 'undefined') {
+        const container = document.getElementById('selected-items-container');
+        if (container) {
+            new Sortable(container, {
+                animation: 150,
+                handle: '.drag-handle',
+                onEnd: function() {
+                    updateRowNumbers();
+                    updatePredecessorDropdowns();
+                }
+            });
+        }
+    }
 });
 </script>
