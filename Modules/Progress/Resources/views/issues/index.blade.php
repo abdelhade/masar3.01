@@ -249,8 +249,8 @@
                             </td>
                             <td>{{ $issue->assignedUser->name ?? __('general.unassigned') }}</td>
                             <td>
-                                @if($issue->deadline)
-                                    {{ $issue->deadline->format('Y-m-d') }}
+                                @if($issue->due_date)
+                                    {{ $issue->due_date->format('Y-m-d') }}
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif

@@ -73,11 +73,11 @@ class IssueController extends Controller
         }
 
         if ($request->filled('deadline_from')) {
-            $query->where('deadline', '>=', $request->deadline_from);
+            $query->where('due_date', '>=', $request->deadline_from);
         }
 
         if ($request->filled('deadline_to')) {
-            $query->where('deadline', '<=', $request->deadline_to);
+            $query->where('due_date', '<=', $request->deadline_to);
         }
 
         if ($request->filled('search')) {
@@ -452,8 +452,8 @@ class IssueController extends Controller
                 'Urgent' => (clone $getBaseQuery())->byPriority('Urgent')->count(),
             ],
             'overdue' => (clone $getBaseQuery())
-                ->whereNotNull('deadline')
-                ->where('deadline', '<', now())
+                ->whereNotNull('due_date')
+                ->where('due_date', '<', now())
                 ->where('status', '!=', 'Closed')
                 ->count(),
             'by_project' => (clone $getBaseQuery())

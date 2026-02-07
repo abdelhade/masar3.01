@@ -102,7 +102,7 @@
                     <div class="col-md-6">
                         <label class="form-label">{{ __('general.deadline') }}</label>
                         <input type="date" name="deadline" class="form-control @error('deadline') is-invalid @enderror" 
-                               value="{{ old('deadline', $issue->deadline?->format('Y-m-d')) }}">
+                               value="{{ old('deadline', $issue->due_date?->format('Y-m-d')) }}">
                         @error('deadline')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
