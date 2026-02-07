@@ -20,6 +20,7 @@ class ProjectRepository
     public function getAllActive(): Collection
     {
         return Project::where('is_draft', false)
+            ->where('is_progress', 1)
             ->with('client')
             ->withCount('items')
             ->latest()
@@ -42,6 +43,7 @@ class ProjectRepository
             $query->where('user_id', $userId);
         })
             ->where('is_draft', $isDraft)
+            ->where('is_progress', 1)
             ->with('client')
             ->withCount('items')
             ->latest()
