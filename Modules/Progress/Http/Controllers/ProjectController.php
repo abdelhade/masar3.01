@@ -136,7 +136,7 @@ class ProjectController extends Controller
                 : __('general.project_created_successfully');
 
             return redirect()
-                ->route('projects.show', $project)
+                ->route('progress.projects.show', $project)
                 ->with('success', $message);
 
         } catch (\Exception $e) {
@@ -1724,7 +1724,7 @@ class ProjectController extends Controller
             }
 
             return redirect()
-                ->route('projects.show', $project)
+                ->route('progress.projects.show', $project)
                 ->with('success', __('general.project_updated_successfully'));
 
         } catch (\Exception $e) {
@@ -1747,7 +1747,7 @@ class ProjectController extends Controller
             $this->projectService->deleteProject($project);
 
             return redirect()
-                ->route('projects.index')
+                ->route('progress.projects.index')
                 ->with('success', __('general.project_deleted_successfully'));
 
         } catch (\Exception $e) {
@@ -1768,7 +1768,7 @@ class ProjectController extends Controller
         }
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('progress.projects.show', $project)
             ->with('success', __('general.project_published_successfully'));
     }
 
@@ -1789,12 +1789,12 @@ class ProjectController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => __('general.project_copied_successfully'),
-                    'redirect_url' => route('projects.edit', $newProject)
+                    'redirect_url' => route('progress.projects.edit', $newProject)
                 ]);
             }
 
             return redirect()
-                ->route('projects.edit', $newProject)
+                ->route('progress.projects.edit', $newProject)
                 ->with('success', __('general.project_copied_successfully'));
 
         } catch (\Exception $e) {
