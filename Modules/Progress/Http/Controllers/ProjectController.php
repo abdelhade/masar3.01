@@ -56,11 +56,17 @@ class ProjectController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('admin') || $user->hasRole('manager')) {
-            // الأدمن والمدير يشوفوا كل المشاريع النشطة
             $projects = $this->projectRepository->getAllActive();
+            \Log::info('Projects Index - Admin/Manager', [
+                'user_id' => $user->id,
+                'projects_count' => $projects->count()
+            ]);
         } else {
-            // باقي المستخدمين يشوفوا المشاريع المرتبطة بيهم (user_id يستخدم كـ employee_id)
             $projects = $this->projectRepository->getByUserId($user->id, false);
+            \Log::info('Projects Index - Regular User', [
+                'user_id' => $user->id,
+                'projects_count' => $projects->count()
+            ]);
         }
 
         return view('progress::projects.index', compact('projects'));
