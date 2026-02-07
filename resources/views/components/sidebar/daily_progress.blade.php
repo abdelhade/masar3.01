@@ -1,5 +1,5 @@
 <li class="nav-item">
-    <a class="nav-link" href="{{ route('project.types.index') }}">
+    <a class="nav-link" href="{{ route('project_types.index') }}">
         <i class="ti-control-record"></i>{{ __('navigation.project_types') }}
     </a>
 </li>
