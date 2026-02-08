@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title">إضافة مورد جديد</h4>
+                <h4 class="page-title">{{ __('Add New Resource') }}</h4>
             </div>
         </div>
     </div>

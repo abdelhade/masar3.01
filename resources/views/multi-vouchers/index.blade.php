@@ -19,14 +19,14 @@
             @can('create multi-payment')
                 @if (request('type') == 'multi_payment')
                     <a href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}" class="btn btn-main">
-                        إضافة سند دفع
+                        {{ __('Add Payment Voucher') }}
                     </a>
                 @endif
             @endcan
             @can('create multi-receipt')
                 @if (request('type') == 'multi_receipt')
                     <a href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}" class="btn btn-main">
-                        إضافة سند قبض
+                        {{ __('Add Receipt Voucher') }}
                     </a>
                 @endif
             @endcan
@@ -39,20 +39,20 @@
 
                         <tr>
                             <th class="font-hold fw-bold font-14 text-center">#</th>
-                            <th class="font-hold fw-bold font-14 text-center">التاريخ</th>
-                            <th class="font-hold fw-bold font-14 text-center">رقم العمليه</th>
-                            <th class="font-hold fw-bold font-14 text-center">نوع العمليه</th>
-                            <th class="font-hold fw-bold font-14 text-center">البيان</th>
-                            <th class="font-hold fw-bold font-14 text-center">المبلغ</th>
-                            <th class="font-hold fw-bold font-14 text-center">من حساب</th>
-                            <th class="font-hold fw-bold font-14 text-center">الي حساب</th>
-                            <th class="font-hold fw-bold font-14 text-center">الموظف</th>
-                            <th class="font-hold fw-bold font-14 text-center">الموظف 2 </th>
-                            <th class="font-hold fw-bold font-14 text-center">المستخدم</th>
-                            <th class="font-hold fw-bold font-14 text-center">تم الانشاء في </th>
-                            <th class="font-hold fw-bold font-14 text-center">ملاحظات</th>
-                            <th class="font-hold fw-bold font-14 text-center">تم المراجعه</th>
-                            <th class="font-hold fw-bold font-14 text-center">العمليات</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Date') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Operation Number') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Operation Type') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Statement') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Amount') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('From Account') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('To Account') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Employee') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Employee 2') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('User') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Created At') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Notes') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Reviewed') }}</th>
+                            <th class="font-hold fw-bold font-14 text-center">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,10 +66,10 @@
                                 <td class="font-hold fw-bold font-14 text-center">{{ $multi->details }}</td>
                                 <td class="font-hold fw-bold font-14 text-center">{{ $multi->pro_value }}</td>
                                 <td class="font-hold fw-bold font-14 text-center">
-                                    {{ $accountsMap[$multi->id]['debit'] ?? ($multi->account1->aname ?? 'مذكروين') }}
+                                    {{ $accountsMap[$multi->id]['debit'] ?? ($multi->account1->aname ?? __('Multiple')) }}
                                 </td>
                                 <td class="font-hold fw-bold font-14 text-center">
-                                    {{ $accountsMap[$multi->id]['credit'] ?? ($multi->account2->aname ?? 'مذكروين') }}
+                                    {{ $accountsMap[$multi->id]['credit'] ?? ($multi->account2->aname ?? __('Multiple')) }}
                                 </td>
                                 <td class="font-hold fw-bold font-14 text-center">{{ $multi->emp1->aname ?? '' }}
                                 </td>
@@ -79,7 +79,7 @@
                                 <td class="font-hold fw-bold font-14 text-center">{{ $multi->created_at }}</td>
                                 <td class="font-hold fw-bold font-14 text-center">{{ $multi->info }}</td>
                                 <td class="font-hold fw-bold font-14 text-center">
-                                    {{ $multi->confirmed ? 'نعم' : 'لا' }}</td>
+                                    {{ $multi->confirmed ? __('Yes') : __('No') }}</td>
                                 <td class="font-hold fw-bold font-14 text-center" x-show="columns[16]">
                                     @php
                                         $pname = $multi->type->pname ?? null;
@@ -108,7 +108,7 @@
                                     @endphp
                                     @if ($canDuplicate)
                                         <a href="{{ route('multi-vouchers.duplicate', $multi) }}"
-                                            class="btn btn-info btn-icon-square-sm" title="نسخ العملية"><i class="las la-copy"></i></a>
+                                            class="btn btn-info btn-icon-square-sm" title="{{ __('Copy Operation') }}"><i class="las la-copy"></i></a>
                                     @endif
 
                                     @if ($deletePerm && Auth::user()->can($deletePerm))
@@ -117,7 +117,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-danger btn-icon-square-sm"
-                                                onclick="return confirm(' أنت متأكد انك عايز تمسح العملية و القيد المصاحب لها؟')">
+                                                onclick="return confirm('{{ __('Are you sure you want to delete this operation and its associated entry?') }}')">
                                                 <i class="las la-trash-alt"></i>
                                             </button>
                                         </form>
@@ -129,7 +129,7 @@
                                 <td colspan="15" class="text-center">
                                     <div class="alert alert-info py-3 mb-0" style="font-size: 1.2rem; font-weight: 500;">
                                         <i class="las la-info-circle me-2"></i>
-                                        لا توجد بيانات
+                                        {{ __('No data available') }}
                                     </div>
                                 </td>
                             </tr>

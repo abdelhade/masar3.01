@@ -9,8 +9,8 @@
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('الرئيسية') }}</a></li>
-                <li class="breadcrumb-item active">{{ __('إدارة إهلاك الأصول') }}</li>
+                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('Home') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('Asset Depreciation Management') }}</li>
             </ol>
         </nav>
 

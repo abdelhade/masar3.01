@@ -8,7 +8,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <h2 class="mb-4">إحصائيات رواتب الموظفين 📊</h2>
+                <h2 class="mb-4">{{ __('Employee Salaries Statistics') }} 📊</h2>
             </div>
         </div>
 
@@ -20,13 +20,13 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="text-muted font-hold fw-bold mb-2">
-                                    إجمالي رواتب الموظفين
+                                    {{ __('Total Employee Salaries') }}
                                 </h6>
                                 <h2 class="font-hold fw-bold mb-0 text-primary">
                                     {{ number_format($overallTotal->overall_value, 2) }}
                                 </h2>
                                 <small class="text-muted font-hold">
-                                    {{ number_format($overallTotal->overall_count) }} سند
+                                    {{ number_format($overallTotal->overall_count) }} {{ __('Voucher') }}
                                 </small>
                             </div>
                             <div class="text-primary" style="font-size: 3rem; opacity: 0.3;">
@@ -51,7 +51,7 @@
                                             {{ number_format($stats['value'], 2) }}
                                         </h2>
                                         <small class="text-muted font-hold">
-                                            {{ number_format($stats['count']) }} سند
+                                            {{ number_format($stats['count']) }} {{ __('Voucher') }}
                                         </small>
                                     </div>
                                     <div class="text-{{ $stats['color'] }}" style="font-size: 3rem; opacity: 0.3;">
@@ -68,25 +68,25 @@
         <!-- الشارتس -->
         <div class="row mb-5">
             <div class="col-lg-6 mb-4">
-                <h3 class="mb-3">توزيع الرواتب حسب نوع السند</h3>
+                <h3 class="mb-3">{{ __('Salary Distribution by Voucher Type') }}</h3>
                 <canvas id="typePieChart" height="150"></canvas>
             </div>
             <div class="col-lg-6 mb-4">
-                <h3 class="mb-3">توزيع الرواتب حسب الموظفين</h3>
+                <h3 class="mb-3">{{ __('Salary Distribution by Employees') }}</h3>
                 <canvas id="employeeBarChart" height="150"></canvas>
             </div>
         </div>
 
         <!-- تفاصيل الإحصائيات حسب نوع السند -->
-        <h3 class="mt-5">إحصائيات حسب نوع السند</h3>
+        <h3 class="mt-5">{{ __('Statistics by Voucher Type') }}</h3>
         <div class="table-responsive mb-5">
             <table class="table table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
                         <th>#</th>
-                        <th>نوع السند</th>
-                        <th>عدد السندات</th>
-                        <th>إجمالي القيمة</th>
+                        <th>{{ __('Voucher Type') }}</th>
+                        <th>{{ __('Number of Vouchers') }}</th>
+                        <th>{{ __('Total Value') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,7 +103,7 @@
                 </tbody>
                 <tfoot class="bg-light font-weight-bold">
                     <tr>
-                        <td colspan="2" class="text-right">الإجمالي الكلي:</td>
+                        <td colspan="2" class="text-right">{{ __('Grand Total') }}:</td>
                         <td>{{ number_format($overallTotal->overall_count) }}</td>
                         <td>{{ number_format($overallTotal->overall_value, 2) }}</td>
                     </tr>
@@ -112,15 +112,15 @@
         </div>
 
         <!-- إحصائيات حسب الموظفين -->
-        <h3 class="mt-5">إحصائيات حسب الموظفين</h3>
+        <h3 class="mt-5">{{ __('Statistics by Employees') }}</h3>
         <div class="table-responsive mb-5">
             <table class="table table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
                         <th>#</th>
-                        <th>اسم الموظف</th>
-                        <th>عدد السندات</th>
-                        <th>إجمالي القيمة</th>
+                        <th>{{ __('Employee Name') }}</th>
+                        <th>{{ __('Number of Vouchers') }}</th>
+                        <th>{{ __('Total Value') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -137,14 +137,14 @@
         </div>
 
         <!-- إحصائيات حسب مراكز التكلفة -->
-        <h3 class="mt-5">إحصائيات حسب مراكز التكلفة</h3>
+        <h3 class="mt-5">{{ __('Statistics by Cost Centers') }}</h3>
         <div class="table-responsive mb-5">
             <table class="table table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
                         <th>#</th>
-                        <th>اسم مركز التكلفة</th>
-                        <th>إجمالي القيمة</th>
+                        <th>{{ __('Cost Center Name') }}</th>
+                        <th>{{ __('Total Value') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -209,7 +209,7 @@
                     },
                     title: {
                         display: true,
-                        text: 'توزيع الرواتب حسب نوع السند'
+                        text: '{{ __('Salary Distribution by Voucher Type') }}'
                     }
                 }
             }
@@ -225,7 +225,7 @@
                     @endforeach
                 ],
                 datasets: [{
-                    label: 'إجمالي القيمة',
+                    label: '{{ __('Total Value') }}',
                     data: [
                         @foreach ($employeeStats as $stat)
                             {{ $stat->value }},
@@ -243,13 +243,13 @@
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'القيمة'
+                            text: '{{ __('Value') }}'
                         }
                     },
                     x: {
                         title: {
                             display: true,
-                            text: 'الموظف'
+                            text: '{{ __('Employee') }}'
                         }
                     }
                 },
@@ -259,7 +259,7 @@
                     },
                     title: {
                         display: true,
-                        text: 'توزيع الرواتب حسب الموظفين'
+                        text: '{{ __('Salary Distribution by Employees') }}'
                     }
                 }
             }

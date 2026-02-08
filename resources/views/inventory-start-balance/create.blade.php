@@ -6,10 +6,10 @@
 @endsection
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('تعديل الرصيد الافتتاحي للأصناف'),
+        'title' => __('Edit Inventory Opening Balance'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('تعديل الرصيد الافتتاحي للأصناف')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Edit Inventory Opening Balance')],
         ],
     ])
     <div class="content-wrapper">
@@ -18,7 +18,7 @@
                 @csrf
                 <div class="row">
                     <div class="col-lg-2 text-center">
-                        <label class="form-label" style="font-size: 1em;">المخزن</label>
+                        <label class="form-label" style="font-size: 1em;">{{ __('Store') }}</label>
                         <select id="store_select" name="store_id"
                             class="form-control form-control-sm @error('store_id') is-invalid @enderror"
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
@@ -32,7 +32,7 @@
                     </div>
 
                     <div class="col-lg-2 text-center">
-                        <label class="form-label" style="font-size: 1em;">الشريك</label>
+                        <label class="form-label" style="font-size: 1em;">{{ __('Partner') }}</label>
                         <select id="partner_select" name="partner_id"
                             class="form-control form-control-sm @error('partner_id') is-invalid @enderror"
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
@@ -46,13 +46,13 @@
                     </div>
 
                     <div class="col-lg-2 text-center">
-                        <label class="form-label" style="font-size: 1em;">أجمالي الكميات المضافه</label>
+                        <label class="form-label" style="font-size: 1em;">{{ __('Total Added Quantities') }}</label>
                         <input id="total_quantities" class="form-control form-control-sm" type="text" value="0"
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px; background-color: #f8f9fa;" readonly>
                     </div>
 
                     <div class="col-lg-2 text-center">
-                        <label class="form-label" style="font-size: 1em;">قيمة الكميات المضافه</label>
+                        <label class="form-label" style="font-size: 1em;">{{ __('Total Added Value') }}</label>
                         <input id="total_value" class="form-control form-control-sm" type="text" value="0.00"
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px; background-color: #f8f9fa;" readonly>
                     </div>
@@ -64,13 +64,13 @@
                         <table class="table table-bordered table-sm">
                             <thead class="table-light">
                                 <tr class="text-center">
-                                    <th style="width: 10%">الكود</th>
-                                    <th style="width: 20%">الاسم</th>
-                                    <th style="width: 15%">الوحدة</th>
-                                    <th style="width: 15%">التكلفة</th>
-                                    <th style="width: 15%">رصيد اول المده الحالي</th>
-                                    <th style="width: 15%">رصيد اول المده الجديد</th>
-                                    <th style="width: 15%">كميه التسويه</th>
+                                    <th style="width: 10%">{{ __('Code') }}</th>
+                                    <th style="width: 20%">{{ __('Name') }}</th>
+                                    <th style="width: 15%">{{ __('Unit') }}</th>
+                                    <th style="width: 15%">{{ __('Cost') }}</th>
+                                    <th style="width: 15%">{{ __('Current Opening Balance') }}</th>
+                                    <th style="width: 15%">{{ __('New Opening Balance') }}</th>
+                                    <th style="width: 15%">{{ __('Adjustment Quantity') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="items_table_body">
@@ -114,13 +114,13 @@
                                         <td>
                                             <input type="number" name="new_opening_balance[{{ $item->id }}]"
                                                 class="form-control form-control-sm new-balance-input"
-                                                placeholder="الرصيد الجديد" style="padding:2px;height:30px;"
+                                                placeholder="{{ __('New Balance') }}" style="padding:2px;height:30px;"
                                                 data-item-id="{{ $item->id }}" step="0.01">
                                         </td>
                                         <td>
                                             <input type="number" name="adjustment_qty[{{ $item->id }}]"
                                                 class="form-control form-control-sm adjustment-qty"
-                                                placeholder="كمية التسوية" style="padding:2px;height:30px;" readonly
+                                                placeholder="{{ __('Adjustment Quantity') }}" style="padding:2px;height:30px;" readonly
                                                 step="0.01">
                                         </td>
                                     </tr>
@@ -133,7 +133,7 @@
                 <div class="row mt-3">
                     <div class="col-12 text-left">
                         <button type="submit" class="btn btn-primary" id="save-btn">
-                            <i class="fas fa-save"></i> حفظ التغييرات
+                            <i class="fas fa-save"></i> {{ __('Save Changes') }}
                         </button>
                     </div>
                 </div>

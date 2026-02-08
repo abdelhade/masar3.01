@@ -7,11 +7,11 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => $pageTitle ?? 'إضافة تحويل نقدي',
+        'title' => $pageTitle ?? __('Add Cash Transfer'),
         'items' => [
-            ['label' => 'الرئيسية', 'url' => route('admin.dashboard')],
-            ['label' => 'التحويلات النقدية', 'url' => route('transfers.index')],
-            ['label' => 'إضافة جديد'],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Cash Transfers'), 'url' => route('transfers.index')],
+            ['label' => __('Add New')],
         ],
     ])
 
@@ -39,44 +39,44 @@
                     <div class="col-lg-9">
                         <div class="card bg-white">
                             <div class="card-header">
-                                <h2 class="card-title">{{ $pageTitle ?? 'إضافة تحويل نقدي' }}</h2>
+                                <h2 class="card-title">{{ $pageTitle ?? __('Add Cash Transfer') }}</h2>
                             </div>
 
                             <div class="card-body">
                                 {{-- بيانات الفاتورة --}}
                                 <div class="row mb-3">
                                     <div class="col-md-4">
-                                        <label class="form-label">رقم العملية</label>
+                                        <label class="form-label">{{ __('Operation Number') }}</label>
                                         <input type="text" name="pro_id" class="form-control"
                                             value="{{ $newProId }}" readonly>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label">الرقم الدفتري</label>
+                                        <label class="form-label">{{ __('Serial Number') }}</label>
                                         <input type="text" name="pro_serial" class="form-control">
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label">رقم الإيصال</label>
+                                        <label class="form-label">{{ __('Receipt Number') }}</label>
                                         <input type="text" name="pro_num" class="form-control">
                                     </div>
                                 </div>
 
                                 <div class="row mb-3">
                                     <div class="col-md-4">
-                                        <label class="form-label">التاريخ</label>
+                                        <label class="form-label">{{ __('Date') }}</label>
                                         <input type="date" name="pro_date" class="form-control"
                                             value="{{ date('Y-m-d') }}">
                                     </div>
                                     <div class="col-md-{{ isMultiCurrencyEnabled() ? '2' : '4' }}">
-                                        <label class="form-label">المبلغ</label>
+                                        <label class="form-label">{{ __('Amount') }}</label>
                                         <input type="number" step="0.01" name="pro_value" id="pro_value"
                                             class="form-control">
                                     </div>
 
                                     @if(isMultiCurrencyEnabled())
                                         <div class="col-md-2">
-                                            <label class="form-label">العملة</label>
+                                            <label class="form-label">{{ __('Currency') }}</label>
                                             <select id="currency_selector" class="form-control">
-                                                <option value="">اختر العملة</option>
+                                                <option value="">{{ __('Select Currency') }}</option>
                                                 @foreach($allCurrencies as $currency)
                                                     <option value="{{ $currency->id }}" 
                                                             data-rate="{{ $currency->latestRate->rate ?? 1 }}"
@@ -88,14 +88,14 @@
                                         </div>
 
                                         <div class="col-md-2">
-                                            <label class="form-label">القيمة المحولة</label>
+                                            <label class="form-label">{{ __('Converted Amount') }}</label>
                                             <input type="text" id="converted_amount" readonly 
                                                 class="form-control bg-light" placeholder="0.00">
                                         </div>
                                     @endif
 
                                     <div class="col-md-{{ isMultiCurrencyEnabled() ? '2' : '4' }}">
-                                        <label class="form-label">البيان</label>
+                                        <label class="form-label">{{ __('Description') }}</label>
                                         <input type="text" name="details" class="form-control">
                                     </div>
                                 </div>
@@ -103,10 +103,10 @@
                                 {{-- الحسابات --}}
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">من حساب</label>
+                                        <label class="form-label">{{ __('From Account') }}</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <select name="acc2" id="from_account" class="form-control js-tom-select" style="flex: 1;">
-                                                <option value="">اختر الحساب</option>
+                                                <option value="">{{ __('Select Account') }}</option>
                                                 @foreach ($fromAccounts as $account)
                                                     <option value="{{ $account->id }}"
                                                         data-balance="{{ $account->balance }}"
@@ -122,10 +122,10 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">إلى حساب</label>
+                                        <label class="form-label">{{ __('To Account') }}</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <select name="acc1" id="to_account" class="form-control js-tom-select" style="flex: 1;">
-                                                <option value="">اختر الحساب</option>
+                                                <option value="">{{ __('Select Account') }}</option>
                                                 @foreach ($toAccounts as $account)
                                                     <option value="{{ $account->id }}"
                                                         data-balance="{{ $account->balance }}"
@@ -145,18 +145,18 @@
                                 {{-- الموظفين --}}
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">الموظف</label>
+                                        <label class="form-label">{{ __('Employee') }}</label>
                                         <select name="emp_id" class="form-control">
-                                            <option value="">اختر موظف</option>
+                                            <option value="">{{ __('Select Employee') }}</option>
                                             @foreach ($employeeAccounts as $emp)
                                                 <option value="{{ $emp->id }}">{{ $emp->aname }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">مندوب التحصيل</label>
+                                        <label class="form-label">{{ __('Collection Representative') }}</label>
                                         <select name="emp2_id" class="form-control">
-                                            <option value="">اختر مندوب</option>
+                                            <option value="">{{ __('Select Representative') }}</option>
                                             @foreach ($employeeAccounts as $emp)
                                                 <option value="{{ $emp->id }}">{{ $emp->aname }}</option>
                                             @endforeach
@@ -167,13 +167,13 @@
                                 {{-- التكلفة والملاحظات --}}
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">مركز التكلفة</label>
+                                        <label class="form-label">{{ __('Cost Center') }}</label>
                                         <select name="cost_center" class="form-control">
-                                            <option value="">بدون مركز تكلفة</option>
+                                            <option value="">{{ __('No Cost Center') }}</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">ملاحظات</label>
+                                        <label class="form-label">{{ __('Notes') }}</label>
                                         <input type="text" name="info" class="form-control">
                                     </div>
                                 </div>
@@ -185,11 +185,11 @@
                             <div class="card-footer d-flex justify-content-start">
                                 <button type="submit" class="btn btn-main m-1">
                                     <i class="ki-outline ki-check fs-3"></i>
-                                    تأكيد
+                                    {{ __('Confirm') }}
                                 </button>
                                 <button type="reset" class="btn btn-danger m-1">
                                     <i class="ki-outline ki-cross fs-3"></i>
-                                    مسح
+                                    {{ __('Clear') }}
                                 </button>
                             </div>
                         </div>
@@ -217,7 +217,7 @@
                                 direction: 'asc'
                             },
                             dropdownInput: true,
-                            placeholder: 'ابحث...',
+                            placeholder: '{{ __('Search...') }}',
                             onItemAdd: function() {
                                 checkAndUpdateCurrency();
                             },
@@ -246,7 +246,7 @@
                                 direction: 'asc'
                             },
                             dropdownInput: true,
-                            placeholder: 'ابحث عن الحساب...',
+                            placeholder: '{{ __('Search for account...') }}',
                             onItemAdd: function() {
                                 checkAndUpdateCurrency();
                             },
@@ -392,7 +392,7 @@
 
                 // التحقق من تطابق العملات
                 if (String(fromCurrencyId) !== String(toCurrencyId)) {
-                    alert('عذراً، يجب أن يكون للحسابين نفس العملة لإتمام التحويل.');
+                    alert('{{ __('Sorry, both accounts must have the same currency to complete the transfer.') }}');
                     return false;
                 }
 

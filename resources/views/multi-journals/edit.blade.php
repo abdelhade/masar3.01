@@ -87,7 +87,7 @@
     <div>
         <div class="card mt-3">
             <div class="card-header">
-                <h1 class="card-title">تعديل قيد يومية متعدد</h1>
+                <h1 class="card-title">{{ __('Edit Multi Journal Entry') }}</h1>
             </div>
             <div class="card-body">
 
@@ -114,21 +114,21 @@
 
                     <div class="row">
                         <div class="col-md-3">
-                            <label>التاريخ</label>
+                            <label>{{ __('Date') }}</label>
                             <input type="date" name="pro_date" class="form-control" 
                                 value="{{ old('pro_date', $oper->pro_date) }}" required>
                         </div>
 
                         <div class="col-md-3">
-                            <label>الرقم الدفتري</label>
+                            <label>{{ __('Serial Number') }}</label>
                             <input type="text" name="pro_num" class="form-control" 
                                 value="{{ old('pro_num', $oper->pro_num) }}" placeholder="EX:7645">
                         </div>
 
                         <div class="col-md-3">
-                            <label>الموظف</label>
+                            <label>{{ __('Employee') }}</label>
                             <select name="emp_id" class="form-control js-tom-select" required>
-                                <option value="">اختر موظف</option>
+                                <option value="">{{ __('Select Employee') }}</option>
                                 @foreach ($employees as $emp)
                                     <option value="{{ $emp->id }}" 
                                         {{ old('emp_id', $oper->emp_id) == $emp->id ? 'selected' : '' }}>
@@ -139,9 +139,9 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label>مركز التكلفة</label>
+                            <label>{{ __('Cost Center') }}</label>
                             <select name="cost_center" class="form-control js-tom-select">
-                                <option value="">اختر مركز تكلفة</option>
+                                <option value="">{{ __('Select Cost Center') }}</option>
                                 @foreach ($cost_centers as $cost)
                                     <option value="{{ $cost->id }}" 
                                         {{ old('cost_center', $oper->cost_center) == $cost->id ? 'selected' : '' }}>
@@ -154,7 +154,7 @@
 
                     <div class="row mt-3">
                         <div class="col">
-                            <label>بيان</label>
+                            <label>{{ __('Statement') }}</label>
                             <input type="text" name="details" class="form-control" 
                                 value="{{ old('details', $oper->details) }}" required>
                         </div>
@@ -164,11 +164,11 @@
                         <table class="table table-bordered" id="entriesTable">
                             <thead>
                                 <tr>
-                                    <th style="width: 12%;">مدين</th>
-                                    <th style="width: 12%;">دائن</th>
-                                    <th style="width: 40%;">الحساب</th>
-                                    <th style="width: 26%;">ملاحظات</th>
-                                    <th style="width: 10%;">إجراء</th>
+                                    <th style="width: 12%;">{{ __('Debit') }}</th>
+                                    <th style="width: 12%;">{{ __('Credit') }}</th>
+                                    <th style="width: 40%;">{{ __('Account') }}</th>
+                                    <th style="width: 26%;">{{ __('Notes') }}</th>
+                                    <th style="width: 10%;">{{ __('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -214,7 +214,7 @@
                                         </td>
                                         <td>
                                             <select name="account_id[]" class="form-control js-tom-select" required>
-                                                <option value="">اختر حساب</option>
+                                                <option value="">{{ __('Select Account') }}</option>
                                                 @foreach ($accounts as $acc)
                                                     <option value="{{ $acc->id }}" 
                                                         {{ old("account_id.$i", $line['account_id']) == $acc->id ? 'selected' : '' }}>
@@ -228,18 +228,18 @@
                                                 value="{{ old("note.$i", $line['note']) }}">
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-danger btn-sm removeRow">حذف</button>
+                                            <button type="button" class="btn btn-danger btn-sm removeRow">{{ __('Remove') }}</button>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
-                        <button type="button" class="btn btn-secondary mt-2" id="addRow">+ إضافة سطر</button>
+                        <button type="button" class="btn btn-secondary mt-2" id="addRow">+ {{ __('Add Row') }}</button>
                     </div>
 
                     <div class="row mt-4">
                         <div class="col">
-                            <label>ملاحظات عامة</label>
+                            <label>{{ __('General Notes') }}</label>
                             <input type="text" name="info" class="form-control" 
                                 value="{{ old('info', $oper->info) }}">
                         </div>
@@ -248,29 +248,29 @@
                     <div class="row mt-4">
                         <div class="col-md-3">
                             <div class="summary-box" id="debitSummaryBox">
-                                اجمالي مدين: <span id="debitTotal">0.00</span>
+                                {{ __('Total Debit') }}: <span id="debitTotal">0.00</span>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="summary-box" id="creditSummaryBox">
-                                اجمالي دائن: <span id="creditTotal">0.00</span>
+                                {{ __('Total Credit') }}: <span id="creditTotal">0.00</span>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="summary-box" id="diffSummaryBox">
-                                الفرق: <span id="diffTotal">0.00</span>
+                                {{ __('Difference') }}: <span id="diffTotal">0.00</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-start mt-4">
                         <button type="submit" class="btn btn-main" id="submitBtn">
-                            <span id="submitText">حفظ</span>
+                            <span id="submitText">{{ __('Save') }}</span>
                             <span id="submitLoading" style="display: none;">
-                                <i class="fas fa-spinner fa-spin"></i> جاري الحفظ...
+                                <i class="fas fa-spinner fa-spin"></i> {{ __('Saving...') }}
                             </span>
                         </button>
-                        <a href="{{ route('multi-journals.index') }}" class="btn btn-danger ms-2">إلغاء</a>
+                        <a href="{{ route('multi-journals.index') }}" class="btn btn-danger ms-2">{{ __('Cancel') }}</a>
                     </div>
 
                 </form>
@@ -288,8 +288,8 @@
                         searchField: ['text'],
                         sortField: {field: 'text', direction: 'asc'},
                         dropdownInput: true,
-                        plugins: { remove_button: {title: 'إزالة'} },
-                        placeholder: elem.getAttribute('placeholder') || 'ابحث...'
+                        plugins: { remove_button: {title: '{{ __('Remove') }}'} },
+                        placeholder: elem.getAttribute('placeholder') || '{{ __('Search...') }}'
                     });
                     
                     // Set z-index for dropdown
@@ -368,7 +368,7 @@
             // التحقق من تعبئة الصف الحالي
             if ((!debitValue || parseFloat(debitValue) === 0) && 
                 (!creditValue || parseFloat(creditValue) === 0) || !accountValue) {
-                alert("يرجى تعبئة الصف الحالي أولاً قبل إضافة صف جديد.");
+                alert("{{ __('Please fill the current row before adding a new one.') }}");
                 return;
             }
 
@@ -384,7 +384,7 @@
                 </td>
                 <td>
                     <select name="account_id[]" class="form-control js-tom-select" required>
-                        <option value="">اختر حساب</option>
+                        <option value="">{{ __('Select Account') }}</option>
                         @foreach ($accounts as $acc)
                             <option value="{{ $acc->id }}">
                                 {{ $acc->code }} - {{ $acc->aname }}
@@ -396,7 +396,7 @@
                     <input type="text" name="note[]" class="form-control">
                 </td>
                 <td>
-                    <button type="button" class="btn btn-danger btn-sm removeRow">حذف</button>
+                    <button type="button" class="btn btn-danger btn-sm removeRow">{{ __('Remove') }}</button>
                 </td>
             `;
 
@@ -422,11 +422,11 @@
                 const rows = Array.from(tableBody.querySelectorAll('tr'));
                 
                 if (rows.length <= 1) {
-                    alert("لا يمكن حذف الصف الأول. يجب أن يكون هناك صف واحد على الأقل.");
+                    alert("{{ __('Cannot delete the first row. At least one row must exist.') }}");
                     return;
                 }
 
-                if (confirm('هل أنت متأكد من حذف هذا الصف؟')) {
+                if (confirm('{{ __('Are you sure you want to delete this row?') }}')) {
                     row.remove();
                     calculateTotals();
                 }
@@ -478,7 +478,7 @@
             // Check if balanced
             if (diff >= 0.01) {
                 e.preventDefault();
-                alert('يجب أن تتساوى المجاميع المدينة والدائنة. الفرق الحالي: ' + diff.toFixed(2));
+                alert('{{ __('Debit value must equal credit value.') }} ' + '{{ __('Current difference') }}: ' + diff.toFixed(2));
                 return false;
             }
 
@@ -492,7 +492,7 @@
 
             if (!hasValue) {
                 e.preventDefault();
-                alert('يجب إدخال مبلغ واحد على الأقل.');
+                alert('{{ __('At least one amount must be entered.') }}');
                 return false;
             }
 
@@ -506,7 +506,7 @@
 
             if (!allHaveAccounts) {
                 e.preventDefault();
-                alert('يجب اختيار حساب لكل صف.');
+                alert('{{ __('An account must be selected for each row.') }}');
                 return false;
             }
 
