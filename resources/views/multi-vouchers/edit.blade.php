@@ -49,7 +49,7 @@
 
     <div class="card mt-3">
         <div class="card-header">
-            <h3 class="h4 font-weight-bold mb-0">نوع العملية: {{ $ptext }}</h3>
+            <h3 class="h4 font-weight-bold mb-0">{{ __("Operation Type") }}: {{ $ptext }}</h3>
         </div>
         <div class="card-body">
 
@@ -72,7 +72,7 @@
                 <div class="row">
                     <div class="col-md-2">
                         <div class="form-group">
-                            <label>رقم الفاتورة</label>
+                            <label>{{ __("Invoice Number") }}</label>
                             <input type="text" name="pro_id" class="form-control" value="{{ $operHead->pro_id }}" readonly>
                         </div>
                     </div>
@@ -86,7 +86,7 @@
 
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>التاريخ</label>
+                            <label>{{ __("Date") }}</label>
                             <input type="date" name="pro_date" class="form-control" value="{{ $operHead->pro_date }}">
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>من حساب</label>
+                            <label>{{ __("From Account") }}</label>
                             @if (in_array($pro_type, $account1_types))
                                 <select name="acc1[]" class="form-control js-tom-select js-balance-source" required>
                                     @foreach ($accounts1 as $acc1)
@@ -121,9 +121,9 @@
                                 </select>
                             @endif
                             <small class="text-muted d-block mt-1">
-                                رصيد قبل: <span id="topBalanceBefore">0.00</span>
+                                {{ __('Balance before') }}: <span id="topBalanceBefore">0.00</span>
                                 &nbsp;|&nbsp;
-                                بعد: <span id="topBalanceAfter">0.00</span>
+                                {{ __('After') }}: <span id="topBalanceAfter">0.00</span>
                             </small>
                         </div>
                     </div>
@@ -131,7 +131,7 @@
 
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>الموظف</label>
+                            <label>{{ __("Employee") }}</label>
                             <select name="emp_id" class="form-control js-tom-select" required>
                                 @foreach ($employees as $emp)
                                     <option value="{{ $emp->id }}" {{ $emp->id == $operHead->emp_id ? 'selected' : '' }}>
@@ -148,7 +148,7 @@
                 <div class="row">
                     <div class="col-md-9">
                         <div class="form-group">
-                            <label>البيان</label>
+                            <label>{{ __("Statement") }}</label>
                             <input name="details" required type="text" class="form-control frst" value="{{ $operHead->details }}">
                         </div>
                     </div>
@@ -158,10 +158,10 @@
                     <table id="entriesTable" class="table table-striped table-bordered mb-0" style="min-width: 1200px;">
                         <thead class="table-light text-center align-middle">
                             <tr>
-                                <th>المبلغ</th>
-                                <th>الحساب</th>
-                                <th>ملاحظات</th>
-                                <th>إجراء</th>
+                                <th>{{ __("Amount") }}</th>
+                                <th>{{ __("Account") }}</th>
+                                <th>{{ __("Notes") }}</th>
+                                <th>{{ __("Action") }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -192,9 +192,9 @@
                                             </select>
                                         @endif
                                         <small class="text-muted d-block mt-1">
-                                            رصيد قبل: <span class="rowBalanceBefore">0.00</span>
+                                            {{ __('Balance before') }}: <span class="rowBalanceBefore">0.00</span>
                                             &nbsp;|&nbsp;
-                                            بعد: <span class="rowBalanceAfter">0.00</span>
+                                            {{ __('After') }}: <span class="rowBalanceAfter">0.00</span>
                                         </small>
                                     </td>
                                     <td><input type="text" name="note[]" class="form-control" value="{{ $entry->info }}"></td>
@@ -205,15 +205,15 @@
                     </table>
 
                     <div class="mt-2 text-right">
-                        <strong>إجمالي المبلغ: <span id="debitTotal">0.00</span></strong>
+                        <strong>{{ __("Total Amount") }}: <span id="debitTotal">0.00</span></strong>
                     </div>
-                    <button type="button" class="btn btn-success mt-2" id="addRow">إضافة سطر</button>
+                    <button type="button" class="btn btn-success mt-2" id="addRow">{{ __("Add Row") }}</button>
                 </div>
 
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label>ملاحظات عامة</label>
+                            <label>{{ __("General Notes") }}</label>
                             <input type="text" name="info" class="form-control" value="{{ $operHead->info }}">
                         </div>
                     </div>
@@ -259,7 +259,7 @@
 
         const tableBody = document.querySelector('#entriesTable tbody');
 
-        // زر إضافة سطر جديد
+        // زر {{ __("Add Row") }} جديد
         document.getElementById('addRow').onclick = () => {
             const lastRow = tableBody.querySelector('tr:last-child');
             const amount = lastRow.querySelector('input[name="sub_value[]"]').value;
@@ -289,9 +289,9 @@
                             </select>
                         @endif
                         <small class="text-muted d-block mt-1">
-                            رصيد قبل: <span class="rowBalanceBefore">0.00</span>
+                            {{ __('Balance before') }}: <span class="rowBalanceBefore">0.00</span>
                             &nbsp;|&nbsp;
-                            بعد: <span class="rowBalanceAfter">0.00</span>
+                            {{ __('After') }}: <span class="rowBalanceAfter">0.00</span>
                         </small>
                     </td>
                     <td><input type="text" name="note[]" class="form-control"></td>

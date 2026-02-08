@@ -6,7 +6,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <h2 class="mb-4">إحصائيات السندات 📊</h2>
+                <h2 class="mb-4">{{ __('Vouchers Statistics') }} 📊</h2>
             </div>
         </div>
 
@@ -17,13 +17,13 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="text-muted font-hold fw-bold mb-2">
-                                    إجمالي السندات الكلي
+                                    {{ __('Total Vouchers Value') }}
                                 </h6>
                                 <h2 class="font-hold fw-bold mb-0 text-primary">
                                     {{ number_format($overallTotal->overall_value, 2) }}
                                 </h2>
                                 <small class="text-muted font-hold">
-                                    {{ number_format($overallTotal->overall_count) }} سند
+                                    {{ number_format($overallTotal->overall_count) }} {{ __('Voucher') }}
                                 </small>
                             </div>
                             <div class="text-primary" style="font-size: 3rem; opacity: 0.3;">
@@ -86,15 +86,15 @@
             @endforeach
         </div>
 
-        <h3 class="mt-5">تفاصيل الإحصائيات</h3>
+        <h3 class="mt-5">{{ __('Statistics Details') }}</h3>
         <div class="table-responsive">
             <table class="table table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
-                        <th>#</th>
-                        <th>نوع السند</th>
-                        <th>عدد السندات</th>
-                        <th>إجمالي القيمة</th>
+                        <th>{{ __('#') }}</th>
+                        <th>{{ __('Voucher Type') }}</th>
+                        <th>{{ __('Vouchers Count') }}</th>
+                        <th>{{ __('Total Value') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -109,7 +109,7 @@
                 </tbody>
                 <tfoot class="bg-light font-weight-bold">
                     <tr>
-                        <td colspan="2" class="text-right">الإجمالي الكلي:</td>
+                        <td colspan="2" class="text-right">{{ __('Grand Total') }}:</td>
                         <td>{{ number_format($overallTotal->overall_count) }}</td>
                         <td>{{ number_format($overallTotal->overall_value, 2) }}</td>
                     </tr>

@@ -74,7 +74,7 @@
 <div class="">
     <div class="card mt-3">
         <div class="card-header">
-            <h1 class="card-title">تعديل قيد يومية</h1>
+            <h1 class="card-title">{{ __('Edit Journal Entry') }}</h1>
         </div>
         <div class="card-body">
 
@@ -96,19 +96,19 @@
                 {{-- بيانات القيد --}}
                 <div class="row">
                     <div class="col-md-3">
-                        <label>التاريخ</label>
+                        <label>{{ __('Date') }}</label>
                         <input type="date" name="pro_date" class="form-control" value="{{ old('pro_date', $journal->pro_date) }}">
                     </div>
 
                     <div class="col-md-3">
-                        <label>الرقم الدفتري</label>
+                        <label>{{ __('Serial Number') }}</label>
                         <input type="text" name="pro_num" class="form-control" value="{{ old('pro_num', $journal->pro_num) }}" placeholder="EX:7645">
                     </div>
 
                     <div class="col-md-3">
-                        <label>الموظف</label>
+                        <label>{{ __('Employee') }}</label>
                         <select name="emp_id" class="form-control js-tom-select" required>
-                            <option value="">اختر موظف</option>
+                            <option value="">{{ __('Select Employee') }}</option>
                             @foreach ($employees as $emp)
                                 <option value="{{ $emp->id }}" {{ old('emp_id', $journal->emp_id) == $emp->id ? 'selected' : '' }}>{{ $emp->code }} - {{ $emp->aname }}</option>
                             @endforeach
@@ -116,9 +116,9 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label>مركز التكلفة</label>
+                        <label>{{ __('Cost Center') }}</label>
                         <select name="cost_center" class="form-control js-tom-select" required>
-                            <option value="">اختر مركز تكلفة</option>
+                            <option value="">{{ __('Select Cost Center') }}</option>
                             @foreach ($cost_centers as $cost)
                                 <option value="{{ $cost->id }}" {{ old('cost_center', $journal->cost_center) == $cost->id ? 'selected' : '' }}>{{ $cost->cname }}</option>
                             @endforeach
@@ -128,7 +128,7 @@
 
                 <div class="row mt-3">
                     <div class="col">
-                        <label>بيان</label>
+                        <label>{{ __('Description') }}</label>
                         <input type="text" name="details" class="form-control" value="{{ old('details', $journal->details) }}">
                     </div>
                 </div>
@@ -138,10 +138,10 @@
                     <table class="table table-bordered mb-0">
                         <thead>
                             <tr>
-                                <th width="15%">مدين</th>
-                                <th width="15%">دائن</th>
-                                <th width="30%">الحساب</th>
-                                <th width="40%">ملاحظات</th>
+                                <th width="15%">{{ __('Debit') }}</th>
+                                <th width="15%">{{ __('Credit') }}</th>
+                                <th width="30%">{{ __('Account') }}</th>
+                                <th width="40%">{{ __('Notes') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -152,7 +152,7 @@
                                 <td></td>
                                 <td>
                                     <select name="acc1" class="form-control js-tom-select" required>
-                                        <option value="">اختر حساب</option>
+                                        <option value="">{{ __('Select Account') }}</option>
                                         @foreach ($accounts as $acc)
                                             <option value="{{ $acc->id }}" {{ old('acc1', $journal->acc1) == $acc->id ? 'selected' : '' }}>{{ $acc->code }} - {{ $acc->aname }}</option>
                                         @endforeach
@@ -167,7 +167,7 @@
                                 </td>
                                 <td>
                                     <select name="acc2" class="form-control js-tom-select" required>
-                                        <option value="">اختر حساب</option>
+                                        <option value="">{{ __('Select Account') }}</option>
                                         @foreach ($accounts as $acc)
                                             <option value="{{ $acc->id }}" {{ old('acc2', $journal->acc2) == $acc->id ? 'selected' : '' }}>{{ $acc->code }} - {{ $acc->aname }}</option>
                                         @endforeach
@@ -181,14 +181,14 @@
 
                 <div class="row my-4">
                     <div class="col">
-                        <label>ملاحظات عامة</label>
+                        <label>{{ __('General Notes') }}</label>
                         <input type="text" name="info" class="form-control" value="{{ old('info', $journal->info) }}">
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-start">
-                    <button type="submit" class="btn btn-main m-1">حفظ</button>
-                    <button type="reset" class="btn btn-danger m-1">إلغاء</button>
+                    <button type="submit" class="btn btn-main m-1">{{ __('Save') }}</button>
+                    <button type="reset" class="btn btn-danger m-1">{{ __('Cancel') }}</button>
                 </div>
 
             </form>
@@ -206,8 +206,8 @@
                     searchField: ['text'],
                     sortField: {field: 'text', direction: 'asc'},
                     dropdownInput: true,
-                    plugins: { remove_button: {title: 'إزالة'} },
-                    placeholder: elem.getAttribute('placeholder') || 'ابحث...'
+                    plugins: { remove_button: {title: '{{ __('Remove') }}'} },
+                    placeholder: elem.getAttribute('placeholder') || '{{ __('Search...') }}'
                 });
                 
                 // Set z-index for dropdown
@@ -256,7 +256,7 @@
 
         if (debit !== credit) {
             e.preventDefault();
-            alert("يجب أن تكون القيمة المدينة مساوية للقيمة الدائنة.");
+            alert("{{ __('Debit value must equal credit value.') }}");
         }
     });
 </script>

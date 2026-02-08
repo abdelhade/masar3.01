@@ -6,8 +6,8 @@
 @endsection
 @section('content')
     @include('components.breadcrumb', [
-        'title' => 'التحويلات النقدية',
-        'items' => [['label' => 'الرئيسية', 'url' => route('admin.dashboard')], ['label' => 'التحويلات النقدية']],
+        'title' => __('Cash Transfers'),
+        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Cash Transfers')]],
     ])
 
 
@@ -20,16 +20,16 @@
                     </button>
                     <ul class="dropdown-menu">
                         @canany(['create cash-to-cash' , 'create transfers'])
-                        <li><a class="dropdown-item" href="{{ route('transfers.create', ['type' => 'cash-to-cash']) }}">تحويل من صندوق إلى صندوق</a></li>
+                        <li><a class="dropdown-item" href="{{ route('transfers.create', ['type' => 'cash-to-cash']) }}">{{ __('Transfer from Cash to Cash') }}</a></li>
                         @endcanany
                         @canany(['create cash-to-bank' , 'create transfers'])
-                        <li><a class="dropdown-item" href="{{ route('transfers.create', ['type' => 'cash-to-bank']) }}">تحويل من صندوق إلى بنك</a></li>
+                        <li><a class="dropdown-item" href="{{ route('transfers.create', ['type' => 'cash-to-bank']) }}">{{ __('Transfer from Cash to Bank') }}</a></li>
                         @endcanany
                         @canany(['create bank-to-cash' , 'create transfers'])
-                        <li><a class="dropdown-item" href="{{ route('transfers.create', ['type' => 'bank-to-cash']) }}">تحويل من بنك إلى صندوق</a></li>
+                        <li><a class="dropdown-item" href="{{ route('transfers.create', ['type' => 'bank-to-cash']) }}">{{ __('Transfer from Bank to Cash') }}</a></li>
                         @endcanany
                         @canany(['create bank-to-bank' , 'create transfers'])
-                        <li><a class="dropdown-item" href="{{ route('transfers.create', ['type' => 'bank-to-bank']) }}">تحويل من بنك إلى بنك</a></li>
+                        <li><a class="dropdown-item" href="{{ route('transfers.create', ['type' => 'bank-to-bank']) }}">{{ __('Transfer from Bank to Bank') }}</a></li>
                         @endcanany
                     </ul>
                 </div>
@@ -39,8 +39,8 @@
         <div class="card-body">
             <div class="table-responsive">
 
-                <x-table-export-actions table-id="transfers-table" filename="transfers-table" excel-label="تصدير Excel"
-                    pdf-label="تصدير PDF" print-label="طباعة" />
+                <x-table-export-actions table-id="transfers-table" filename="transfers-table" excel-label="{{ __('Export Excel') }}"
+                    pdf-label="{{ __('Export PDF') }}" print-label="{{ __('Print') }}" />
 
                 @php
                     $typeSlugs = [3 => 'cash-to-cash', 4 => 'cash-to-bank', 5 => 'bank-to-cash', 6 => 'bank-to-bank'];
@@ -49,27 +49,27 @@
                 <table id="transfers-table" class="table table-striped">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>التاريخ</th>
-                            <th>رقم العمليه</th>
-                            <th>نوع العمليه</th>
-                            <th>البيان</th>
+                            <th>{{ __('#') }}</th>
+                            <th>{{ __('Date') }}</th>
+                            <th>{{ __('Operation Number') }}</th>
+                            <th>{{ __('Operation Type') }}</th>
+                            <th>{{ __('Description') }}</th>
                             @if(isMultiCurrencyEnabled())
-                                <th>المبلغ (عملة أجنبية)</th>
-                                <th>المبلغ (عملة محلية)</th>
+                                <th>{{ __('Amount') }} ({{ __('Foreign Currency') }})</th>
+                                <th>{{ __('Amount') }} ({{ __('Local Currency') }})</th>
                             @else
-                                <th>المبلغ</th>
+                                <th>{{ __('Amount') }}</th>
                             @endif
-                            <th>مدين</th>
-                            <th>دائن</th>
-                            <th>الموظف</th>
-                            <th>الموظف 2 </th>
-                            <th>المستخدم</th>
-                            <th>تم الانشاء في </th>
-                            <th>ملاحظات</th>
-                            <th>تم المراجعه</th>
+                            <th>{{ __('Debit') }}</th>
+                            <th>{{ __('Credit') }}</th>
+                            <th>{{ __('Employee') }}</th>
+                            <th>{{ __('Employee') }} 2 </th>
+                            <th>{{ __('User') }}</th>
+                            <th>{{ __('Created At') }}</th>
+                            <th>{{ __('Notes') }}</th>
+                            <th>{{ __('Review') }}</th>
                             {{-- @canany(['تعديل التحويلات النقدية', 'حذف التحويلات النقدية']) --}}
-                                <th class="text-end">العمليات</th>
+                                <th class="text-end">{{ __('Actions') }}</th>
                             {{-- @endcanany --}}
 
                         </tr>
@@ -109,7 +109,7 @@
                                 <td>{{ $transfer->user_name->name }}</td>
                                 <td>{{ $transfer->created_at }}</td>
                                 <td>{{ $transfer->info }}</td>
-                                <td>{{ $transfer->confirmed ? 'نعم' : 'لا' }}</td>
+                                <td>{{ $transfer->confirmed ? __('Yes') : __('No') }}</td>
                                 {{-- أظهر الأزرار بناءً على صلاحيات النوع أو صلاحية عامة --}}
                                     <td x-show="columns[16]">
                                         @php
@@ -132,7 +132,7 @@
                                             <form action="{{ route('transfers.destroy', $transfer->id) }}" method="POST" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="btn btn-danger btn-icon-square-sm" onclick="return confirm('هل أنت متأكد؟')">
+                                                <button class="btn btn-danger btn-icon-square-sm" onclick="return confirm('{{ __('Are you sure?') }}')">
                                                     <i class="las la-trash-alt"></i>
                                                 </button>
                                             </form>
