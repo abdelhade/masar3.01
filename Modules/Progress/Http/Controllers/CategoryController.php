@@ -7,13 +7,14 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:view progress-categories')->only(['index']);
-        $this->middleware('can:create progress-categories')->only(['create', 'store']);
-        $this->middleware('can:edit progress-categories')->only(['edit', 'update']);
-        $this->middleware('can:delete progress-categories')->only(['destroy']);
-    }
+    // Uncomment to enforce permissions; user must have progress-categories permissions
+    // public function __construct()
+    // {
+    //     $this->middleware('can:view progress-categories')->only(['index']);
+    //     $this->middleware('can:create progress-categories')->only(['create', 'store']);
+    //     $this->middleware('can:edit progress-categories')->only(['edit', 'update']);
+    //     $this->middleware('can:delete progress-categories')->only(['destroy']);
+    // }
 
     // عرض كل الفئات
     public function index()
@@ -39,7 +40,7 @@ public function store(Request $request)
         'name' => $request->name,
     ]);
 
-    return redirect()->route('categories.index')->with('success','category created successfully.');
+    return redirect()->route('progress.categories.index')->with('success','category created successfully.');
 }
 
 
@@ -61,7 +62,7 @@ public function store(Request $request)
         $category = Category::findOrFail($id);
         $category->update(['name' => $request->name]);
 
-        return redirect()->route('categories.index')->with('success', 'Category updated successfully.');
+        return redirect()->route('progress.categories.index')->with('success', 'Category updated successfully.');
     }
 
     // حذف الفئة
@@ -70,6 +71,6 @@ public function store(Request $request)
         $category = Category::findOrFail($id);
         $category->delete();
 
-        return redirect()->route('categories.index')->with('success', 'Category deleted successfully.');
+        return redirect()->route('progress.categories.index')->with('success', 'Category deleted successfully.');
     }
 }

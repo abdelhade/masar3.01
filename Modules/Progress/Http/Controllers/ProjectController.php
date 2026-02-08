@@ -94,7 +94,7 @@ class ProjectController extends Controller
         $employees = $this->employeeRepository->getAll();
         $templates = ProjectTemplate::withCount('items')->orderBy('name')->get();
         $projectTypes = ProjectType::orderBy('name')->get();
-        $categories = WorkItemCategory::with('workItems')->orderBy('name')->get();
+        $categories = WorkItemCategory::orderBy('name')->get();
         
         // Initialize empty collections for new project
         $projectItems = collect([]);
@@ -130,7 +130,7 @@ class ProjectController extends Controller
                 : __('general.project_created_successfully');
 
             return redirect()
-                ->route('projects.show', $project)
+                ->route('progress.projects.index')
                 ->with('success', $message);
 
         } catch (\Exception $e) {
