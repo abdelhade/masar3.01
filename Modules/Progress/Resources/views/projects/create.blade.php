@@ -33,8 +33,6 @@
             </div>
         </div>
     </div>
-
-    
     <form action="{{ route('progress.projects.store') }}" 
           method="POST" 
           id="projectForm" 

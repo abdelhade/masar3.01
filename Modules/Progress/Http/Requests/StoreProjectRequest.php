@@ -20,7 +20,7 @@ class StoreProjectRequest extends FormRequest
             return [
                 'name' => 'required|string|max:255',
                 'client_id' => 'nullable|exists:clients,id',
-                'status' => 'nullable|in:active,completed,pending',
+                'status' => 'nullable|in:draft,pending,in_progress,completed,cancelled',
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date',
                 'description' => 'nullable|string',
@@ -57,7 +57,7 @@ class StoreProjectRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'client_id' => 'required|exists:clients,id',
-            'status' => 'required|in:active,completed,pending',
+            'status' => 'required|in:draft,pending,in_progress,completed,cancelled',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'description' => 'nullable|string',

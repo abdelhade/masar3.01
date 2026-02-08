@@ -45,6 +45,7 @@ class Issue extends Model
         'module',
         'reproduce_steps',
         'deadline',
+        'due_date',
     ];
 
     /**
@@ -54,6 +55,7 @@ class Issue extends Model
      */
     protected $casts = [
         'deadline' => 'date',
+        'due_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -194,5 +196,23 @@ class Issue extends Model
             self::STATUS_CLOSED => 'success',
             default => 'secondary',
         };
+    }
+
+    /**
+     * Get the issue deadline.
+     * If deadline field is null but due_date exists, use due_date
+     */
+    public function getDeadlineAttribute()
+    {
+        return $this->attributes['deadline'] ?? $this->attributes['due_date'] ?? null;
+    }
+
+    /**
+     * Set the issue deadline to both deadline and due_date for compatibility
+     */
+    public function setDeadlineAttribute($value)
+    {
+        $this->attributes['deadline'] = $value;
+        $this->attributes['due_date'] = $value;
     }
 }

@@ -46,7 +46,7 @@
                                 <h6 class="text-muted">{{ __('general.project_status') }}</h6>
                                 <h5>
                                     <span
-                                        class="badge bg-{{ $project->status === 'active' ? 'success' : ($project->status === 'pending' ? 'warning' : 'primary') }}">
+                                        class="badge bg-{{ $project->status === 'in_progress' ? 'success' : ($project->status === 'pending' ? 'warning' : 'primary') }}">
                                         {{ __('general.status_' . $project->status) }}
                                     </span>
                                 </h5>
@@ -367,7 +367,7 @@
                 const tasks = filteredTasks;
                 const totalTasks = tasks.length;
                 const completedTasks = tasks.filter(t => t.status === 'completed').length;
-                const activeTasks = tasks.filter(t => t.status === 'active').length;
+                const activeTasks = tasks.filter(t => t.status === 'in_progress').length;
                 const pendingTasks = tasks.filter(t => t.status === 'pending').length;
 
                 document.getElementById('totalTasks').textContent = totalTasks;

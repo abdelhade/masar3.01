@@ -513,7 +513,7 @@ button:focus,
                 <div class="text-center text-md-end">
                     <div class="mb-2">
                         <span class="badge bg-success status-badge">
-                            @if($project->status == 'active')
+                            @if($project->status == 'in_progress')
                                 {{ __('general.active') }}
                             @elseif($project->status == 'completed')
                                 {{ __('general.completed') }}
