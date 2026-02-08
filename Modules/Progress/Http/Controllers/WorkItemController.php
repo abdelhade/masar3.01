@@ -8,13 +8,13 @@ use Modules\Progress\Models\WorkItemCategory;
 
 class WorkItemController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:view progress-work-items')->only(['index', 'search']);
-        $this->middleware('can:create progress-work-items')->only(['create', 'store']);
-        $this->middleware('can:edit progress-work-items')->only(['edit', 'update', 'reorder']);
-        $this->middleware('can:delete progress-work-items')->only(['destroy']);
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('can:view progress-work-items')->only(['index', 'search']);
+    //     $this->middleware('can:create progress-work-items')->only(['create', 'store']);
+    //     $this->middleware('can:edit progress-work-items')->only(['edit', 'update', 'reorder']);
+    //     $this->middleware('can:delete progress-work-items')->only(['destroy']);
+    // }
 
     public function index(Request $request)
     {
@@ -77,7 +77,7 @@ class WorkItemController extends Controller
 
     WorkItem::create($request->only(['name', 'unit', 'description', 'category_id']));
 
-        return redirect()->route('work-items.index')
+        return redirect()->route('progress.work-items.index')
             ->with('success', 'Work item added successfully');
     }
 
@@ -103,7 +103,7 @@ class WorkItemController extends Controller
 
         $workItem->update($request->all());
 
-        return redirect()->route('work-items.index')
+        return redirect()->route('progress.work-items.index')
             ->with('success', 'Work item updated successfully');
     }
 
@@ -111,7 +111,7 @@ class WorkItemController extends Controller
     {
         $workItem->delete();
 
-        return redirect()->route('work-items.index')
+        return redirect()->route('progress.work-items.index')
             ->with('success', 'تم حذف بند العمل بنجاح');
     }
 

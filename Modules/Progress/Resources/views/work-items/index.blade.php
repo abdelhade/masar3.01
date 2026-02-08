@@ -306,11 +306,11 @@
 
 
 
-                @can('create progress-work-items')
+                {{-- @can('create progress-work-items') --}}
                     <a href="{{ route('progress.work-items.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i> {{ __('general.add_new') }}
                     </a>
-                @endcan
+                {{-- @endcan --}}
 
             </div>
         </div>
@@ -384,9 +384,9 @@
                             <th>{{ __('general.item_name') }}</th>
                             <th>{{ __('general.category') }}</th>
                             <th>{{ __('general.unit') }}</th>
-                            @canany(['items-edit', 'items-delete'])
+                            {{-- @canany(['items-edit', 'items-delete']) --}}
                                 <th>{{ __('general.actions') }}</th>
-                            @endcanany
+                            {{-- @endcanany --}}
                         </tr>
                     </thead>
                     <tbody id="itemsTableBody">
@@ -420,16 +420,16 @@
                                 </td>
 
                                 
-                                @canany(['items-edit', 'items-delete'])
+                                {{-- @canany(['items-edit', 'items-delete']) --}}
                                     <td>
                                         <div class="d-flex gap-1">
-                                            @can('edit progress-work-items')
+                                            {{-- @can('edit progress-work-items') --}}
                                                 <a href="{{ route('progress.work-items.edit', $item->id) }}" class="action-btn btn-edit"
                                                     title="تعديل">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                            @endcan
-                                            @can('delete progress-work-items')
+                                            {{-- @endcan --}}
+                                            {{-- @can('delete progress-work-items') --}}
                                                 <form action="{{ route('progress.work-items.destroy', $item->id) }}" method="POST"
                                                     class="d-inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
                                                     @csrf
@@ -438,10 +438,10 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
-                                            @endcan
+                                            {{-- @endcan --}}
                                         </div>
                                     </td>
-                                @endcanany
+                                {{-- @endcanany --}}
                             </tr>
                         @endforeach
                     </tbody>

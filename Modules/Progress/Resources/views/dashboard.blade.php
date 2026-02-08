@@ -47,7 +47,7 @@
                                 <select name="status" id="status" class="form-select">
                                     <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>
                                         {{ __('general.all') }}</option>
-                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>
+                                    <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>
                                         {{ __('general.active') }}</option>
                                     <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>
                                         {{ __('general.completed') }}</option>
@@ -253,7 +253,7 @@
                                                 <td>
                                                     <span
                                                         class="badge badge-status
-                                                    @if ($project->status == 'active') bg-active
+                                                    @if ($project->status == 'in_progress') bg-active
                                                     @elseif($project->status == 'completed') bg-completed
                                                     @else bg-pending @endif">
                                                         {{ __("general.{$project->status}") }}

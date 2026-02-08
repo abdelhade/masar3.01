@@ -7,6 +7,7 @@ use Modules\Progress\Repositories\ProjectItemRepository;
 use Modules\Progress\Models\Project;
 use Modules\Progress\Models\ProjectItem;
 use Modules\Progress\Models\Subproject;
+use App\Models\Project as MainProject;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -65,6 +66,9 @@ class ProjectService
             if (!empty($validated['subprojects'])) {
                 $this->createSubprojects($project, $validated['subprojects']);
             }
+
+            // ✅ إنشاء مشروع في التطبيق الرئيسي أيضاً
+            $this->createMainAppProject($project, $validated);
 
             return $project;
         });
@@ -603,5 +607,27 @@ class ProjectService
 
             return $newProject;
         });
+    }
+
+    /**
+     * Create a project in the main app's projects table
+     */
+    private function createMainAppProject(Project $progressProject, array $validated): void
+    {
+        try {
+            MainProject::create([
+                'name' => $progressProject->name,
+                'description' => $progressProject->description,
+                'start_date' => $progressProject->start_date,
+                'end_date' => $progressProject->end_date,
+                'status' => $progressProject->status,
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
+                // Add any additional fields needed for the main project
+            ]);
+        } catch (\Exception $e) {
+            // Log error but don't fail the main project creation
+            Log::error('Failed to create main app project: ' . $e->getMessage());
+        }
     }
 }

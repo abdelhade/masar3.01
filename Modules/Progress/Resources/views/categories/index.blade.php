@@ -18,11 +18,11 @@
                 <h2 class="mb-0">{{ __('general.categories') }}</h2>
 
             </div>
-            @can('categories-create')
+            {{-- @can('categories-create') --}}
                 <a href="{{ route('progress.categories.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i> {{ __('general.add_new') }}
                 </a>
-            @endcan
+            {{-- @endcan --}}
 
         </div>
 
@@ -53,15 +53,15 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $category->name }}</td>
-                                        @canany(['categories-edit', 'categories-delete'])
+                                        {{-- @canany(['categories-edit', 'categories-delete']) --}}
                                             <td>
-                                                @can('categories-edit')
+                                                {{-- @can('categories-edit') --}}
                                                     <a href="{{ route('progress.categories.edit', $category->id) }}"
                                                         class="btn btn-sm btn-outline-primary">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                @endcan
-                                                @can('categories-delete')
+                                                {{-- @endcan --}}
+                                                {{-- @can('categories-delete') --}}
                                                     <form action="{{ route('progress.categories.destroy', $category->id) }}" method="POST"
                                                         class="d-inline" onsubmit="return confirm('هل أنت متأكدة من الحذف؟');">
                                                         @csrf
@@ -70,9 +70,9 @@
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>
-                                                @endcan
+                                                {{-- @endcan --}}
                                             </td>
-                                        @endcanany
+                                        {{-- @endcanany --}}
                                     </tr>
                                 @endforeach
                             </tbody>

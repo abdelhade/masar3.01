@@ -59,7 +59,7 @@
                     </label>
                     <select id="projectStatusFilter" class="form-select border-0 bg-light" style="border-radius: 12px;">
                         <option value="all">{{ __('general.all_statuses') }}</option>
-                        <option value="active">{{ __('general.active') }}</option>
+                        <option value="in_progress">{{ __('general.active') }}</option>
                         <option value="completed">{{ __('general.completed') }}</option>
                         <option value="pending">{{ __('general.pending') }}</option>
                     </select>
@@ -641,7 +641,7 @@
                 // Get status badge HTML
                 let statusBadge = '';
                 switch(data.status) {
-                    case 'active':
+                    case 'in_progress':
                         statusBadge = '<span class="badge bg-success px-3 py-2"><i class="fas fa-check-circle me-1"></i>' + t.active + '</span>';
                         break;
                     case 'completed':
