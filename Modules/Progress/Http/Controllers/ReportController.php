@@ -1,7 +1,7 @@
 <?php
 namespace Modules\Progress\Http\Controllers;
 
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller

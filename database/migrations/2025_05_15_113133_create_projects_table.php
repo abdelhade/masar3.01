@@ -56,10 +56,10 @@ return new class extends Migration
             $table->date('actual_end_date')->nullable();
             
             // الحالة والمسودة
-            $table->enum('status', ['draft', 'pending', 'in_progress', 'completed', 'cancelled'])->default('pending');
+            $table->string('status')->default('pending');
             $table->json('settings')->nullable();
             $table->boolean('is_draft')->default(false);
-            $table->boolean('is_progress')->nullable();
+            $table->boolean('is_progress')->default(false);
             
             // من أنشأ المشروع
             $table->unsignedBigInteger('created_by')->nullable();

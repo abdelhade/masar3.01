@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`🔄 Loading template ${templateId} with fixed predecessor handling...`);
                 
                 // Load template data via AJAX
-                fetch(`/project-templates/${templateId}/data`)
+                fetch(`/progress/project-templates/${templateId}/data`)
                     .then(response => response.json())
                     .then(templateData => {
                         console.log('📦 Template data received:', templateData);

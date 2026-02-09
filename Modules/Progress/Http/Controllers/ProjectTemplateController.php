@@ -121,6 +121,7 @@ class ProjectTemplateController extends Controller
                 'description' => $validated['description'] ?? null,
                 'status' => $validated['status'] ?? 'active',
                 'project_type_id' => $validated['project_type_id'] ?? null,
+                'is_progress' => 1,
             ]);
 
             Log::info('Template created:', ['id' => $template->id, 'name' => $template->name]);
@@ -145,7 +146,7 @@ class ProjectTemplateController extends Controller
         }
         
         return redirect()
-            ->route('project-templates.index')
+            ->route('progress.project-templates.index')
             ->with('success', 'تم إنشاء القالب بنجاح.');
     }
 
@@ -232,7 +233,7 @@ public function show(ProjectTemplate $project_template)
         });
 
         return redirect()
-            ->route('project-templates.index')
+            ->route('progress.project-templates.index')
             ->with('success', 'تم تحديث القالب بنجاح.');
     }
 
@@ -241,7 +242,7 @@ public function show(ProjectTemplate $project_template)
         $project_template->delete();
 
         return redirect()
-            ->route('project-templates.index')
+            ->route('progress.project-templates.index')
             ->with('success', 'تم حذف القالب بنجاح.');
     }
     
@@ -306,7 +307,8 @@ public function show(ProjectTemplate $project_template)
                 // Get predecessor work_item_id if predecessor exists
                 $predecessorWorkItemId = null;
                 if ($item->predecessor) {
-                    $predecessorItem = ProjectItem::find($item->predecessor);
+                    // ✅ Fixed: Search in template_items instead of project_items
+                    $predecessorItem = TemplateItem::find($item->predecessor);
                     if ($predecessorItem) {
                         $predecessorWorkItemId = $predecessorItem->work_item_id;
                     }
@@ -350,11 +352,11 @@ public function show(ProjectTemplate $project_template)
                     $predecessorName = $predecessorItem->workItem->name;
                     $predecessorWorkItemId = $predecessorItem->work_item_id;
                 } else {
-                    // Fallback: search by project_item_id
-                    $predecessorProjectItem = ProjectItem::find($predecessor);
-                    if ($predecessorProjectItem && $predecessorProjectItem->workItem) {
-                        $predecessorName = $predecessorProjectItem->workItem->name;
-                        $predecessorWorkItemId = $predecessorProjectItem->work_item_id;
+                    // Fallback: search by template_item_id
+                    $predecessorTemplateItem = TemplateItem::find($predecessor);
+                    if ($predecessorTemplateItem && $predecessorTemplateItem->workItem) {
+                        $predecessorName = $predecessorTemplateItem->workItem->name;
+                        $predecessorWorkItemId = $predecessorTemplateItem->work_item_id;
                     }
                 }
             }
@@ -404,17 +406,17 @@ public function show(ProjectTemplate $project_template)
                         $predecessorName = null;
                         $predecessorWorkItemId = null;
                         
-                        // predecessor is project_item_id in project_items
+                        // predecessor is template_item_id in template_items
                         if ($predecessor) {
                             $predecessorItem = $templateItems->find($predecessor);
                             if ($predecessorItem && $predecessorItem->workItem) {
                                 $predecessorName = $predecessorItem->workItem->name;
                                 $predecessorWorkItemId = $predecessorItem->work_item_id;
                             } else {
-                                $predecessorProjectItem = ProjectItem::find($predecessor);
-                                if ($predecessorProjectItem && $predecessorProjectItem->workItem) {
-                                    $predecessorName = $predecessorProjectItem->workItem->name;
-                                    $predecessorWorkItemId = $predecessorProjectItem->work_item_id;
+                                $predecessorTemplateItem = TemplateItem::find($predecessor);
+                                if ($predecessorTemplateItem && $predecessorTemplateItem->workItem) {
+                                    $predecessorName = $predecessorTemplateItem->workItem->name;
+                                    $predecessorWorkItemId = $predecessorTemplateItem->work_item_id;
                                 }
                             }
                         }
@@ -487,6 +489,7 @@ public function show(ProjectTemplate $project_template)
                     'working_days' => $workingDays ?? null,
                     'daily_work_hours' => $dailyWorkHours ?? null,
                     'weekly_holidays' => $weeklyHolidays,
+                    'is_progress' => 1,
                 ]);
 
                 // Create mapping of work_item_id to project_item_id
@@ -618,6 +621,7 @@ public function show(ProjectTemplate $project_template)
                 'daily_work_hours' => $project->daily_work_hours,
                 'weekly_holidays' => $project->weekly_holidays,
                 'working_zone' => $project->working_zone,
+                'is_progress' => 1,
             ]);
 
             // Create mappings for predecessor conversion

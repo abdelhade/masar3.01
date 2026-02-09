@@ -3,7 +3,7 @@
 namespace Modules\Progress\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Modules\Progress\Models\DailyProgress;
 use Modules\Progress\Models\Client;
 use Modules\Progress\Models\Employee;
@@ -15,9 +15,9 @@ class RecycleBinController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view recycle-bin')->only(['index']);
-        $this->middleware('can:restore recycle-bin')->only(['restore']);
-        $this->middleware('can:delete recycle-bin')->only(['forceDelete', 'permanentDelete']);
+        $this->middleware('can:view progress-recycle-bin')->only(['index']);
+        $this->middleware('can:edit progress-recycle-bin')->only(['restore']);
+        $this->middleware('can:delete progress-recycle-bin')->only(['forceDelete', 'permanentDelete']);
     }
 
     public function index()

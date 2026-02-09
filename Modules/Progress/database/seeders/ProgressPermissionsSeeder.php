@@ -29,9 +29,12 @@ class ProgressPermissionsSeeder extends Seeder
             'progress-project-templates',
             'progress-work-items',
             'progress-work-item-categories',
+            'progress-categories',
             'progress-item-statuses',
             'progress-dashboard',
-            'progress-recyclebin'
+            'progress-recycle-bin',
+            'progress-clients',
+            'progress-employees'
         ];
 
         $actions = ['view', 'create', 'edit', 'delete'];
@@ -39,6 +42,7 @@ class ProgressPermissionsSeeder extends Seeder
         foreach ($matrixTargets as $target) {
             foreach ($actions as $action) {
                 // Use the custom Permission model to access category/option_type
+                // Use 'web' guard (default for users)
                 \Modules\Authorization\Models\Permission::updateOrCreate(
                     [
                         'name' => "{$action} {$target}", 
@@ -53,14 +57,29 @@ class ProgressPermissionsSeeder extends Seeder
             }
         }
 
+        // Note: 'restore' is handled by 'edit' permission for recycle-bin
+        // No need for separate restore permission
+
     
 
         // 4. Assign all to Admin
-        $adminRole = Role::where('name', 'Admin')->first();
-        if ($adminRole) {
-            // Get all permissions in Progress category
-            $progressPermissions = \Modules\Authorization\Models\Permission::where('category', 'Progress')->current()->get();
-            $adminRole->givePermissionTo($progressPermissions);
+        // Note: Skip if guard mismatch - let UserSeeder handle role assignments
+        try {
+            $adminRole = Role::where('name', 'Admin')->first();
+            if ($adminRole) {
+                // Get all permissions in Progress category with web guard
+                $progressPermissions = \Modules\Authorization\Models\Permission::where('category', 'Progress')
+                    ->where('guard_name', 'web')
+                    ->get();
+                
+                if ($progressPermissions->isNotEmpty()) {
+                    // Sync permissions (will only work if guards match)
+                    $adminRole->syncPermissions($progressPermissions);
+                }
+            }
+        } catch (\Exception $e) {
+            // Ignore guard mismatch errors - permissions will be assigned in UserSeeder
+            \Log::info('Progress permissions created, role assignment skipped due to guard mismatch');
         }
     }
 }

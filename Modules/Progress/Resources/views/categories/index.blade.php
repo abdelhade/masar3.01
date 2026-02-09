@@ -18,7 +18,7 @@
                 <h2 class="mb-0">{{ __('general.categories') }}</h2>
 
             </div>
-            {{-- @can('categories-create') --}}
+            @can('create progress-categories')
                 <a href="{{ route('progress.categories.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i> {{ __('general.add_new') }}
                 </a>
@@ -43,7 +43,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>{{ __('general.category_name') }}</th>
-                                    @canany(['categories-edit', 'categories-delete'])
+                                    @canany(['edit progress-categories', 'delete progress-categories'])
                                         <th style="width:160px">{{ __('general.actions') }}</th>
                                     @endcanany
                                 </tr>
@@ -53,15 +53,15 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $category->name }}</td>
-                                        {{-- @canany(['categories-edit', 'categories-delete']) --}}
+                                        @canany(['edit progress-categories', 'delete progress-categories'])
                                             <td>
-                                                {{-- @can('categories-edit') --}}
+                                                @can('edit progress-categories')
                                                     <a href="{{ route('progress.categories.edit', $category->id) }}"
                                                         class="btn btn-sm btn-outline-primary">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                {{-- @endcan --}}
-                                                {{-- @can('categories-delete') --}}
+                                                @endcan
+                                                @can('delete progress-categories')
                                                     <form action="{{ route('progress.categories.destroy', $category->id) }}" method="POST"
                                                         class="d-inline" onsubmit="return confirm('هل أنت متأكدة من الحذف؟');">
                                                         @csrf

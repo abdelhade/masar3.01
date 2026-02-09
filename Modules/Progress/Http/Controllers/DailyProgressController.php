@@ -3,7 +3,7 @@
 namespace Modules\Progress\Http\Controllers;
 
 use Modules\Progress\Models\DailyProgress;
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Modules\Progress\Models\ProjectItem;
 use Modules\Progress\Models\Employee;
 use Illuminate\Http\Request;
@@ -282,7 +282,7 @@ public function store(Request $request)
 
         // التوجيه حسب الصلاحيات
         if (Auth::user()->can('dailyprogress-list')) {
-            return redirect()->route('daily-progress.index')
+            return redirect()->route('progress.daily-progress.index')
                 ->with('success', $successMessage);
         }
 
@@ -389,7 +389,7 @@ public function update(Request $request, DailyProgress $dailyProgress)
             session()->flash('warning', $warning);
         }
 
-        return redirect()->route('daily-progress.index')
+        return redirect()->route('progress.daily-progress.index')
             ->with('success', $successMessage);
 
     } catch (\Exception $e) {
@@ -433,7 +433,7 @@ public function update(Request $request, DailyProgress $dailyProgress)
             // Clear progress report cache after deleting daily progress
             $this->clearProjectProgressCache($item->project_id);
 
-            return redirect()->route('daily-progress.index')
+            return redirect()->route('progress.daily-progress.index')
                 ->with('success', 'تم حذف التسجيل اليومي بنجاح');
 
         } catch (\Exception $e) {

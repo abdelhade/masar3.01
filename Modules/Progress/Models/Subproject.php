@@ -31,7 +31,7 @@ class Subproject extends Model
      */
     public function project(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(ProjectProgress::class, 'project_id');
     }
 
     /**

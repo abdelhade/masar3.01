@@ -881,4 +881,5 @@ return [
     'copy_of' => 'Copy of',
     'general_statistics' => 'General Statistics',
     'gantt_chart' => 'Gantt Chart',
+    'serial' => 'Serial',
 ];

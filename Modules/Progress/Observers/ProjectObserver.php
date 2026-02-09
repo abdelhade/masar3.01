@@ -2,7 +2,7 @@
 
 namespace Modules\Progress\Observers;
 
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Modules\Progress\Services\ActivityLogService;
 
 class ProjectObserver

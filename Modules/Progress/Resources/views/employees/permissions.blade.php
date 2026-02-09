@@ -18,6 +18,22 @@
         <form method="POST" action="{{ route('progress.employees.updatePermissions', $employee->id) }}">
             @csrf
 
+            {{-- Debug: عرض الصلاحيات الحالية --}}
+            @if(config('app.debug'))
+                <div class="alert alert-info mb-3">
+                    <strong>Debug Info:</strong><br>
+                    <strong>User ID:</strong> {{ $employee->id }}<br>
+                    <strong>User Name:</strong> {{ $employee->name }}<br>
+                    <strong>Current Permissions Count:</strong> {{ $employee->permissions->count() }}<br>
+                    <strong>Current Permissions:</strong> 
+                    <ul class="mb-0">
+                        @foreach($employee->permissions as $perm)
+                            <li>{{ $perm->name }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             
             <div class="mb-3">
                 <button type="button" class="btn btn-primary btn-sm me-2" id="selectAll">
@@ -36,21 +52,24 @@
                             @php
                                 use Spatie\Permission\Models\Permission;
 
+                                // الصلاحيات بالصيغة الصحيحة المطابقة لقاعدة البيانات
                                 $permissionsByCategory = [
-                                    'users' => ['list', 'create', 'edit', 'delete'],
-                                    'projects' => ['list', 'view-all', 'create', 'edit', 'delete', 'view', 'progress','gantt', 'save-as-template', 'copy'],
-                                    'project-templates' => ['list', 'create', 'edit', 'delete', 'view'],
-                                    'employees' => ['list', 'create', 'permissions', 'edit', 'delete'],
-                                    'dailyprogress' => ['list', 'create', 'edit', 'delete'],
-                                    'items' => ['list', 'create', 'edit', 'delete'],
-                                    'categories' => ['list', 'create', 'edit', 'delete'],
-                                    'dashboard' => ['view'],
-                                    'project-types' => ['list', 'create', 'edit', 'delete'],
-                                    'activity-logs' => ['list', 'view', 'delete'],
-                                    'recycle-bin' => ['list', 'restore', 'permanent-delete'],
-                                    'backup'=>['view', 'create'],
-                                    'item-statuses' => ['list', 'create', 'edit', 'delete', 'view'],
-                                    'issues' => ['list', 'create', 'edit', 'delete', 'view']
+                                    'progress-dashboard' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-projects' => ['view', 'create', 'edit', 'delete'],
+                                    'daily-progress' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-issues' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-clients' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-employees' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-work-items' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-work-item-categories' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-categories' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-item-statuses' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-project-templates' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-project-types' => ['view', 'create', 'edit', 'delete'],
+                                    'progress-activity-logs' => ['view'],
+                                    'progress-recyclebin' => ['view', 'create', 'edit', 'delete', 'restore', 'force-delete'],
+                                    'progress-recycle-bin' => ['view', 'edit'],
+                                    'progress-backup' => ['view', 'create', 'download', 'delete'],
                                 ];
 
                                 $allActions = collect($permissionsByCategory)->flatten()->unique()->values()->toArray();
@@ -63,10 +82,10 @@
                     <tbody>
                         @foreach ($permissionsByCategory as $feature => $actions)
                             <tr>
-                                <td>{{ __("general.$feature") ?? ucfirst($feature) }}</td>
+                                <td>{{ __("general.$feature") ?? ucfirst(str_replace('-', ' ', $feature)) }}</td>
                                 @foreach ($allActions as $actionKey)
                                     @php
-                                        $permName = $feature . '-' . $actionKey;
+                                        $permName = $actionKey . ' ' . $feature;
                                         $permExists = Permission::where('name', $permName)
                                             ->where('guard_name', 'web')
                                             ->exists();
@@ -99,6 +118,18 @@
 
         document.getElementById('clearAll').addEventListener('click', function() {
             document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        });
+
+        // Debug: Log form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const checkedPermissions = Array.from(document.querySelectorAll('input[name="permissions[]"]:checked'))
+                .map(cb => cb.value);
+            
+            console.log('Form submitting with permissions:', checkedPermissions);
+            console.log('Total permissions selected:', checkedPermissions.length);
+            
+            // Uncomment to prevent submission for testing
+            // e.preventDefault();
         });
     </script>
 @endsection

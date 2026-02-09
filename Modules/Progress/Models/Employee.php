@@ -5,7 +5,7 @@ namespace Modules\Progress\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 
 class Employee extends Model
 {

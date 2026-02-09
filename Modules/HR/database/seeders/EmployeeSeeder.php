@@ -82,10 +82,14 @@ class EmployeeSeeder extends Seeder
             // Filter out columns that don't exist in the table
             $filteredData = $this->filterColumns($employeeData);
 
-            Employee::firstOrCreate(
-                ['email' => $filteredData['email']],
-                $filteredData
-            );
+            // Check by email OR finger_print_id to avoid duplicates
+            $existing = Employee::where('email', $filteredData['email'])
+                ->orWhere('finger_print_id', $filteredData['finger_print_id'] ?? null)
+                ->first();
+
+            if (!$existing) {
+                Employee::create($filteredData);
+            }
         }
     }
 

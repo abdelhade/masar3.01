@@ -145,7 +145,7 @@
                      data-project-working-days="{{ $project->working_days ?? '' }}"
                      data-project-daily-hours="{{ $project->daily_work_hours ?? '' }}"
                      data-project-weekly-holidays="{{ $project->weekly_holidays ?? '' }}"
-                     data-project-items-count="{{ $project->projectItems->count() ?? 0 }}"
+                     data-project-items-count="{{ $project->items->count() ?? 0 }}"
                     @php
                         // ✅ Count only subprojects that have items (includes virtual "بدون فرعي" subproject)
                         $subprojectNamesWithItems = $project->items()->whereNotNull('subproject_name')->distinct()->pluck('subproject_name')->filter()->toArray();
@@ -169,12 +169,14 @@
                              @case('active') #28a745 @break
                              @case('completed') #6c757d @break
                              @case('pending') #ffc107 @break
+                             @default #007bff @break
                          @endswitch
                          , 
                          @switch($project->status)
                              @case('active') #20c997 @break
                              @case('completed') #5a6268 @break
                              @case('pending') #ffb300 @break
+                             @default #0056b3 @break
                          @endswitch
                          );
                          border-radius: 25px 25px 0 0;
@@ -334,7 +336,7 @@
                                         <small class="fw-semibold">{{ __('general.items') }}</small>
                                     </div>
                                     <div class="fw-bold" style="color: #2d3748; font-size: 1.1rem;">
-                                        {{ $project->projectItems->count() ?? 0 }}
+                                        {{ $project->items->count() ?? 0 }}
                                     </div>
                                 </div>
                             </div>
@@ -1043,7 +1045,7 @@
             const content = document.getElementById('subprojectsContent');
             content.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">{{ __('general.loading') }}...</span></div></div>';
             
-            fetch(`/api/projects/${projectId}/subprojects`, {
+            fetch(`/progress/api/projects/${projectId}/subprojects`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -1397,7 +1399,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>{{ __('general.updating') }} <b>...</b>';
             btn.disabled = true;
             
-            fetch(`/api/projects/${currentProjectId}/subprojects/${subprojectId}/update-weight`, {
+            fetch(`/progress/api/projects/${currentProjectId}/subprojects/${subprojectId}/update-weight`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1484,7 +1486,7 @@
             btn.disabled = true;
             
             // Send request
-            fetch(`/api/projects/${currentProjectId}/subprojects/update-all-weights`, {
+            fetch(`/progress/api/projects/${currentProjectId}/subprojects/update-all-weights`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1545,7 +1547,7 @@
                 const subprojectsCount = parseInt(card.getAttribute('data-project-subprojects-count') || '0');
                 if (subprojectsCount === 0) return;
                 
-                fetch(`/api/projects/${projectId}/subprojects`, {
+                fetch(`/progress/api/projects/${projectId}/subprojects`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',

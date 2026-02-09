@@ -75,6 +75,14 @@
             }
         }
 
+        // Set start_date to today if empty (for new projects)
+        if (elements.startDate && !elements.startDate.value) {
+            const today = new Date();
+            const formattedDate = formatDate(today);
+            elements.startDate.value = formattedDate;
+            console.log('✅ Set start_date to today:', formattedDate);
+        }
+
         initEventListeners();
         initWeeklyHolidays();
         initCharCounter();
@@ -1772,8 +1780,23 @@
             // Show loading notification
             showNotification('info', 'جاري تحميل بيانات القالب...');
 
-            const response = await fetch(`/project-templates/${templateId}/data`);
+            console.log('🔵 Loading template items for template ID:', templateId);
+            console.log('🔗 Fetching URL:', `/progress/project-templates/${templateId}/data`);
+            
+            const response = await fetch(`/progress/project-templates/${templateId}/data`);
+            console.log('📡 Response status:', response.status);
+            console.log('📡 Response ok:', response.ok);
+            console.log('📡 Response headers:', response.headers);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Response error text:', errorText);
+                throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+            }
+            
             const data = await response.json();
+            console.log('📦 Received data:', data);
+            console.log('📊 Items count:', data.items ? data.items.length : 0);
 
             if (data.items && Array.isArray(data.items)) {
                 const itemCount = data.items.length;
@@ -1903,6 +1926,7 @@
 
                 showNotification('success', `✅ تم إضافة ${addedCount} بند من القالب بنجاح`);
             } else {
+                console.warn('⚠️ No items found in template data');
                 showNotification('warning', 'القالب فارغ - لا توجد بنود للإضافة');
 
                 // Uncheck the checkbox
@@ -1912,8 +1936,12 @@
                 }
             }
         } catch (error) {
-            console.error('Template loading error:', error);
-            showNotification('error', 'حدث خطأ في تحميل القالب');
+            console.error('❌ Template loading error:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack
+            });
+            showNotification('error', `حدث خطأ في تحميل القالب: ${error.message}`);
 
             // Uncheck the checkbox on error
             const checkbox = document.querySelector(`.template-checkbox[value="${templateId}"]`);
@@ -1928,7 +1956,7 @@
             // Show loading notification
             showNotification('info', 'جاري تحميل بيانات المسودة...');
 
-            const response = await fetch(`/projects/${draftId}/items-data`);
+            const response = await fetch(`/progress/projects/${draftId}/items-data`);
 
             if (!response.ok) {
                 throw new Error('Failed to load draft items');

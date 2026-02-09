@@ -19,6 +19,7 @@ class ProjectTemplate extends Model
         'daily_work_hours',
         'weekly_holidays',
         'working_zone',
+        'is_progress',
     ];
 
     protected $casts = [

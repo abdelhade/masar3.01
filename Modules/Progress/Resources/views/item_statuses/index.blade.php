@@ -12,7 +12,7 @@
             <h3 class="fw-bold text-primary mb-0">
                 <i class="fa-solid fa-tags me-2"></i> {{ __('general.item_statuses') }}
             </h3>
-            @can('item-statuses-create')
+            @can('create progress-item-statuses')
                 <a href="{{ route('progress.item-statuses.create') }}" class="btn btn-success rounded-pill shadow-sm">
                     <i class="fa-solid fa-plus me-1"></i> {{ __('general.add_item_status') }}
                 </a>
@@ -46,7 +46,7 @@
                             <th>{{ __('general.icon') }}</th>
                             <th class="text-center">{{ __('general.order') }}</th>
                             <th class="text-center">{{ __('general.status') }}</th>
-                            @canany(['item-statuses-edit', 'item-statuses-delete'])
+                            @canany(['edit progress-item-statuses', 'delete progress-item-statuses'])
                                 <th class="text-center" style="width: 180px">{{ __('general.actions') }}</th>
                             @endcanany
                         </tr>
@@ -85,15 +85,15 @@
                                         <span class="badge bg-secondary">{{ __('general.inactive') }}</span>
                                     @endif
                                 </td>
-                                @canany(['item-statuses-edit', 'item-statuses-delete'])
+                                @canany(['edit progress-item-statuses', 'delete progress-item-statuses'])
                                     <td class="text-center">
-                                        @can('item-statuses-edit')
+                                        @can('edit progress-item-statuses')
                                         <a href="{{ route('progress.item-statuses.edit', $status->id) }}"
                                             class="btn btn-sm btn-outline-primary rounded-pill me-1">
                                             <i class="fa-solid fa-pen-to-square"></i> {{ __('general.edit') }}
                                         </a>
                                         @endcan
-                                        @can('item-statuses-delete')
+                                        @can('delete progress-item-statuses')
                                         <form action="{{ route('progress.item-statuses.destroy', $status->id) }}" method="POST"
                                             class="d-inline">
                                             @csrf

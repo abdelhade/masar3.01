@@ -29,7 +29,7 @@ class DailyProgress extends Model
 
     public function project()
     {
-        return $this->belongsTo(Project::class)->withDefault([
+        return $this->belongsTo(ProjectProgress::class, 'project_id')->withDefault([
             'name' => 'مشروع غير متوفر'
         ]);
     }

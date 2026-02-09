@@ -209,9 +209,12 @@
                                     </div>
                                     <div class="d-flex flex-wrap gap-3">
                                         @foreach ($branches as $branch)
+                                            @php
+                                                $branchNameLower = strtolower((string) $branch->name);
+                                            @endphp
                                             <label
                                                 class="d-flex align-items-center cursor-pointer bg-white px-3 py-2 rounded border shadow-sm"
-                                                x-show="searchBranch === '' || '{{ strtolower($branch->name) }}'.includes(searchBranch.toLowerCase())">
+                                                x-show="searchBranch === '' || '{{ $branchNameLower }}'.includes(searchBranch.toLowerCase())">
                                                 <input type="checkbox" name="branches[]" value="{{ $branch->id }}"
                                                     class="modern-check me-2"
                                                     {{ in_array($branch->id, (array) old('branches', $userBranches)) ? 'checked' : '' }}>
@@ -242,7 +245,10 @@
                                     <button class="nav-link {{ $loop->first ? 'active' : '' }}"
                                         id="pills-{{ $catSlug }}-tab" data-bs-toggle="pill"
                                         data-bs-target="#pills-{{ $catSlug }}" type="button">
-                                        {{ __(ucfirst($category ?: 'General')) }}
+                                        @php
+                                            $catTrans = __(ucfirst($category ?: 'General'));
+                                            echo is_string($catTrans) ? $catTrans : ucfirst($category ?: 'General');
+                                        @endphp
                                     </button>
                                 </li>
                             @endforeach
@@ -273,7 +279,7 @@
                                                     <i class="fas fa-search text-muted"></i>
                                                 </span>
                                                 <input type="text" x-model="search" class="form-control border-start-0 ps-0" 
-                                                       placeholder="{{ __('Search in') }} {{ __(ucfirst($category ?: 'General')) }}...">
+                                                       placeholder="{{ __('Search in') }} @php $catTrans = __(ucfirst($category ?: 'General')); echo is_string($catTrans) ? $catTrans : ucfirst($category ?: 'General'); @endphp...">
                                             </div>
                                         </div>
                                         <!-- Select All Header -->
@@ -298,17 +304,14 @@
                                             </thead>
                                             <tbody>
                                                 @foreach ($grouped as $target => $actions)
-                                                    <tr class="perm-row" x-show="search === '' || '{{ strtolower($target) }}'.includes(search.toLowerCase()) || '{{ strtolower(__(ucfirst($target))) }}'.includes(search.toLowerCase())">
+                                                    @php
+                                                        $targetTrans = __(ucfirst($target));
+                                                        $targetTransStr = is_string($targetTrans) ? $targetTrans : ucfirst($target);
+                                                        $searchableText = strtolower($target) . ' ' . strtolower($targetTransStr);
+                                                    @endphp
+                                                    <tr class="perm-row" x-show="search === '' || '{{ $searchableText }}'.includes(search.toLowerCase())">
                                                         <td class="ps-4 perm-label">
-                                                            @php
-                                                                $transVal = __(ucfirst($target));
-                                                                if(is_array($transVal)) {
-                                                                    \Illuminate\Support\Facades\Log::warning("Permission target '$target' translates to array.");
-                                                                    echo ucfirst($target);
-                                                                } else {
-                                                                    echo $transVal;
-                                                                }
-                                                            @endphp
+                                                            {{ $targetTransStr }}
                                                         </td>
                                                         @foreach (['view', 'create', 'edit', 'delete', 'print'] as $act)
                                                             <td class="text-center">
@@ -349,19 +352,34 @@
 
                         <div class="row g-4">
                             @foreach ($selectivePermissions as $cat => $perms)
-                                <div class="col-12" x-show="searchOption === '' || '{{ strtolower($cat) }}'.includes(searchOption.toLowerCase()) || Array.from($el.querySelectorAll('.opt-label')).some(el => el.innerText.toLowerCase().includes(searchOption.toLowerCase()))">
+                                @php
+                                    $catLower = strtolower((string) $cat);
+                                @endphp
+                                <div class="col-12" x-show="searchOption === '' || '{{ $catLower }}'.includes(searchOption.toLowerCase()) || Array.from($el.querySelectorAll('.opt-label')).some(el => el.innerText.toLowerCase().includes(searchOption.toLowerCase()))">
                                     <div class="card border p-3">
-                                        <h6 class="text-uppercase text-muted small fw-bold mb-3">{{ __($cat) }}</h6>
+                                        <h6 class="text-uppercase text-muted small fw-bold mb-3">
+                                            @php
+                                                $catTrans = __($cat);
+                                                echo is_string($catTrans) ? $catTrans : $cat;
+                                            @endphp
+                                        </h6>
                                         <div class="d-flex flex-wrap gap-2">
                                             @foreach ($perms as $perm)
+                                                @php
+                                                    $permNameLower = strtolower((string) $perm->name);
+                                                    $permDescTrans = __($perm->description ?? $perm->name);
+                                                    $permDescStr = is_string($permDescTrans) ? $permDescTrans : ($perm->description ?? $perm->name);
+                                                    $permDescLower = strtolower((string) $permDescStr);
+                                                @endphp
                                                 <label
                                                     class="d-flex align-items-center px-3 py-2 border rounded bg-light cursor-pointer hover-shadow"
-                                                    x-show="searchOption === '' || '{{ strtolower($perm->name) }}'.includes(searchOption.toLowerCase()) || '{{ strtolower(__($perm->description ?? $perm->name)) }}'.includes(searchOption.toLowerCase())">
+                                                    x-show="searchOption === '' || '{{ $permNameLower }}'.includes(searchOption.toLowerCase()) || '{{ $permDescLower }}'.includes(searchOption.toLowerCase())">
                                                     <input type="checkbox" name="permissions[]"
                                                         value="{{ $perm->id }}" class="modern-check me-2"
                                                         {{ in_array($perm->id, (array) old('permissions', $userPermissions)) ? 'checked' : '' }}>
-                                                    <span
-                                                        class="small fw-semibold opt-label">{{ __($perm->description ?? $perm->name) }}</span>
+                                                    <span class="small fw-semibold opt-label">
+                                                        {{ $permDescStr }}
+                                                    </span>
                                                 </label>
                                             @endforeach
                                         </div>

@@ -49,7 +49,7 @@ class ItemStatusController extends Controller
         ItemStatus::create($validated);
 
         return redirect()
-            ->route('item-statuses.index')
+            ->route('progress.item-statuses.index')
             ->with('success', __('general.item_status_created_successfully'));
     }
 
@@ -86,7 +86,7 @@ class ItemStatusController extends Controller
         $itemStatus->update($validated);
 
         return redirect()
-            ->route('item-statuses.index')
+            ->route('progress.item-statuses.index')
             ->with('success', __('general.item_status_updated_successfully'));
     }
 
@@ -104,7 +104,7 @@ class ItemStatusController extends Controller
         $itemStatus->delete();
 
         return redirect()
-            ->route('item-statuses.index')
+            ->route('progress.item-statuses.index')
             ->with('success', __('general.item_status_deleted_successfully'));
     }
 }

@@ -5,7 +5,7 @@ namespace Modules\Progress\Http\Controllers;
 use Modules\Progress\Models\Issue;
 use Modules\Progress\Models\IssueComment;
 use Modules\Progress\Models\IssueAttachment;
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use App\Models\User;
 use Modules\Progress\Models\Employee;
 use Modules\Progress\Http\Requests\StoreIssueRequest;
@@ -195,7 +195,7 @@ class IssueController extends Controller
             }
 
             return redirect()
-                ->route('issues.show', $issue)
+                ->route('progress.issues.show', $issue)
                 ->with('success', __('general.issue_created_successfully'));
 
         } catch (\Exception $e) {
@@ -254,7 +254,7 @@ class IssueController extends Controller
             }
 
             return redirect()
-                ->route('issues.show', $issue)
+                ->route('progress.issues.show', $issue)
                 ->with('success', __('general.issue_updated_successfully'));
 
         } catch (\Exception $e) {
@@ -286,7 +286,7 @@ class IssueController extends Controller
             $issue->delete();
 
             return redirect()
-                ->route('issues.index')
+                ->route('progress.issues.index')
                 ->with('success', __('general.issue_deleted_successfully'));
 
         } catch (\Exception $e) {

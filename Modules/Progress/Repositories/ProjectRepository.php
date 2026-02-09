@@ -2,7 +2,7 @@
 
 namespace Modules\Progress\Repositories;
 
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Illuminate\Support\Collection;
 
 class ProjectRepository
