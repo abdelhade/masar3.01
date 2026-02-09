@@ -29,7 +29,8 @@ class RoleAndPermissionSeeder extends Seeder
                 'check-portfolios-outgoing',
                 'account-movement-report',
                 'balance-sheet',
-                'start-balance-management'
+                'start-balance-management',
+                'Expenses-Management'
             ],
             'Journals' => [
                 'service-agreement',
@@ -67,7 +68,7 @@ class RoleAndPermissionSeeder extends Seeder
             'Inventory' => ['Stock Transfer', 'Stock Adjustment'],
             'POS' => ['POS System', 'POS Transaction', 'POS Reports', 'POS Settings'],
             'Expnses' => ['Expenses', 'Cost Centers'],
-            // 'Settings' => ['System Settings'],
+            'Projects' => ['Projects'],
 
         ];
 
@@ -86,11 +87,5 @@ class RoleAndPermissionSeeder extends Seeder
                 }
             }
         }
-
-        // Ensure vouchers statistics permission exists
-        // Permission::firstOrCreate(
-        //     ['name' => 'view vouchers-statistics', 'guard_name' => 'web'],
-        //     ['category' => 'vouchers']
-        // );
     }
 }

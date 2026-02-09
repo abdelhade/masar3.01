@@ -32,22 +32,22 @@
                     <thead class="table-light text-center align-middle">
 
                         <tr>
-                            <th class="font-family-cairo fw-bold font-14 text-center">#</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">التاريخ</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">رقم العمليه</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">نوع العمليه</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">البيان</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">المبلغ</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">من حساب</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">الي حساب</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">الموظف</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">الموظف 2 </th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">المستخدم</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">تم الانشاء في </th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">ملاحظات</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">تم المراجعه</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('#') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Date') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Operation Number') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Operation Type') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Description') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Amount') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('From Account') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('To Account') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Employee') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Employee') }} 2 </th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('User') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Created At') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Notes') }}</th>
+                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Review') }}</th>
                             @canany(['edit journals', 'delete journals'])
-                                <th class="font-family-cairo fw-bold font-14 text-center">العمليات</th>
+                                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Actions') }}</th>
                             @endcanany
                         </tr>
                     </thead>
@@ -74,7 +74,7 @@
                                 <td class="font-hold fw-bold font-14 text-center">{{ $journal->created_at }}</td>
                                 <td class="font-hold fw-bold font-14 text-center">{{ $journal->info }}</td>
                                 <td class="font-hold fw-bold font-14 text-center">
-                                    {{ $journal->confirmed ? 'نعم' : 'لا' }}</td>
+                                    {{ $journal->confirmed ? __('Yes') : __('No') }}</td>
                                 @canany(['edit journals', 'delete journals'])
                                     <td class="font-family-cairo fw-bold font-14 text-center" x-show="columns[16]">
                                         @can('edit journals')
@@ -89,7 +89,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="text-danger font-16"
-                                                    onclick="return confirm(' أنت متأكد انك عايز تمسح العملية و القيد المصاحب لها؟')">
+                                                    onclick="return confirm('{{ __('Are you sure you want to delete this operation and its associated journal entry?') }}')">
                                                     <i class="las la-trash-alt"></i>
                                                 </button>
                                             </form>
@@ -102,7 +102,7 @@
                                 <td colspan="15" class="text-center">
                                     <div class="alert alert-info py-3 mb-0" style="font-size: 1.2rem; font-weight: 500;">
                                         <i class="las la-info-circle me-2"></i>
-                                        لا توجد بيانات
+                                        {{ __('No data available') }}
                                     </div>
                                 </td>
                             </tr>

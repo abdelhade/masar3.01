@@ -195,4 +195,22 @@ class Issue extends Model
             default => 'secondary',
         };
     }
+
+    /**
+     * Get the issue deadline.
+     * If deadline field is null but due_date exists, use due_date
+     */
+    public function getDeadlineAttribute()
+    {
+        return $this->attributes['deadline'] ?? $this->attributes['due_date'] ?? null;
+    }
+
+    /**
+     * Set the issue deadline to both deadline and due_date for compatibility
+     */
+    public function setDeadlineAttribute($value)
+    {
+        $this->attributes['deadline'] = $value;
+        $this->attributes['due_date'] = $value;
+    }
 }

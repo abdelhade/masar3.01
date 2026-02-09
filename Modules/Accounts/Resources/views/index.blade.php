@@ -48,22 +48,22 @@
 
         // Arabic labels for display without modifying the original $permissionTypes
         $permissionLabels = [
-            'clients' => 'العملاء',
-            'suppliers' => 'الموردين',
-            'funds' => 'الصناديق',
-            'banks' => 'البنوك',
-            'employees' => 'الموظفين',
-            'warhouses' => 'المخازن',
-            'expenses' => 'المصروفات',
-            'revenues' => 'الايرادات',
-            'creditors' => 'دائنين آخرين',
-            'debtors' => 'مدينين آخرين',
-            'partners' => 'الشركاء',
-            'current-partners' => 'جاري الشريك',
-            'assets' => 'الأصول',
-            'rentables' => 'الممتلكات القابلة للإيجار',
-            'check-portfolios-incoming' => 'حافظات أوراق القبض',
-            'check-portfolios-outgoing' => 'حافظات أوراق الدفع',
+            'clients' => __('Clients'),
+            'suppliers' => __('Suppliers'),
+            'funds' => __('Funds'),
+            'banks' => __('Banks'),
+            'employees' => __('Employees'),
+            'warhouses' => __('Warehouses'),
+            'expenses' => __('Expenses'),
+            'revenues' => __('Revenues'),
+            'creditors' => __('Other Creditors'),
+            'debtors' => __('Other Debtors'),
+            'partners' => __('Partners'),
+            'current-partners' => __('Partner Current Account'),
+            'assets' => __('Assets'),
+            'rentables' => __('Rentable Properties'),
+            'check-portfolios-incoming' => __('Incoming Check Portfolios'),
+            'check-portfolios-outgoing' => __('Outgoing Check Portfolios'),
         ];
 
         // Prefer the Arabic label when available, otherwise fall back to the original mapping
@@ -74,8 +74,8 @@
     <div class="container-dashboard">
         <!-- Page Header -->
         <div class="mb-6">
-            <h1 class="text-page-title mb-2">{{ $permName ? 'قائمة ' . $permName : 'قائمة الحسابات' }}</h1>
-            <p class="text-body-sm text-text-secondary">إدارة وعرض جميع الحسابات المالية</p>
+            <h1 class="text-page-title mb-2">{{ $permName ? __('List') . ' ' . $permName : __('Accounts List') }}</h1>
+            <p class="text-body-sm text-text-secondary">{{ __('Manage and view all financial accounts') }}</p>
         </div>
 
         {{-- رسائل الأخطاء --}}
@@ -89,10 +89,10 @@
         <section class="content-header mb-4">
             <div class="container-fluid">
                 @include('components.breadcrumb', [
-                    'title' => $permName ? __('قائمة الحسابات - ' . $permName) : __('قائمة الحسابات'),
+                    'title' => $permName ? __('Accounts List') . ' - ' . $permName : __('Accounts List'),
                     'items' => [
-                        ['label' => ' الصفحه الرئيسية', 'url' => route('admin.dashboard')],
-                        $permName ? ['label' => $permName] : ['label' => __('قائمة الحسابات')],
+                        ['label' => __('Home'), 'url' => route('admin.dashboard')],
+                        $permName ? ['label' => $permName] : ['label' => __('Accounts List')],
                     ],
                 ])
             </div>
@@ -103,18 +103,18 @@
             <div class="flex-shrink-0 col-md-8">
                 @if ($type == 'current-partners')
                     <p class="p-3 rounded-lg" style="background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%); color: white;">
-                        يتم اضافة حساب مع اضافة شريك جديد
+                        {{ __('Account is added when adding a new partner') }}
                     </p>
                 @elseif(
                     $type &&
                         isset($permissionTypes[$type]) &&
                         auth()->user()->can('create ' . $permissionTypes[$type]))
                     <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-main">
-                        <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
+                        <i class="las la-plus"></i> {{ __('Add New Account') }}
                     </a>
                 @elseif(!$type)
                     <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-main">
-                        <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
+                        <i class="las la-plus"></i> {{ __('Add New Account') }}
                     </a>
                 @endif
             </div>
@@ -128,7 +128,7 @@
                     @endif
                     
                     <input class="input form-control" type="text" name="search" value="{{ request('search') }}"
-                        placeholder="بحث بالكود | اسم الحساب | ID" autocomplete="off">
+                        placeholder="{{ __('Search by Code | Account Name | ID') }}" autocomplete="off">
                         </div>
                         <div class="col-3">
                     <button type="submit" class="btn btn-lg btn-main col-2">
@@ -151,7 +151,7 @@
         {{-- الجدول --}}
         <div class="card hover-lift transition-base" style="border-left: 4px solid #34d3a3;">
             <div class="card-header border-b border-border-light p-4 d-flex justify-content-between align-items-center">
-                <h3 class="text-section-title mb-0">{{ $permName ? 'قائمة ' . $permName : 'قائمة الحسابات' }}</h3>
+                <h3 class="text-section-title mb-0">{{ $permName ? __('List') . ' ' . $permName : __('Accounts List') }}</h3>
                 @php
                     $printPermission = $type && isset($permissionTypes[$type]) 
                         ? 'print ' . $permissionTypes[$type] 
@@ -160,9 +160,9 @@
                 <x-table-export-actions 
                     table-id="myTable" 
                     filename="accounts" 
-                    excel-label="تصدير Excel"
-                    pdf-label="تصدير PDF" 
-                    print-label="طباعة"
+                    :excel-label="__('Export Excel')"
+                    :pdf-label="__('Export PDF')" 
+                    :print-label="__('Print')"
                     :print-permission="$printPermission" />
             </div>
 
@@ -171,12 +171,12 @@
                     <thead>
                         <tr>
                             <th class="text-table-header">#</th>
-                            <th class="text-table-header">الاسم</th>
-                            <th class="text-table-header">الرصيد</th>
-                            <th class="text-table-header">العنوان</th>
-                            <th class="text-table-header">التليفون</th>
+                            <th class="text-table-header">{{ __('Name') }}</th>
+                            <th class="text-table-header">{{ __('Balance') }}</th>
+                            <th class="text-table-header">{{ __('Address') }}</th>
+                            <th class="text-table-header">{{ __('Phone') }}</th>
                             <th class="text-table-header">ID</th>
-                            <th class="text-table-header">عمليات</th>
+                            <th class="text-table-header">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -234,7 +234,7 @@
                                         @if (auth()->user()->can('edit ' . $permissionName))
                                             <a href="{{ route('accounts.edit-direct', $acc->id) }}" 
                                                 class="btn btn-success btn-sm" 
-                                                title="تعديل">
+                                                :title="__('Edit')">
                                                 <i class="las la-pen"></i>
                                             </a>
                                         @endif
@@ -247,8 +247,8 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-danger btn-sm" 
-                                                    title="حذف"
-                                                    onclick="return confirm('هل أنت متأكد من الحذف؟')">
+                                                    :title="__('Delete')"
+                                                    onclick="return confirm('{{ __('Are you sure you want to delete?') }}')">
                                                     <i class="las la-trash-alt"></i>
                                                 </button>
                                             </form>
@@ -262,11 +262,11 @@
                                     <div class="alert alert-info py-3 mb-0" style="background: #e6f2ff; border-left: 4px solid #1a8eff; color: #0075e6;">
                                         <i class="las la-info-circle me-2"></i>
                                         @if (!$type)
-                                            يرجى اختيار نوع الحسابات من القائمة الجانبية
+                                            {{ __('Please select account type from sidebar') }}
                                         @elseif (request('search'))
-                                            لا توجد نتائج للبحث عن "{{ request('search') }}"
+                                            {{ __('No results found for') }} "{{ request('search') }}"
                                         @else
-                                            لا توجد بيانات
+                                            {{ __('No data available') }}
                                         @endif
                                     </div>
                                 </td>
@@ -281,8 +281,8 @@
                 <div class="card-footer border-t border-border-light p-4 bg-white">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div class="text-body-sm text-text-secondary">
-                            عرض {{ $accounts->firstItem() }} إلى {{ $accounts->lastItem() }}
-                            من أصل {{ $accounts->total() }} حساب
+                            {{ __('Showing') }} {{ $accounts->firstItem() }} {{ __('to') }} {{ $accounts->lastItem() }}
+                            {{ __('of') }} {{ $accounts->total() }} {{ __('account') }}
                         </div>
 
                         <div>

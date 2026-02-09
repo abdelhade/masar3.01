@@ -66,23 +66,23 @@
                     </a>
                 </li>
             @endcan
-            @can('view progress-clients')
+            <!-- @can('view progress-clients') -->
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('progress.clients.*') ? 'active' : '' }}"
                         href="{{ route('progress.clients.index') }}" data-title="{{ __('general.clients') }}">
                         <i class="fas fa-users me-2"></i> <span>{{ __('general.clients') }}</span>
                     </a>
                 </li>
-            @endcan
+            <!-- @endcan -->
 
-            @can('view progress-employees')
+            <!-- @can('view progress-employees') -->
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('progress.employees.*') ? 'active' : '' }}"
                         href="{{ route('progress.employees.index') }}" data-title="{{ __('general.employees') }}">
                         <i class="fas fa-user-tie me-2"></i> <span>{{ __('general.employees') }}</span>
                     </a>
                 </li>
-            @endcan
+            <!-- @endcan -->
             @can('view progress-work-item-categories')
             <li class="nav-item">
                 <a href="{{ route('progress.categories.index') }}"

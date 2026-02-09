@@ -1,4 +1,24 @@
 @php
+    // Permission mapping for authorization checks
+    $permissionMap = [
+        'clients' => 'Clients',
+        'suppliers' => 'Suppliers',
+        'funds' => 'Funds',
+        'banks' => 'Banks',
+        'employees' => 'Employees',
+        'warhouses' => 'warhouses',
+        'expenses' => 'Expenses',
+        'revenues' => 'Revenues',
+        'creditors' => 'various_creditors',
+        'debtors' => 'various_debtors',
+        'partners' => 'partners',
+        'current-partners' => 'current_partners',
+        'assets' => 'assets',
+        'rentables' => 'rentables',
+        'check-portfolios-incoming' => 'check-portfolios-incoming',
+        'check-portfolios-outgoing' => 'check-portfolios-outgoing',
+    ];
+
     $accountTypes = [
         'clients' => ['label' => 'navigation.clients', 'icon' => 'las la-user-tag'],
         'suppliers' => ['label' => 'navigation.suppliers', 'icon' => 'las la-truck-loading'],
@@ -14,21 +34,18 @@
         'current-partners' => ['label' => 'navigation.current_partners', 'icon' => 'las la-user-friends'],
         'assets' => ['label' => 'navigation.fixed_assets', 'icon' => 'las la-building'],
         'rentables' => ['label' => 'navigation.rentable_assets', 'icon' => 'las la-key'],
-        'check-portfolios-incoming' => ['label' => 'حافظات أوراق القبض', 'icon' => 'las la-file-alt'],
-        'check-portfolios-outgoing' => ['label' => 'حافظات أوراق الدفع', 'icon' => 'las la-file-signature'],
+        'check-portfolios-incoming' => ['label' => __('Incoming Check Portfolios'), 'icon' => 'las la-file-alt'],
+        'check-portfolios-outgoing' => ['label' => __('Outgoing Check Portfolios'), 'icon' => 'las la-file-signature'],
     ];
 
     $currentType = request('type');
 @endphp
-
-<li class="menu-title mt-2">{{ __('Accounts Module') }}</li>
-
 @can('view basicData-statistics')
     <li class="nav-item">
         <a class="nav-link d-flex align-items-center gap-2 font-hold fw-bold transition-base {{ request()->routeIs('accounts.basic-data-statistics') ? 'active' : '' }}" 
            href="{{ route('accounts.basic-data-statistics') }}"
            style="{{ request()->routeIs('accounts.basic-data-statistics') ? 'background-color: rgba(52, 211, 163, 0.1); color: #34d3a3;' : '' }}">
-            <i class="las la-chart-bar font-18"></i>{{ __('إحصائيات البيانات الأساسية') }}
+            <i class="las la-chart-bar font-18"></i>{{ __('Basic Data Statistics') }}
         </a>
     </li>
 @endcan

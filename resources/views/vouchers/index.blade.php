@@ -35,22 +35,22 @@
                     <div class="dropdown">
                         <button class="btn btn-main dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-plus me-2"></i>
-                            إضافة سند جديد
+                            {{ __('Add New Voucher') }}
                         </button>
                         <ul class="dropdown-menu">
                             @if($canCreateReceipt)
                                 <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'receipt']) }}">
-                                        <i class="fas fa-plus-circle text-success me-2"></i>سند قبض عام
+                                        <i class="fas fa-plus-circle text-success me-2"></i>{{ __('General Receipt Voucher') }}
                                     </a></li>
                             @endif
                             @if($canCreatePayment)
                                 <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
-                                        <i class="fas fa-minus-circle text-danger me-2"></i>سند دفع عام
+                                        <i class="fas fa-minus-circle text-danger me-2"></i>{{ __('General Payment Voucher') }}
                                     </a></li>
                             @endif
                             @if($canCreateExpPayment)
                                 <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'exp-payment']) }}">
-                                        <i class="fas fa-credit-card text-warning me-2"></i>سند دفع مصاريف
+                                        <i class="fas fa-credit-card text-warning me-2"></i>{{ __('Expense Payment Voucher') }}
                                     </a></li>
                             @endif
 
@@ -61,13 +61,13 @@
                             @if($canCreateMultiPayment)
                                 <li><a class="dropdown-item"
                                         href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}">
-                                        <i class="fas fa-list-alt text-info me-2"></i>سند دفع متعدد
+                                        <i class="fas fa-list-alt text-info me-2"></i>{{ __('Multi Payment Voucher') }}
                                     </a></li>
                             @endif
                             @if($canCreateMultiReceipt)
                                 <li><a class="dropdown-item"
                                         href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}">
-                                        <i class="fas fa-list-ul text-primary me-2"></i>سند قبض متعدد
+                                        <i class="fas fa-list-ul text-primary me-2"></i>{{ __('Multi Receipt Voucher') }}
                                     </a></li>
                             @endif
                         </ul>
@@ -117,25 +117,25 @@
                 <table class="table table-striped mb-0" style="min-width: 1200px;">
                     <thead class="table-light text-center align-middle">
                         <tr>
-                            <th>م</th>
-                            <th>التاريخ</th>
-                            <th>رقم العملية</th>
-                            <th>نوع العملية</th>
-                            <th>البيان</th>
+                            <th>{{ __('#') }}</th>
+                            <th>{{ __('Date') }}</th>
+                            <th>{{ __('Operation Number') }}</th>
+                            <th>{{ __('Operation Type') }}</th>
+                            <th>{{ __('Description') }}</th>
                             @if(isMultiCurrencyEnabled())
-                                <th>المبلغ (عملة أجنبية)</th>
-                                <th>المبلغ (عملة محلية)</th>
+                                <th>{{ __('Amount') }} ({{ __('Foreign Currency') }})</th>
+                                <th>{{ __('Amount') }} ({{ __('Local Currency') }})</th>
                             @else
-                                <th>المبلغ</th>
+                                <th>{{ __('Amount') }}</th>
                             @endif
-                            <th>الحساب</th>
-                            <th>الحساب المقابل</th>
-                            <th>الموظف</th>
-                            <th>المستخدم</th>
-                            <th>تاريخ الإنشاء</th>
-                            <th>ملاحظات</th>
-                            <th>المراجعة</th>
-                            <th>العمليات</th>
+                            <th>{{ __('Account') }}</th>
+                            <th>{{ __('Opposite Account') }}</th>
+                            <th>{{ __('Employee') }}</th>
+                            <th>{{ __('User') }}</th>
+                            <th>{{ __('Created At') }}</th>
+                            <th>{{ __('Notes') }}</th>
+                            <th>{{ __('Review') }}</th>
+                            <th>{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -185,7 +185,7 @@
                                         @elseif($voucher->pro_type == 32) bg-primary
                                         @elseif($voucher->pro_type == 33) bg-info
                                         @else bg-secondary @endif">
-                                        {{ $voucher->type->ptext ?? 'غير محدد' }}
+                                        {{ $voucher->type->ptext ?? __('Not Specified') }}
                                     </span>
                                 </td>
                                 <td>{{ $voucher->details }}</td>
@@ -217,7 +217,7 @@
                                 <td>{{ $voucher->notes ?? '' }}</td>
                                 <td>
                                     <span class="badge {{ $voucher->is_approved ? 'bg-success' : 'bg-secondary' }}">
-                                        {{ $voucher->is_approved ? 'نعم' : 'لا' }}
+                                        {{ $voucher->is_approved ? __('Yes') : __('No') }}
                                     </span>
                                 </td>
                                 <td>
@@ -225,11 +225,11 @@
                                         <div class="btn-group" role="group">
                                             @if($canEdit)
                                                 @if(in_array($voucher->pro_type, [32, 33])) {{-- multi vouchers --}}
-                                                    <a href="{{ route('multi-vouchers.edit', $voucher) }}" class="btn btn-sm btn-warning" title="تعديل">
+                                                    <a href="{{ route('multi-vouchers.edit', $voucher) }}" class="btn btn-sm btn-warning" title="{{ __('Edit') }}">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @else
-                                                    <a href="{{ route('vouchers.edit', $voucher) }}" class="btn btn-sm btn-warning" title="تعديل">
+                                                    <a href="{{ route('vouchers.edit', $voucher) }}" class="btn btn-sm btn-warning" title="{{ __('Edit') }}">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endif
@@ -245,7 +245,7 @@
                                                     };
                                                 @endphp
                                                 @if($canDuplicate)
-                                                    <a href="{{ route('multi-vouchers.duplicate', $voucher) }}" class="btn btn-sm btn-info" title="نسخ العملية">
+                                                    <a href="{{ route('multi-vouchers.duplicate', $voucher) }}" class="btn btn-sm btn-info" title="{{ __('Duplicate Operation') }}">
                                                         <i class="fas fa-copy"></i>
                                                     </a>
                                                 @endif
@@ -260,14 +260,14 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('هل أنت متأكد من حذف هذا السند؟')" title="حذف">
+                                                        onclick="return confirm('{{ __('Are you sure you want to delete this voucher?') }}')" title="{{ __('Delete') }}">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
                                             @endif
                                         </div>
                                     @else
-                                        <span class="text-muted">غير مسموح</span>
+                                        <span class="text-muted">{{ __('Not Allowed') }}</span>
                                     @endif
                                 </td>
                             </tr>
@@ -276,11 +276,10 @@
                                 <td colspan="14" class="text-center">
                                     <div class="alert alert-info py-4 mb-0">
                                         <i class="fas fa-info-circle me-2"></i>
-                                        <strong>لا توجد {{ $currentTypeInfo['title'] }} حالياً</strong>
+                                        <strong>{{ __('No vouchers currently available', ['type' => $currentTypeInfo['title']]) }}</strong>
                                         <br>
                                         <small class="text-muted mt-2 d-block">
-                                            يمكنك إضافة {{ strtolower($currentTypeInfo['create_text']) }} باستخدام الزر
-                                            أعلاه
+                                            {{ __('You can add new voucher using the button above', ['type' => strtolower($currentTypeInfo['create_text'])]) }}
                                         </small>
                                     </div>
                                 </td>
