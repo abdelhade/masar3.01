@@ -12,6 +12,11 @@ class ZakahTaxDeclarationSeeder extends Seeder
 {
     public function run(): void
     {
+        // التحقق من وجود الجدول أولاً
+        if (! \Schema::hasTable('zakah_tax_declarations')) {
+            return;
+        }
+
         // التحقق من وجود عميل برقم 1
         $clientExists = DB::table('clients')->where('id', 1)->exists();
 

@@ -39,7 +39,7 @@ class ProjectProgressController extends Controller
         if (request('status') === 'draft') {
             $projects = ProjectProgress::with(['client', 'type', 'items'])
                 ->withCount('items')
-                ->where('is_progress', true)
+                ->where('is_progress', 1)
                 ->where('status', 'draft')
                 ->latest()
                 ->get();
@@ -51,7 +51,7 @@ class ProjectProgressController extends Controller
             ->withCount('items')
             ->withSum('items', 'total_quantity')
             ->withSum('dailyProgress', 'quantity')
-            ->where('is_progress', true)
+            ->where('is_progress', 1)
             ->where('status', '!=', 'draft')
             ->latest()
             ->get();
@@ -73,7 +73,7 @@ class ProjectProgressController extends Controller
             'holidays' => '5,6', // أيام الجمعة والسبت كقيمة افتراضية
             'status' => 'pending',
             'start_date' => now()->format('Y-m-d'),
-            'is_progress' => true,
+            'is_progress' => 1,
         ]);
 
         return redirect()
@@ -128,9 +128,6 @@ class ProjectProgressController extends Controller
         if ($isDraft) {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                // We keep client_id as required if DB enforces it. 
-                // If user really wants NO validation, we'd need to mock it or nullable DB.
-                // Minimizing to just name and client.
                  'client_id' => 'required|exists:clients,id',
                  'account_id' => 'nullable|exists:acc_head,id',
             ]);
@@ -157,6 +154,8 @@ class ProjectProgressController extends Controller
         $project = ProjectProgress::create([
             'name' => $request['name'],
             'description' => $request['description'] ?? null,
+            'is_progress' => 1,
+            'created_by' => auth()->id(),
             'client_id' => $request['client_id'],
             'account_id' => $request['account_id'] ?? null,
             'start_date' => $request['start_date'] ?? null, // Allow null for draft
@@ -168,7 +167,7 @@ class ProjectProgressController extends Controller
             'holidays' => is_array($request['weekly_holidays'] ?? $request['holidays'] ?? null) 
                 ? implode(',', $request['weekly_holidays'] ?? $request['holidays']) 
                 : ($request['weekly_holidays'] ?? $request['holidays'] ?? '5,6'),
-            'is_progress' => true,
+            'is_progress' => 1,
         ]);
 
         // If Draft and no items, return early
@@ -930,7 +929,7 @@ class ProjectProgressController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('projects.index')
+                ->route('progress.projects.index')
                 ->with('success', 'تم حذف المشروع وكل البيانات المرتبطة به بنجاح');
         } catch (\Exception $e) {
             DB::rollBack();

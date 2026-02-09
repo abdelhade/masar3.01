@@ -4,7 +4,7 @@ namespace Modules\Progress\Services;
 
 use Modules\Progress\Repositories\ProjectRepository;
 use Modules\Progress\Repositories\ProjectItemRepository;
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Modules\Progress\Models\ProjectItem;
 use Modules\Progress\Models\Subproject;
 use Illuminate\Support\Facades\DB;
@@ -48,6 +48,8 @@ class ProjectService
                 'daily_work_hours' => $validated['daily_work_hours'] ?? 8,
                 'weekly_holidays' => $validated['weekly_holidays'] ?? '',
                 'is_draft' => $isDraft,
+                'is_progress' => 1,
+                'created_by' => $validated['created_by'] ?? auth()->id(),
             ]);
 
             // إضافة البنود
@@ -74,7 +76,6 @@ class ProjectService
     {
         return DB::transaction(function () use ($project, $validated) {
             // ✅ تحديث المشروع بكل البيانات
-            // لا نغير is_draft عند التحديث - نبقيه كما هو
             $this->projectRepository->update($project, [
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
@@ -87,7 +88,7 @@ class ProjectService
                 'working_days' => $validated['working_days'] ?? 6,
                 'daily_work_hours' => $validated['daily_work_hours'] ?? 8,
                 'weekly_holidays' => $validated['weekly_holidays'] ?? '',
-                // لا نغير is_draft - نبقيه كما هو
+                'is_progress' =>  1,
             ]);
 
             // ✅ Smart Sync للبنود: يحافظ على daily_progress

@@ -2,7 +2,7 @@
 
 namespace Modules\Progress\Repositories;
 
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Modules\Progress\Models\ProjectItem;
 use Modules\Progress\Models\WorkItem;
 

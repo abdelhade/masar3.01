@@ -2973,7 +2973,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     this.disabled = true;
                     
-                    const url = `/projects/${projectId}/items/${itemId}/status`;
+                    const url = `/progress/projects/${projectId}/items/${itemId}/status`;
                     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                     
                     console.log('Sending request to:', url);

@@ -77,7 +77,7 @@ class WorkItemController extends Controller
 
     WorkItem::create($request->only(['name', 'unit', 'description', 'category_id']));
 
-        return redirect()->route('work-items.index')
+        return redirect()->route('progress.work-items.index')
             ->with('success', 'Work item added successfully');
     }
 
@@ -103,7 +103,7 @@ class WorkItemController extends Controller
 
         $workItem->update($request->all());
 
-        return redirect()->route('work-items.index')
+        return redirect()->route('progress.work-items.index')
             ->with('success', 'Work item updated successfully');
     }
 
@@ -111,7 +111,7 @@ class WorkItemController extends Controller
     {
         $workItem->delete();
 
-        return redirect()->route('work-items.index')
+        return redirect()->route('progress.work-items.index')
             ->with('success', 'تم حذف بند العمل بنجاح');
     }
 

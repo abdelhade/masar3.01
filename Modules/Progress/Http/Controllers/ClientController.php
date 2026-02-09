@@ -35,9 +35,15 @@ class ClientController extends Controller
             'address' => 'nullable|string'
         ]);
 
-        Client::create($request->all());
+        Client::create([
+            'cname' => $request->name,
+            'contact_person' => $request->contact_person,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'address' => $request->address,
+        ]);
 
-        return redirect()->route('clients.index')
+        return redirect()->route('progress.clients.index')
             ->with('success', 'تم إضافة العميل بنجاح');
     }
 
@@ -58,9 +64,15 @@ class ClientController extends Controller
             'phone' => 'nullable|string|max:20'
         ]);
 
-        $client->update($request->all());
+        $client->update([
+            'cname' => $request->name,
+            'contact_person' => $request->contact_person,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'address' => $request->address,
+        ]);
 
-        return redirect()->route('clients.index')
+        return redirect()->route('progress.clients.index')
             ->with('success', 'تم تحديث بيانات العميل بنجاح');
     }
 
@@ -78,7 +90,7 @@ class ClientController extends Controller
             $client->delete();
 
             return redirect()
-                ->route('clients.index')
+                ->route('progress.clients.index')
                 ->with('success', 'تم حذف العميل بنجاح');
 
         } catch (\Exception $e) {

@@ -39,7 +39,7 @@ public function store(Request $request)
         'name' => $request->name,
     ]);
 
-    return redirect()->route('categories.index')->with('success','category created successfully.');
+    return redirect()->route('progress.categories.index')->with('success','category created successfully.');
 }
 
 
@@ -61,7 +61,7 @@ public function store(Request $request)
         $category = Category::findOrFail($id);
         $category->update(['name' => $request->name]);
 
-        return redirect()->route('categories.index')->with('success', 'Category updated successfully.');
+        return redirect()->route('progress.categories.index')->with('success', 'Category updated successfully.');
     }
 
     // حذف الفئة
@@ -70,6 +70,6 @@ public function store(Request $request)
         $category = Category::findOrFail($id);
         $category->delete();
 
-        return redirect()->route('categories.index')->with('success', 'Category deleted successfully.');
+        return redirect()->route('progress.categories.index')->with('success', 'Category deleted successfully.');
     }
 }

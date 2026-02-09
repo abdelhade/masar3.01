@@ -14,6 +14,8 @@ class Project extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'actual_end_date' => 'date',
+        'is_progress' => 'boolean',
+        'is_draft' => 'boolean',
     ];
 
     protected static function booted()

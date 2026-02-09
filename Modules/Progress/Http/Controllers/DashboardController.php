@@ -2,7 +2,7 @@
 
 namespace Modules\Progress\Http\Controllers;
 
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Modules\Progress\Models\WorkItem;
 use Modules\Progress\Models\DailyProgress;
 use Modules\Progress\Models\ProjectItem;

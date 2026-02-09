@@ -216,7 +216,7 @@ function confirmImport() {
 function confirmDelete(filename) {
     if (confirm('هل أنت متأكد من حذف النسخة الاحتياطية:\n' + filename + '؟')) {
         const form = document.getElementById('deleteForm');
-        form.action = '/backup/delete/' + encodeURIComponent(filename);
+        form.action = '/progress/backup/delete/' + encodeURIComponent(filename);
         form.submit();
     }
 }

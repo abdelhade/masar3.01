@@ -4,7 +4,7 @@ namespace Modules\Progress\Http\Controllers;
 
 use Modules\Progress\Models\ProjectItem;
 use Modules\Progress\Models\WorkItem;
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Illuminate\Http\Request;
 
 class ProjectItemController extends Controller

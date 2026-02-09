@@ -31,7 +31,7 @@ class ProjectTypeController extends Controller
         ]);
 
         ProjectType::create($request->all());
-        return redirect()->route('project_types.index')->with('success', 'تم إضافة النوع بنجاح');
+        return redirect()->route('progress.project_types.index')->with('success', 'تم إضافة النوع بنجاح');
     }
 
     public function show(ProjectType $projectType)
@@ -51,12 +51,12 @@ class ProjectTypeController extends Controller
         ]);
 
         $projectType->update($request->all());
-        return redirect()->route('project_types.index')->with('success', 'تم تعديل النوع بنجاح');
+        return redirect()->route('progress.project_types.index')->with('success', 'تم تعديل النوع بنجاح');
     }
 
     public function destroy(ProjectType $projectType)
     {
         $projectType->delete();
-        return redirect()->route('project_types.index')->with('success', 'تم حذف النوع بنجاح');
+        return redirect()->route('progress.project_types.index')->with('success', 'تم حذف النوع بنجاح');
     }
 }

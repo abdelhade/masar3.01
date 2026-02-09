@@ -381,19 +381,24 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-primary">
                         <tr>
+                            <th style="width: 80px;">{{ __('general.serial') }}</th>
                             <th>{{ __('general.item_name') }}</th>
                             <th>{{ __('general.category') }}</th>
                             <th>{{ __('general.unit') }}</th>
-                            @canany(['items-edit', 'items-delete'])
+                            @canany(['edit progress-work-items', 'delete progress-work-items'])
                                 <th>{{ __('general.actions') }}</th>
                             @endcanany
                         </tr>
                     </thead>
                     <tbody id="itemsTableBody">
-                        @foreach ($workItems as $item)
+                        @foreach ($workItems as $index => $item)
                             <tr class="item-row"
                                 data-id="{{ $item->id }} data-status="{{ $item->status ?? 'not_started' }}"
                                 data-shift="{{ $item->shift ?? 'morning' }}">
+                                
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">{{ $workItems->firstItem() + $index }}</span>
+                                </td>
                                 
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -420,7 +425,7 @@
                                 </td>
 
                                 
-                                @canany(['items-edit', 'items-delete'])
+                                @canany(['edit progress-work-items', 'delete progress-work-items'])
                                     <td>
                                         <div class="d-flex gap-1">
                                             @can('edit progress-work-items')

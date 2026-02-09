@@ -33,7 +33,7 @@ class ProjectItem extends Model
 
     public function project()
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(ProjectProgress::class, 'project_id');
     }
 
     public function projectTemplate()

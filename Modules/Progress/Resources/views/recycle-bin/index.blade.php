@@ -107,13 +107,13 @@
                                                         </td>
                                                         <td class="text-end">
                                                             <div class="btn-group">
-                                                                @can('edit progress-recyclebin')
+                                                                @can('edit progress-recycle-bin')
                                                                 <a href="{{ route('progress.recycle-bin.restore', ['type' => 'project', 'id' => $project->id]) }}"
                                                                    class="btn btn-sm btn-success">
                                                                     <i class="fas fa-undo me-1"></i> {{ __('general.restore') }}
                                                                 </a>
                                                                 @endcan
-                                                                @can('delete progress-recyclebin')
+                                                                @can('delete progress-recycle-bin')
                                                                 <a href="{{ route('progress.recycle-bin.force-delete', ['type' => 'project', 'id' => $project->id]) }}"
                                                                    class="btn btn-sm btn-danger"
                                                                    onclick="return confirm('{{ __('general.confirm_delete') }}')">
@@ -169,13 +169,13 @@
                                                         </td>
                                                         <td class="text-end">
                                                             <div class="btn-group">
-                                                                @can('edit progress-recyclebin')
+                                                                @can('edit progress-recycle-bin')
                                                                 <a href="{{ route('progress.recycle-bin.restore', ['type' => 'client', 'id' => $client->id]) }}"
                                                                    class="btn btn-sm btn-success">
                                                                     <i class="fas fa-undo me-1"></i> {{ __('general.restore') }}
                                                                 </a>
                                                                 @endcan
-                                                                @can('delete progress-recyclebin')
+                                                                @can('delete progress-recycle-bin')
                                                                 <a href="{{ route('progress.recycle-bin.force-delete', ['type' => 'client', 'id' => $client->id]) }}"
                                                                    class="btn btn-sm btn-danger"
                                                                    onclick="return confirm('{{ __('general.confirm_delete') }}')">
@@ -230,13 +230,13 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-group">
-                                            @can('edit progress-recyclebin')
+                                            @can('edit progress-recycle-bin')
                                             <a href="{{ route('progress.recycle-bin.restore', ['type' => 'employee', 'id' => $employee->id]) }}"
                                                class="btn btn-sm btn-success">
                                                 <i class="fas fa-undo me-1"></i>{{ __('general.restore') }}
                                             </a>
                                             @endcan
-                                            @can('delete progress-recyclebin')
+                                            @can('delete progress-recycle-bin')
                                             <a href="{{ route('progress.recycle-bin.force-delete', ['type' => 'employee', 'id' => $employee->id]) }}"
                                                class="btn btn-sm btn-danger"
                                                onclick="return confirm('{{ __('general.confirm_delete') }}')">
@@ -291,13 +291,13 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-group">
-                                            @can('edit progress-recyclebin')
+                                            @can('edit progress-recycle-bin')
                                             <a href="{{ route('progress.recycle-bin.restore', ['type' => 'work-item', 'id' => $workItem->id]) }}"
                                                class="btn btn-sm btn-success">
                                                 <i class="fas fa-undo me-1"></i>{{ __('general.restore') }}
                                             </a>
                                             @endcan
-                                            @can('delete progress-recyclebin')
+                                            @can('delete progress-recycle-bin')
                                             <a href="{{ route('progress.recycle-bin.force-delete', ['type' => 'work-item', 'id' => $workItem->id]) }}"
                                                class="btn btn-sm btn-danger"
                                                onclick="return confirm('{{ __('general.confirm_delete') }}')">
@@ -352,13 +352,13 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-group">
-                                            @can('edit progress-recyclebin')
+                                            @can('edit progress-recycle-bin')
                                             <a href="{{ route('progress.recycle-bin.restore', ['type' => 'template', 'id' => $template->id]) }}"
                                                class="btn btn-sm btn-success">
                                                 <i class="fas fa-undo me-1"></i>{{ __('general.restore') }}
                                             </a>
                                             @endcan
-                                            @can('delete progress-recyclebin')
+                                            @can('delete progress-recycle-bin')
                                             <a href="{{ route('progress.recycle-bin.force-delete', ['type' => 'template', 'id' => $template->id]) }}"
                                                class="btn btn-sm btn-danger"
                                                onclick="return confirm('{{ __('general.confirm_delete') }}')">
@@ -413,13 +413,13 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-group">
-                                            @can('edit progress-recyclebin')
+                                            @can('edit progress-recycle-bin')
                                             <a href="{{ route('progress.recycle-bin.restore', ['type' => 'type', 'id' => $type->id]) }}"
                                                class="btn btn-sm btn-success">
                                                 <i class="fas fa-undo me-1"></i>{{ __('general.restore') }}
                                             </a>
                                             @endcan
-                                            @can('delete progress-recyclebin')
+                                            @can('delete progress-recycle-bin')
                                             <a href="{{ route('progress.recycle-bin.force-delete', ['type' => 'type', 'id' => $type->id]) }}"
                                                class="btn btn-sm btn-danger"
                                                onclick="return confirm('{{ __('general.confirm_delete') }}')">
@@ -475,14 +475,14 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-group">
-                                            @can('edit progress-recyclebin')
+                                            @can('edit progress-recycle-bin')
                                                 <a href="{{ route('progress.recycle-bin.restore', ['type' => 'daily-progress', 'id' => $progress->id]) }}"
                                                    class="btn btn-sm btn-success">
                                                     <i class="fas fa-undo me-1"></i>{{ __('general.restore') }}
                                                 </a>
                                             @endcan
 
-                                            @can('delete progress-recyclebin')
+                                            @can('delete progress-recycle-bin')
                                                 <a href="{{ route('progress.recycle-bin.permanent-delete', ['type' => 'daily-progress', 'id' => $progress->id]) }}"
                                                    class="btn btn-sm btn-danger"
                                                    onclick="return confirm('{{ __('general.confirm_delete') }}')">
