@@ -56,11 +56,17 @@ class ProjectController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('admin') || $user->hasRole('manager')) {
-            // الأدمن والمدير يشوفوا كل المشاريع النشطة
             $projects = $this->projectRepository->getAllActive();
+            \Log::info('Projects Index - Admin/Manager', [
+                'user_id' => $user->id,
+                'projects_count' => $projects->count()
+            ]);
         } else {
-            // باقي المستخدمين يشوفوا المشاريع المرتبطة بيهم (user_id يستخدم كـ employee_id)
             $projects = $this->projectRepository->getByUserId($user->id, false);
+            \Log::info('Projects Index - Regular User', [
+                'user_id' => $user->id,
+                'projects_count' => $projects->count()
+            ]);
         }
 
         return view('progress::projects.index', compact('projects'));
@@ -130,7 +136,7 @@ class ProjectController extends Controller
                 : __('general.project_created_successfully');
 
             return redirect()
-                ->route('progress.projects.index')
+                ->route('progress.projects.show', $project)
                 ->with('success', $message);
 
         } catch (\Exception $e) {
@@ -1718,7 +1724,7 @@ class ProjectController extends Controller
             }
 
             return redirect()
-                ->route('projects.show', $project)
+                ->route('progress.projects.show', $project)
                 ->with('success', __('general.project_updated_successfully'));
 
         } catch (\Exception $e) {
@@ -1741,7 +1747,7 @@ class ProjectController extends Controller
             $this->projectService->deleteProject($project);
 
             return redirect()
-                ->route('projects.index')
+                ->route('progress.projects.index')
                 ->with('success', __('general.project_deleted_successfully'));
 
         } catch (\Exception $e) {
@@ -1762,7 +1768,7 @@ class ProjectController extends Controller
         }
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('progress.projects.show', $project)
             ->with('success', __('general.project_published_successfully'));
     }
 
@@ -1783,12 +1789,12 @@ class ProjectController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => __('general.project_copied_successfully'),
-                    'redirect_url' => route('projects.edit', $newProject)
+                    'redirect_url' => route('progress.projects.edit', $newProject)
                 ]);
             }
 
             return redirect()
-                ->route('projects.edit', $newProject)
+                ->route('progress.projects.edit', $newProject)
                 ->with('success', __('general.project_copied_successfully'));
 
         } catch (\Exception $e) {

@@ -19,11 +19,26 @@ class ProjectRepository
 
     public function getAllActive(): Collection
     {
-        return Project::where('is_draft', false)
+        $query = Project::where('is_draft', false);
+        
+        // Log the query
+        \Log::info('getAllActive Query', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings()
+        ]);
+        
+        $projects = $query->where('is_progress', 1)
             ->with('client')
             ->withCount('items')
             ->latest()
             ->get();
+            
+        \Log::info('getAllActive Result', [
+            'count' => $projects->count(),
+            'ids' => $projects->pluck('id')->toArray()
+        ]);
+        
+        return $projects;
     }
 
     public function getAllDrafts(): Collection
@@ -42,6 +57,7 @@ class ProjectRepository
             $query->where('user_id', $userId);
         })
             ->where('is_draft', $isDraft)
+            ->where('is_progress', 1)
             ->with('client')
             ->withCount('items')
             ->latest()

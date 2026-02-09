@@ -44,7 +44,6 @@ class Issue extends Model
         'assigned_to',
         'module',
         'reproduce_steps',
-        'deadline',
         'due_date',
     ];
 
@@ -54,7 +53,6 @@ class Issue extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'deadline' => 'date',
         'due_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -142,13 +140,13 @@ class Issue extends Model
     }
 
     /**
-     * Scope to filter issues with deadline approaching.
+     * Scope to filter issues with due date approaching.
      */
     public function scopeDeadlineApproaching($query, int $days = 7)
     {
-        return $query->whereNotNull('deadline')
-            ->where('deadline', '<=', now()->addDays($days))
-            ->where('deadline', '>=', now())
+        return $query->whereNotNull('due_date')
+            ->where('due_date', '<=', now()->addDays($days))
+            ->where('due_date', '>=', now())
             ->where('status', '!=', self::STATUS_CLOSED);
     }
 
@@ -165,8 +163,8 @@ class Issue extends Model
      */
     public function isOverdue(): bool
     {
-        return $this->deadline && 
-               $this->deadline->isPast() && 
+        return $this->due_date && 
+               $this->due_date->isPast() && 
                $this->status !== self::STATUS_CLOSED;
     }
 
