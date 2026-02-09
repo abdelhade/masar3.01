@@ -4,15 +4,10 @@ namespace Modules\Invoices\Http\Controllers;
 
 use App\Models\OperHead;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 
 class InvoiceWorkflowController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:view Requisition');
-    }
-
     public function index()
     {
         // list request orders (pro_type = 25)
