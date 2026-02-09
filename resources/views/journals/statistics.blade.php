@@ -8,7 +8,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <h2 class="mb-4">إحصائيات القيود اليومية 📊</h2>
+                <h2 class="mb-4">{{ __('Journal Entries Statistics') }} 📊</h2>
             </div>
         </div>
 
@@ -20,13 +20,13 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="text-muted font-hold fw-bold mb-2">
-                                    إجمالي القيود اليومية
+                                    {{ __('Total Journal Entries') }}
                                 </h6>
                                 <h2 class="font-hold fw-bold mb-0 text-primary">
                                     {{ number_format($overallTotal->overall_value, 2) }}
                                 </h2>
                                 <small class="text-muted font-hold">
-                                    {{ number_format($overallTotal->overall_count) }} قيد
+                                    {{ number_format($overallTotal->overall_count) }} {{ __('Entry') }}
                                 </small>
                             </div>
                             <div class="text-primary" style="font-size: 3rem; opacity: 0.3;">
@@ -51,7 +51,7 @@
                                             {{ number_format($stats['value'], 2) }}
                                         </h2>
                                         <small class="text-muted font-hold">
-                                            {{ number_format($stats['count']) }} قيد
+                                            {{ number_format($stats['count']) }} {{ __('Entry') }}
                                         </small>
                                     </div>
                                     <div class="text-{{ $stats['color'] }}" style="font-size: 3rem; opacity: 0.3;">
@@ -65,28 +65,28 @@
             @endforeach
         </div>
 
-        <!-- الشارتس -->
+        <!-- Charts -->
         <div class="row mb-5">
             <div class="col-lg-6 mb-4">
-                <h3 class="mb-3">توزيع القيود حسب النوع</h3>
+                <h3 class="mb-3">{{ __('Distribution of Entries by Type') }}</h3>
                 <canvas id="typePieChart" height="150"></canvas>
             </div>
             <div class="col-lg-6 mb-4">
-                <h3 class="mb-3">توزيع القيم حسب الحسابات</h3>
+                <h3 class="mb-3">{{ __('Distribution of Values by Accounts') }}</h3>
                 <canvas id="accountBarChart" height="150"></canvas>
             </div>
         </div>
 
-        <!-- إحصائيات حسب نوع القيد -->
-        <h3 class="mt-5">إحصائيات حسب نوع القيد</h3>
+        <!-- Statistics by Entry Type -->
+        <h3 class="mt-5">{{ __('Statistics by Entry Type') }}</h3>
         <div class="table-responsive mb-5">
             <table class="table table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
                         <th>#</th>
-                        <th>نوع القيد</th>
-                        <th>عدد القيود</th>
-                        <th>إجمالي القيمة</th>
+                        <th>{{ __('Entry Type') }}</th>
+                        <th>{{ __('Entries Count') }}</th>
+                        <th>{{ __('Total Value') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,7 +103,7 @@
                 </tbody>
                 <tfoot class="bg-light font-weight-bold">
                     <tr>
-                        <td colspan="2" class="text-right">الإجمالي الكلي:</td>
+                        <td colspan="2" class="text-right">{{ __('Grand Total') }}:</td>
                         <td>{{ number_format($overallTotal->overall_count) }}</td>
                         <td>{{ number_format($overallTotal->overall_value, 2) }}</td>
                     </tr>
@@ -111,16 +111,16 @@
             </table>
         </div>
 
-        <!-- إحصائيات حسب الحسابات -->
-        <h3 class="mt-5">إحصائيات حسب الحسابات</h3>
+        <!-- Statistics by Accounts -->
+        <h3 class="mt-5">{{ __('Statistics by Accounts') }}</h3>
         <div class="table-responsive mb-5">
             <table class="table table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
                         <th>#</th>
-                        <th>اسم الحساب</th>
-                        <th>إجمالي المدين</th>
-                        <th>إجمالي الدائن</th>
+                        <th>{{ __('Account Name') }}</th>
+                        <th>{{ __('Total Debit') }}</th>
+                        <th>{{ __('Total Credit') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -136,16 +136,16 @@
             </table>
         </div>
 
-        <!-- إحصائيات حسب الموظفين -->
-        <h3 class="mt-5">إحصائيات حسب الموظفين</h3>
+        <!-- Statistics by Employees -->
+        <h3 class="mt-5">{{ __('Statistics by Employees') }}</h3>
         <div class="table-responsive mb-5">
             <table class="table table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
                         <th>#</th>
-                        <th>اسم الموظف</th>
-                        <th>عدد القيود</th>
-                        <th>إجمالي القيمة</th>
+                        <th>{{ __('Employee Name') }}</th>
+                        <th>{{ __('Entries Count') }}</th>
+                        <th>{{ __('Total Value') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -161,15 +161,15 @@
             </table>
         </div>
 
-        <!-- إحصائيات حسب مراكز التكلفة -->
-        <h3 class="mt-5">إحصائيات حسب مراكز التكلفة</h3>
+        <!-- Statistics by Cost Centers -->
+        <h3 class="mt-5">{{ __('Statistics by Cost Centers') }}</h3>
         <div class="table-responsive mb-5">
             <table class="table table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
                         <th>#</th>
-                        <th>اسم مركز التكلفة</th>
-                        <th>إجمالي القيمة</th>
+                        <th>{{ __('Cost Center Name') }}</th>
+                        <th>{{ __('Total Value') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -185,10 +185,10 @@
         </div>
     </div>
 
-    <!-- تضمين Chart.js -->
+    <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
-        // مخطط دائري: توزيع القيود حسب النوع
+        // Pie Chart: Distribution of Entries by Type
         const typePieChart = new Chart(document.getElementById('typePieChart'), {
             type: 'pie',
             data: {
@@ -224,14 +224,13 @@
                     },
                     title: {
                         display: true,
-                        text: 'توزيع القيود حسب النوع'
+                        text: '{{ __('Distribution of Entries by Type') }}'
                     }
                 }
             }
         });
 
-        // مخطط أعمدة: توزيع القيم حسب الحسابات
-        // مخطط أعمدة: توزيع القيم حسب الحسابات
+        // Bar Chart: Distribution of Values by Accounts
         const accountBarChart = new Chart(document.getElementById('accountBarChart'), {
             type: 'bar',
             data: {
@@ -241,7 +240,7 @@
                     @endforeach
                 ],
                 datasets: [{
-                        label: 'إجمالي المدين',
+                        label: '{{ __('Total Debit') }}',
                         data: [
                             @foreach ($accountStats as $stat)
                                 {{ $stat->debit_total }},
@@ -252,7 +251,7 @@
                         borderWidth: 1
                     },
                     {
-                        label: 'إجمالي الدائن',
+                        label: '{{ __('Total Credit') }}',
                         data: [
                             @foreach ($accountStats as $stat)
                                 {{ $stat->credit_total }},
@@ -271,13 +270,13 @@
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'القيمة'
+                            text: '{{ __('Value') }}'
                         }
                     },
                     x: {
                         title: {
                             display: true,
-                            text: 'الحساب'
+                            text: '{{ __('Account') }}'
                         }
                     }
                 },
@@ -287,7 +286,7 @@
                     },
                     title: {
                         display: true,
-                        text: 'توزيع القيم حسب الحسابات'
+                        text: '{{ __('Distribution of Values by Accounts') }}'
                     }
                 }
             }

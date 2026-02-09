@@ -122,7 +122,7 @@ class ProjectController extends Controller
         $templates = $templates->merge($drafts);
         
         $projectTypes = ProjectType::orderBy('name')->get();
-        $categories = WorkItemCategory::with('workItems')->orderBy('name')->get();
+        $categories = WorkItemCategory::orderBy('name')->get();
         
         // Initialize empty collections for new project
         $projectItems = collect([]);

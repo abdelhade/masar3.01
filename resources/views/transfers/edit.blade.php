@@ -43,19 +43,19 @@
 
                     <div class="row">
                         <div class="col-lg-2">
-                            <label>رقم العملية</label>
+                            <label>{{ __('Operation Number') }}</label>
                             <input type="text" name="pro_id" class="form-control" value="{{ $transfer->pro_id}}" readonly>
                         </div>
                         <div class="col-lg-2">
-                            <label>الرقم الدفتري</label>
+                            <label>{{ __('Serial Number') }}</label>
                             <input type="text" name="pro_serial" class="form-control" value="{{ $transfer->pro_serial}}">
                         </div>
                         <div class="col-lg-2">
-                            <label>رقم الإيصال</label>
+                            <label>{{ __('Receipt Number') }}</label>
                             <input type="text" name="pro_num" class="form-control" value="{{ old('pro_num', $transfer->pro_num ?? '') }}" onblur="validateRequired(this)">
                         </div>
                         <div class="col-lg-4">
-                            <label>التاريخ</label>
+                            <label>{{ __('Date') }}</label>
                             <input type="date" name="pro_date" class="form-control"
                                 value="{{ old('pro_date', isset($transfer->pro_date) ? date('Y-m-d', strtotime($transfer->pro_date)) : date('Y-m-d')) }}"
                                 onblur="validateRequired(this)">
@@ -66,7 +66,7 @@
 
                     <div class="row">
                         <div class="col-lg-{{ isMultiCurrencyEnabled() ? '2' : '3' }}">
-                            <label>المبلغ</label>
+                            <label>{{ __('Amount') }}</label>
                             @php
                                 // عرض القيمة الأصلية (قبل الضرب في سعر الصرف)
                                 $displayValue = $transfer->pro_value;
@@ -79,9 +79,9 @@
 
                         @if(isMultiCurrencyEnabled())
                             <div class="col-lg-2">
-                                <label>العملة</label>
+                                <label>{{ __('Currency') }}</label>
                                 <select id="currency_selector" class="form-control">
-                                    <option value="">اختر العملة</option>
+                                    <option value="">{{ __('Select Currency') }}</option>
                                     @foreach($allCurrencies as $currency)
                                         <option value="{{ $currency->id }}" 
                                                 data-rate="{{ $currency->latestRate->rate ?? 1 }}"
@@ -94,7 +94,7 @@
                             </div>
 
                             <div class="col-lg-2">
-                                <label>القيمة المحولة</label>
+                                <label>{{ __('Converted Amount') }}</label>
                                 <input type="text" id="converted_amount" readonly 
                                     class="form-control bg-light" 
                                     value="{{ number_format($transfer->pro_value, 2) }}" 
@@ -103,7 +103,7 @@
                         @endif
 
                         <div class="col-lg-{{ isMultiCurrencyEnabled() ? '6' : '9' }}">
-                            <label>البيان</label>
+                            <label>{{ __('Description') }}</label>
                             <input type="text" name="details" class="form-control" value="{{ old('details', $transfer->details ?? '') }}" onblur="validateRequired(this)">
                         </div>
                     </div>
@@ -122,10 +122,10 @@
 
                     <div class="row">
                         <div class="col-lg-6">
-                            <label>من حساب: {{ $acc1_text }} <span class="badge badge-outline-info">دائن</span></label>
+                            <label>{{ __('From Account') }}: {{ $acc1_text }} <span class="badge badge-outline-info">{{ __('Credit') }}</span></label>
                             <div class="d-flex align-items-center gap-2">
                                 <select name="acc1" required id="acc1" class="form-control js-tom-select" style="flex: 1;" onblur="validateRequired(this); checkSameAccounts();">
-                                    <option value="">اختر الحساب</option>
+                                    <option value="">{{ __('Select Account') }}</option>
                                     @foreach ($fromAccounts as $account)
                                         <option value="{{ $account->id }}"
                                             data-balance="{{ $account->balance }}"
@@ -142,10 +142,10 @@
                             </div>
                         </div>
                         <div class="col-lg-6">
-                            <label>إلى حساب: {{ $acc2_text }} <span class="badge badge-outline-info">مدين</span></label>
+                            <label>{{ __('To Account') }}: {{ $acc2_text }} <span class="badge badge-outline-info">{{ __('Debit') }}</span></label>
                             <div class="d-flex align-items-center gap-2">
                                 <select name="acc2" id="acc2" required class="form-control js-tom-select" style="flex: 1;" onblur="validateRequired(this); ">
-                                    <option value="">اختر الحساب</option>
+                                    <option value="">{{ __('Select Account') }}</option>
                                     @foreach ($toAccounts as $account)
                                         <option value="{{ $account->id }}"
                                             data-balance="{{ $account->balance }}"
@@ -167,9 +167,9 @@
 
                     <div class="row">
                         <div class="col-lg-6">
-                            <label>الموظف</label>
+                            <label>{{ __('Employee') }}</label>
                             <select name="emp_id" class="form-control">
-                                <option value="">اختر موظف</option>
+                                <option value="">{{ __('Select Employee') }}</option>
                                 @foreach ($employeeAccounts as $emp)
                                     <option value="{{ $emp->id }}" {{ old('emp_id', $transfer->emp_id ?? '') == $emp->id ? ' selected ' : '' }}>
                                         {{ $emp->aname }}
@@ -178,9 +178,9 @@
                             </select>
                         </div>
                         <div class="col-lg-6">
-                            <label>مندوب التحصيل</label>
+                            <label>{{ __('Collection Representative') }}</label>
                             <select name="emp2_id" class="form-control">
-                                <option value="">اختر مندوب</option>
+                                <option value="">{{ __('Select Representative') }}</option>
                                 @foreach ($employeeAccounts as $emp)
                                     <option value="{{ $emp->id }}" {{ old('emp2_id', $transfer->emp2_id ?? '') == $emp->id ? 'selected' : '' }}>
                                         {{ $emp->aname }}
@@ -194,9 +194,9 @@
 
                     <div class="row">
                         <div class="col-lg-6">
-                            <label>مركز التكلفة</label>
+                            <label>{{ __('Cost Center') }}</label>
                             <select name="cost_center" class="form-control">
-                                <option value="">بدون مركز تكلفة</option>
+                                <option value="">{{ __('No Cost Center') }}</option>
                                 @if(!empty($costCenters) && count($costCenters))
                                     @foreach($costCenters as $cc)
                                         <option value="{{ $cc->id }}" {{ old('cost_center', $transfer->cost_center ?? '') == $cc->id ? 'selected' : '' }}>{{ $cc->name }}</option>
@@ -205,7 +205,7 @@
                             </select>
                         </div>
                         <div class="col-lg-6">
-                            <label>ملاحظات</label>
+                            <label>{{ __('Notes') }}</label>
                             <input type="text" name="info" class="form-control" value="{{ old('info', $transfer->info ?? '') }}">
                         </div>
                     </div>
@@ -215,10 +215,10 @@
                 <div class="card-footer">
                     <div class="row">
                         <div class="col">
-                            <button class="btn btn-main" type="submit">تأكيد</button>
+                            <button class="btn btn-main" type="submit">{{ __('Confirm') }}</button>
                         </div>
                         <div class="col">
-                            <button class="btn btn-danger" type="reset">مسح</button>
+                            <button class="btn btn-danger" type="reset">{{ __('Clear') }}</button>
                         </div>
                     </div>
                 </div>
@@ -235,7 +235,7 @@ function validateRequired(input) {
         if (!input.nextElementSibling || !input.nextElementSibling.classList.contains('invalid-feedback')) {
             const errorMsg = document.createElement('div');
             errorMsg.className = 'invalid-feedback';
-            errorMsg.innerText = 'هذا الحقل مطلوب';
+            errorMsg.innerText = '{{ __('This field is required') }}';
             input.parentNode.appendChild(errorMsg);
         }
     } else {
@@ -251,7 +251,7 @@ function checkSameAccounts() {
     let acc1 = document.getElementById('acc1').value;
     let acc2 = document.getElementById('acc2').value;
     if (acc1 && acc2 && acc1 === acc2) {
-        alert("لا يمكن اختيار نفس الحساب في الحقلين");
+        alert("{{ __('Cannot select the same account in both fields') }}");
         document.getElementById('acc1').value = '';
         document.getElementById('acc2').value = '';
     }
@@ -447,7 +447,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // التحقق من تطابق العملات
         if (String(acc1CurrencyId) !== String(acc2CurrencyId)) {
-            alert('عذراً، يجب أن يكون للحسابين نفس العملة لإتمام التحويل.');
+            alert('{{ __('Sorry, both accounts must have the same currency to complete the transfer.') }}');
             return false;
         }
 

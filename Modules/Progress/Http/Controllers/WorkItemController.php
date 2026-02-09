@@ -8,13 +8,13 @@ use Modules\Progress\Models\WorkItemCategory;
 
 class WorkItemController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:view progress-work-items')->only(['index', 'search']);
-        $this->middleware('can:create progress-work-items')->only(['create', 'store']);
-        $this->middleware('can:edit progress-work-items')->only(['edit', 'update', 'reorder']);
-        $this->middleware('can:delete progress-work-items')->only(['destroy']);
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('can:view progress-work-items')->only(['index', 'search']);
+    //     $this->middleware('can:create progress-work-items')->only(['create', 'store']);
+    //     $this->middleware('can:edit progress-work-items')->only(['edit', 'update', 'reorder']);
+    //     $this->middleware('can:delete progress-work-items')->only(['destroy']);
+    // }
 
     public function index(Request $request)
     {

@@ -153,30 +153,39 @@
                 <h1 class="title text-white text-page-title">Massar ERP</h1>
                 <div class="user-section">
                     <i data-lucide="user" class="user-icon"></i>
-                    <span class="user-name">{{ auth()->user()->name ?? 'المستخدم' }}</span>
+                    <span class="user-name">{{ auth()->user()->name ?? __('User') }}</span>
                     <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="display: inline;">
                         @csrf
-                        <button type="submit" class="logout-btn" title="تسجيل الخروج">
+                        <button type="submit" class="logout-btn" :title="__('Logout')">
                             <i data-lucide="log-out" class="logout-icon"></i>
-                            <span class="logout-text">تسجيل الخروج</span>
+                            <span class="logout-text">{{ __('Logout') }}</span>
                         </button>
                     </form>
                 </div>
                 <div class="search-container-inline">
                     <i data-lucide="search" class="search-icon"></i>
                     <input type="text" id="searchInput" class="search-input frst"
-                        placeholder="🔍 ابحث عن القسم...">
+                        placeholder="🔍 {{ __('Search for section...') }}">
                     <span class="search-count" id="searchCount"></span>
                 </div>
-                {{-- Theme switcher: select --}}
+                {{-- Theme switcher --}}
                 <div class="ms-3 d-flex align-items-center gap-2">
-                    <label for="masar-theme-select" class="mb-0 small fw-bold text-white">المظهر:</label>
-                    <select id="masar-theme-select" class="form-select form-select-sm shadow-sm" title="تغيير المظهر"
+                    <label for="masar-theme-select" class="mb-0 small fw-bold text-white">{{ __('Theme') }}:</label>
+                    <select id="masar-theme-select" class="form-select form-select-sm shadow-sm" :title="__('Change Theme')"
                         style="min-width: 140px; border-radius: 8px; font-weight: 600;">
-                        <option value="classic">Classic (أزرق)</option>
-                        <option value="mint-green">Mint Green</option>
-                        <option value="dark">Dark Mode</option>
-                        <option value="monokai">Monokai</option>
+                        <option value="classic">{{ __('Classic (Blue)') }}</option>
+                        <option value="mint-green">{{ __('Mint Green') }}</option>
+                        <option value="dark">{{ __('Dark Mode') }}</option>
+                        <option value="monokai">{{ __('Monokai') }}</option>
+                    </select>
+                </div>
+                {{-- Language switcher --}}
+                <div class="ms-3 d-flex align-items-center gap-2">
+                    <label for="language-select" class="mb-0 small fw-bold text-white">{{ __('Language') }}:</label>
+                    <select id="language-select" class="form-select form-select-sm shadow-sm" :title="__('Change Language')"
+                        style="min-width: 120px; border-radius: 8px; font-weight: 600;">
+                        <option value="ar" {{ app()->getLocale() == 'ar' ? 'selected' : '' }}>العربية</option>
+                        <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
                     </select>
                 </div>
             </div>
@@ -194,11 +203,11 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="stats-card-content">
-                                    <p class="stats-card-label">العملاء</p>
+                                    <p class="stats-card-label">{{ __('Clients') }}</p>
                                     <h2 class="stats-card-value">{{ number_format($totalClients ?? 0) }}</h2>
                                     <p class="stats-card-subtitle">
                                         <i data-lucide="trending-up"></i>
-                                        إجمالي العملاء
+                                        {{ __('Total Clients') }}
                                     </p>
                                 </div>
                                 <div class="stat-icon-wrapper">
@@ -217,11 +226,11 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="stats-card-content">
-                                    <p class="stats-card-label">مرات الدخول</p>
+                                    <p class="stats-card-label">{{ __('Login Count') }}</p>
                                     <h2 class="stats-card-value">{{ number_format($totalLogins ?? 0) }}</h2>
                                     <p class="stats-card-subtitle">
                                         <i data-lucide="activity"></i>
-                                        إجمالي الجلسات
+                                        {{ __('Total Sessions') }}
                                     </p>
                                 </div>
                                 <div class="stat-icon-wrapper">
@@ -240,11 +249,11 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="stats-card-content">
-                                    <p class="stats-card-label">المبيعات اليوم</p>
+                                    <p class="stats-card-label">{{ __('Today Sales') }}</p>
                                     <h2 class="stats-card-value">{{ number_format($todaySales ?? 0, 2) }}</h2>
                                     <p class="stats-card-subtitle">
                                         <i data-lucide="dollar-sign"></i>
-                                        ر.س
+                                        {{ __('SAR') }}
                                     </p>
                                 </div>
                                 <div class="stat-icon-wrapper">
@@ -260,54 +269,124 @@
         </div>
 
         <!-- أيقونات البرنامج - سطر واحد -->
-        @canany(['view Clients', 'view Suppliers', 'view Funds', 'view Banks', 'view Employees', 'view warhouses', 'view
-            Expenses', 'view Revenues', 'view various_creditors', 'view various_debtors', 'view partners', 'view
-            current_partners', 'view assets', 'view rentables', 'view check-portfolios-incoming', 'view
-            basicData-statistics', 'view items', 'view units', 'view prices', 'view notes-names', 'view varibals', 'view
-            varibalsValues', 'view roles', 'view branches', 'view settings', 'view login-history', 'view active-sessions',
-            'view activity-logs', 'view Inquiries', 'view Orders', 'view Rental-Management', 'view progress-recyclebin',
-            'view progress-project-types', 'view progress-project-templates', 'view progress-item-statuses', 'view
-            progress-work-items', 'view progress-work-item-categories', 'view daily-progress', 'view progress-issues', 'view
-            progress-projects', 'view progress-dashboard'])
+        @canany([
+            'view Clients',
+            'view Suppliers',
+            'view Funds',
+            'view Banks',
+            'view Employees',
+            'view warhouses',
+            'view
+            Expenses',
+            'view Revenues',
+            'view various_creditors',
+            'view various_debtors',
+            'view partners',
+            'view
+            current_partners',
+            'view assets',
+            'view rentables',
+            'view check-portfolios-incoming',
+            'view
+            basicData-statistics',
+            'view items',
+            'view units',
+            'view prices',
+            'view notes-names',
+            'view varibals',
+            'view
+            varibalsValues',
+            'view roles',
+            'view branches',
+            'view settings',
+            'view login-history',
+            'view active-sessions',
+            'view activity-logs',
+            'view Inquiries',
+            'view Orders',
+            'view Rental-Management',
+            'view progress-recyclebin',
+            'view progress-project-types',
+            'view progress-project-templates',
+            'view progress-item-statuses',
+            'view
+            progress-work-items',
+            'view progress-work-item-categories',
+            'view daily-progress',
+            'view progress-issues',
+            'view
+            progress-projects',
+            'view progress-dashboard',
+            ])
             <div class="apps-icons-row">
                 <div class="d-flex">
                     {{-- البيانات الاساسيه --}}
                     <div class="app-icon-group">
-                        @canany(['view Clients', 'view Suppliers', 'view Funds', 'view Banks', 'view Employees', 'view
-                            warhouses', 'view Expenses', 'view Revenues', 'view various_creditors', 'view various_debtors',
-                            'view partners', 'view current_partners', 'view assets', 'view rentables', 'view
-                            check-portfolios-incoming', 'view basicData-statistics'])
+                        @canany([
+                            'view Clients',
+                            'view Suppliers',
+                            'view Funds',
+                            'view Banks',
+                            'view Employees',
+                            'view
+                            warhouses',
+                            'view Expenses',
+                            'view Revenues',
+                            'view various_creditors',
+                            'view various_debtors',
+                            'view partners',
+                            'view current_partners',
+                            'view assets',
+                            'view rentables',
+                            'view
+                            check-portfolios-incoming',
+                            'view basicData-statistics',
+                            ])
                             <a href="{{ route('accounts.index') }}" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="chart-bar-increasing"></i>
                                 </div>
-                                <p>البيانات الاساسيه</p>
+                                <p>{{ __('Basic Data') }}</p>
                             </a>
                         @endcanany
                     </div>
 
                     {{-- الاصناف --}}
                     <div class="app-icon-group">
-                        @canany(['view items', 'view units', 'view prices', 'view notes-names', 'view varibals', 'view
-                            varibalsValues'])
+                        @canany([
+                            'view items',
+                            'view units',
+                            'view prices',
+                            'view notes-names',
+                            'view varibals',
+                            'view
+                            varibalsValues',
+                            ])
                             <a href="{{ route('items.index') }}" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="boxes"></i>
                                 </div>
-                                <p>الاصناف</p>
+                                <p>{{ __('Items') }}</p>
                             </a>
                         @endcanany
                     </div>
 
                     {{-- الصلاحيات --}}
                     <div class="app-icon-group">
-                        @canany(['view roles', 'view branches', 'view settings', 'view login-history', 'view
-                            active-sessions', 'view activity-logs'])
+                        @canany([
+                            'view roles',
+                            'view branches',
+                            'view settings',
+                            'view login-history',
+                            'view
+                            active-sessions',
+                            'view activity-logs',
+                            ])
                             <a href="{{ route('users.index') }}" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="key"></i>
                                 </div>
-                                <p>الصلاحيات</p>
+                                <p>{{ __('Permissions') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -319,21 +398,30 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="settings"></i>
                                 </div>
-                                <p>الاعدادات</p>
+                                <p>{{ __('Settings') }}</p>
                             </a>
                         @endcan
                     </div>
 
                     {{-- التقارير --}}
                     <div class="app-icon-group">
-                        @canany(['view DailyWorkAnalysis', 'view Chart-of-Accounts', 'view balance-sheet', 'view
-                            Profit-Loss', 'view Sales-Reports', 'view Purchasing-Reports', 'view Inventory-Reports', 'view
-                            Expenses-Reports'])
+                        @canany([
+                            'view DailyWorkAnalysis',
+                            'view Chart-of-Accounts',
+                            'view balance-sheet',
+                            'view
+                            Profit-Loss',
+                            'view Sales-Reports',
+                            'view Purchasing-Reports',
+                            'view Inventory-Reports',
+                            'view
+                            Expenses-Reports',
+                            ])
                             <a href="{{ route('reports.index') }}" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="file-bar-chart"></i>
                                 </div>
-                                <p>التقارير</p>
+                                <p>{{ __('Reports') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -357,7 +445,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="trending-up"></i>
                                 </div>
-                                <p>المبيعات</p>
+                                <p>{{ __("Sales") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -369,7 +457,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="shopping-cart"></i>
                                 </div>
-                                <p>نقطة البيع</p>
+                                <p>{{ __("POS") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -381,7 +469,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="building"></i>
                                 </div>
-                                <p>ادارة المستأجرات</p>
+                                <p>{{ __("Rental Management") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -394,7 +482,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="file-text"></i>
                                 </div>
-                                <p>أدارة الحسابات</p>
+                                <p>{{ __("Accounts Management") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -406,7 +494,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="credit-card"></i>
                                 </div>
-                                <p>ادارة المصروفات</p>
+                                <p>{{ __("Expenses Management") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -418,7 +506,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="receipt"></i>
                                 </div>
-                                <p>السندات الماليه</p>
+                                <p>{{ __("Financial Vouchers") }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -430,7 +518,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="arrow-left-right"></i>
                                 </div>
-                                <p>التحويلات النقديه</p>
+                                <p>{{ __("Cash Transfers") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -442,7 +530,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="tag"></i>
                                 </div>
-                                <p>ادارة الدفعات</p>
+                                <p>{{ __("Installments Management") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -453,24 +541,30 @@
                             <a href="{{ route('checks.incoming') }}" class="app-icon-large icon-bg-green"
                                 style="position: relative;">
                                 <span
-                                    style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">جديد</span>
+                                    style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">{{ __("New") }}</span>
                                 <div class="icon-wrapper">
                                     <i data-lucide="file-check-2"></i>
                                 </div>
-                                <p>إدارة الشيكات</p>
+                                <p>{{ __("Checks Management") }}</p>
                             </a>
                         @endcan
                     </div>
 
                     {{-- ادارة المخزون --}}
                     <div class="app-icon-group">
-                        @canany(['view Inventory-Management', 'view Damaged Goods Invoice', 'view Dispatch Order', 'view
-                            Addition Order', 'view Store-to-Store Transfer'])
+                        @canany([
+                            'view Inventory-Management',
+                            'view Damaged Goods Invoice',
+                            'view Dispatch Order',
+                            'view
+                            Addition Order',
+                            'view Store-to-Store Transfer',
+                            ])
                             <a href="{{ route('invoices.index', ['type' => 18]) }}" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="package"></i>
                                 </div>
-                                <p>ادارة المخزون</p>
+                                <p>{{ __("Inventory Management") }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -482,20 +576,30 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="factory"></i>
                                 </div>
-                                <p>التصنيع</p>
+                                <p>{{ __("Manufacturing") }}</p>
                             </a>
                         @endcan
                     </div>
 
                     {{-- إدارة الجودة --}}
                     <div class="app-icon-group">
-                        @canany(['view quality', 'view inspections', 'view standards', 'view ncr', 'view capa', 'view
-                            batches', 'view rateSuppliers', 'view certificates', 'view audits'])
+                        @canany([
+                            'view quality',
+                            'view inspections',
+                            'view standards',
+                            'view ncr',
+                            'view capa',
+                            'view
+                            batches',
+                            'view rateSuppliers',
+                            'view certificates',
+                            'view audits',
+                            ])
                             <a href="{{ route('quality.dashboard') }}" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="award"></i>
                                 </div>
-                                <p>إدارة الجودة</p>
+                                <p>{{ __("Quality Management") }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -507,20 +611,25 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="shopping-bag"></i>
                                 </div>
-                                <p>المشتريات</p>
+                                <p>{{ __("Purchases") }}</p>
                             </a>
                         @endcan
                     </div>
 
                     {{-- الصيانه --}}
                     <div class="app-icon-group">
-                        @canany(['view Service Types', 'view Maintenances', 'view Periodic Maintenance', 'view
-                            Maintenance'])
+                        @canany([
+                            'view Service Types',
+                            'view Maintenances',
+                            'view Periodic Maintenance',
+                            'view
+                            Maintenance',
+                            ])
                             <a href="{{ route('service.types.index') }}" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="package"></i>
                                 </div>
-                                <p>الصيانه</p>
+                                <p>{{ __("Maintenance") }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -531,24 +640,24 @@
                             <a href="{{ route('fleet.dashboard.index') }}?sidebar=fleet" class="app-icon-large icon-bg-green"
                                 style="position: relative;">
                                 <span
-                                    style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">جديد</span>
+                                    style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">{{ __("New") }}</span>
                                 <div class="icon-wrapper">
                                     <i data-lucide="truck"></i>
                                 </div>
-                                <p>إدارة الأسطول</p>
+                                <p>{{ __("Fleet Management") }}</p>
                             </a>
                         @endcan
                     </div>
 
                     {{-- المشاريع --}}
                     <div class="app-icon-group">
-                        @can('view projects')
-                            @if(Route::has('progress.projects.index'))
+                        @can('view Projects')
+                            @if (Route::has('progress.projects.index'))
                                 <a href="{{ route('progress.projects.index') }}" class="app-icon-large icon-bg-green">
                                     <div class="icon-wrapper">
                                         <i data-lucide="kanban"></i>
                                     </div>
-                                    <p>المشاريع</p>
+                                    <p>{{ __("Projects") }}</p>
                                 </a>
                             @endif
                         @endcan
@@ -556,13 +665,27 @@
 
                     {{-- التقدم اليومي --}}
                     <div class="app-icon-group">
-                        @canany(['view progress-recyclebin','view progress-project-types' , 'view progress-project-templates','view progress-item-statuses','view progress-work-items','view progress-work-item-categories' ,'view daily-progress', 'view progress-issues','view progress-projects','view progress-dashboard'])
-                            @if(Route::has('progress.dashboard'))
+                        @canany([
+                            'view progress-recyclebin',
+                            'view progress-project-types',
+                            'view
+                            progress-project-templates',
+                            'view progress-item-statuses',
+                            'view progress-work-items',
+                            'view
+                            progress-work-item-categories',
+                            'view daily-progress',
+                            'view progress-issues',
+                            'view
+                            progress-projects',
+                            'view progress-dashboard',
+                            ])
+                            @if (Route::has('progress.dashboard'))
                                 <a href="{{ route('progress.dashboard') }}" class="app-icon-large icon-bg-green">
                                     <div class="icon-wrapper">
                                         <i data-lucide="bar-chart-3"></i>
                                     </div>
-                                    <p>التقدم اليومي</p>
+                                    <p>{{ __("Daily Progress") }}</p>
                                 </a>
                             @endif
                         @endcanany
@@ -574,7 +697,7 @@
                             <div class="icon-wrapper">
                                 <i data-lucide="building"></i>
                             </div>
-                            <p>عمليات الاصول</p>
+                            <p>{{ __("Assets Operations") }}</p>
                         </a>
                     </div>
 
@@ -585,7 +708,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="cog"></i>
                                 </div>
-                                <p>إدارة الموارد</p>
+                                <p>{{ __("Resources Management") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -597,7 +720,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="users"></i>
                                 </div>
-                                <p>الموارد البشريه</p>
+                                <p>{{ __("Human Resources") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -609,7 +732,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="fingerprint"></i>
                                 </div>
-                                <p>بصمه الموبايل</p>
+                                <p>{{ __("Mobile Fingerprint") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -621,7 +744,7 @@
                                 <div class="icon-wrapper">
                                     <i data-lucide="truck"></i>
                                 </div>
-                                <p>أدارة الشحن</p>
+                                <p>{{ __("Shipping Management") }}</p>
                             </a>
                         @endcan
                     </div>
@@ -644,14 +767,14 @@
         <!-- الجداول (3 في الصف) -->
         <div class="tables-section" style="margin-top: 3rem;">
             <div class="row g-4">
-                <!-- آخر 5 حسابات -->
+                <!-- {{ __("Last 5 Accounts") }} -->
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="wallet"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                آخر 5 حسابات
+                                {{ __("Last 5 Accounts") }}
                             </h5>
                         </div>
                         <div class="card-body" style="padding: 0;">
@@ -659,9 +782,9 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th>الكود</th>
-                                            <th>الاسم</th>
-                                            <th>الرقم</th>
+                                            <th>{{ __("Code") }}</th>
+                                            <th>{{ __("Name") }}</th>
+                                            <th>{{ __("Number") }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -673,7 +796,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5">لا توجد بيانات
+                                                <td colspan="3" class="text-center text-muted py-5">{{ __("No data available") }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -684,14 +807,14 @@
                     </div>
                 </div>
 
-                <!-- آخر 5 عمليات تسجيل دخول -->
+                <!-- {{ __("Last 5 Login Operations") }} -->
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="log-in"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                آخر 5 عمليات تسجيل دخول
+                                {{ __("Last 5 Login Operations") }}
                             </h5>
                         </div>
                         <div class="card-body" style="padding: 0;">
@@ -699,9 +822,9 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th>المستخدم</th>
+                                            <th>{{ __("User") }}</th>
                                             <th>IP</th>
-                                            <th>التاريخ</th>
+                                            <th>{{ __("Date") }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -715,7 +838,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5">لا توجد بيانات
+                                                <td colspan="3" class="text-center text-muted py-5">{{ __("No data available") }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -726,38 +849,38 @@
                     </div>
                 </div>
 
-                <!-- إحصائيات المبيعات -->
+                <!-- {{ __("Sales Statistics") }} -->
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="trending-up"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                إحصائيات المبيعات
+                                {{ __("Sales Statistics") }}
                             </h5>
                         </div>
                         <div class="card-body">
                             <div class="d-flex flex-column gap-3">
                                 <div class="sales-stats-item d-flex justify-content-between align-items-center">
-                                    <span class="sales-stats-label">آخر فاتورة</span>
+                                    <span class="sales-stats-label">{{ __("Last Invoice") }}</span>
                                     <span class="sales-stats-value">
                                         {{ $salesStats['last_invoice'] ? '#' . $salesStats['last_invoice']->pro_id . ' - ' . number_format($salesStats['last_invoice']->fat_net ?? 0, 2) . ' ر.س' : '-' }}
                                     </span>
                                 </div>
                                 <div class="sales-stats-item d-flex justify-content-between align-items-center">
-                                    <span class="sales-stats-label">أحر يوم</span>
+                                    <span class="sales-stats-label">{{ __("Today") }}</span>
                                     <span class="sales-stats-value">
                                         {{ number_format($salesStats['today'] ?? 0, 2) }} ر.س
                                     </span>
                                 </div>
                                 <div class="sales-stats-item d-flex justify-content-between align-items-center">
-                                    <span class="sales-stats-label">آخر أسبوع</span>
+                                    <span class="sales-stats-label">{{ __("Last Week") }}</span>
                                     <span class="sales-stats-value">
                                         {{ number_format($salesStats['last_week'] ?? 0, 2) }} ر.س
                                     </span>
                                 </div>
                                 <div class="sales-stats-item d-flex justify-content-between align-items-center">
-                                    <span class="sales-stats-label">آخر شهر</span>
+                                    <span class="sales-stats-label">{{ __("Last Month") }}</span>
                                     <span class="sales-stats-value">
                                         {{ number_format($salesStats['last_month'] ?? 0, 2) }} ر.س
                                     </span>
@@ -767,14 +890,14 @@
                     </div>
                 </div>
 
-                <!-- آخر 5 أصناف -->
+                <!-- {{ __("Last 5 Items") }} -->
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="package"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                آخر 5 أصناف
+                                {{ __("Last 5 Items") }}
                             </h5>
                         </div>
                         <div class="card-body" style="padding: 0;">
@@ -782,9 +905,9 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th>الكود</th>
-                                            <th>الاسم</th>
-                                            <th>التاريخ</th>
+                                            <th>{{ __("Code") }}</th>
+                                            <th>{{ __("Name") }}</th>
+                                            <th>{{ __("Date") }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -798,7 +921,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5">لا توجد بيانات
+                                                <td colspan="3" class="text-center text-muted py-5">{{ __("No data available") }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -809,14 +932,14 @@
                     </div>
                 </div>
 
-                <!-- آخر 5 عمليات -->
+                <!-- {{ __("Last 5 Operations") }} -->
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="file-text"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                آخر 5 عمليات
+                                {{ __("Last 5 Operations") }}
                             </h5>
                         </div>
                         <div class="card-body" style="padding: 0;">
@@ -824,9 +947,9 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th>الرقم</th>
-                                            <th>العميل</th>
-                                            <th>المبلغ</th>
+                                            <th>{{ __("Number") }}</th>
+                                            <th>{{ __("Client") }}</th>
+                                            <th>{{ __("Amount") }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -840,7 +963,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5">لا توجد بيانات
+                                                <td colspan="3" class="text-center text-muted py-5">{{ __("No data available") }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -860,6 +983,22 @@
         (function() {
             if (typeof MasarThemeSwitcher !== 'undefined') MasarThemeSwitcher.bindSelect('#masar-theme-select');
         })();
+    </script>
+
+    {{-- Language switcher --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageSelect = document.getElementById('language-select');
+            
+            if (languageSelect) {
+                languageSelect.addEventListener('change', function() {
+                    const selectedLang = this.value;
+                    
+                    // Redirect to language switch route
+                    window.location.href = '{{ url("/locale") }}/' + selectedLang;
+                });
+            }
+        });
     </script>
 
     <script>
@@ -935,7 +1074,7 @@
                 // Update search count
                 if (searchCount) {
                     if (searchTerm !== '') {
-                        searchCount.textContent = visibleCount + ' نتيجة';
+                        searchCount.textContent = visibleCount + ' {{ __("result") }}';
                         searchCount.style.display = 'block';
                     } else {
                         searchCount.style.display = 'none';

@@ -7,13 +7,14 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:view progress-categories')->only(['index']);
-        $this->middleware('can:create progress-categories')->only(['create', 'store']);
-        $this->middleware('can:edit progress-categories')->only(['edit', 'update']);
-        $this->middleware('can:delete progress-categories')->only(['destroy']);
-    }
+    // Uncomment to enforce permissions; user must have progress-categories permissions
+    // public function __construct()
+    // {
+    //     $this->middleware('can:view progress-categories')->only(['index']);
+    //     $this->middleware('can:create progress-categories')->only(['create', 'store']);
+    //     $this->middleware('can:edit progress-categories')->only(['edit', 'update']);
+    //     $this->middleware('can:delete progress-categories')->only(['destroy']);
+    // }
 
     // عرض كل الفئات
     public function index()

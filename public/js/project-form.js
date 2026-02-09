@@ -503,7 +503,7 @@
         showSearchResults();
 
         try {
-            const response = await fetch(`/work-items/search-ajax?q=${encodeURIComponent(query)}`);
+            const response = await fetch(`/progress/work-items/search-ajax?q=${encodeURIComponent(query)}`);
             const data = await response.json();
 
             renderSearchResults(data.results || []);

@@ -60,7 +60,7 @@ class DepreciationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "تم حساب الإهلاك لـ {$updatedCount} أصل بنجاح",
+                'message' => __('Depreciation calculated successfully for :count assets', ['count' => $updatedCount]),
                 'updated_count' => $updatedCount,
             ]);
 
@@ -69,7 +69,7 @@ class DepreciationController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حساب الإهلاك: '.$e->getMessage(),
+                'message' => __('An error occurred while calculating depreciation').': '.$e->getMessage(),
             ], 500);
         }
     }
@@ -141,7 +141,7 @@ class DepreciationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "تم ربط {$syncedCount} حساب إهلاك بنجاح",
+                'message' => __('Successfully linked :count depreciation accounts', ['count' => $syncedCount]),
                 'synced_count' => $syncedCount,
             ]);
 
@@ -150,7 +150,7 @@ class DepreciationController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء ربط حسابات الإهلاك: '.$e->getMessage(),
+                'message' => __('An error occurred while linking depreciation accounts').': '.$e->getMessage(),
             ], 500);
         }
     }
@@ -175,7 +175,7 @@ class DepreciationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء إنشاء الجدولة: '.$e->getMessage(),
+                'message' => __('An error occurred while creating schedule').': '.$e->getMessage(),
             ], 500);
         }
     }
@@ -204,9 +204,9 @@ class DepreciationController extends Controller
 
                 // Header
                 fputcsv($file, [
-                    'اسم الأصل', 'السنة', 'من تاريخ', 'إلى تاريخ',
-                    'القيمة الدفترية في البداية', 'إهلاك السنة',
-                    'الإهلاك المتراكم', 'القيمة الدفترية في النهاية', 'النسبة %',
+                    __('Asset Name'), __('Year'), __('From Date'), __('To Date'),
+                    __('Beginning Book Value'), __('Annual Depreciation'),
+                    __('Accumulated Depreciation'), __('Ending Book Value'), __('Percentage') . ' %',
                 ]);
 
                 foreach ($schedule as $row) {
@@ -231,7 +231,7 @@ class DepreciationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تصدير الجدولة: '.$e->getMessage(),
+                'message' => __('An error occurred while exporting schedule').': '.$e->getMessage(),
             ], 500);
         }
     }
@@ -248,7 +248,7 @@ class DepreciationController extends Controller
             if (empty($assetIds)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'يرجى اختيار أصل واحد على الأقل',
+                    'message' => __('Please select at least one asset'),
                 ], 400);
             }
 
@@ -283,7 +283,7 @@ class DepreciationController extends Controller
                     $processedCount++;
 
                 } catch (\Exception $e) {
-                    $errors[] = "خطأ في الأصل {$assetId}: ".$e->getMessage();
+                    $errors[] = __('Error in asset :id', ['id' => $assetId]).': '.$e->getMessage();
                 }
             }
 
@@ -291,7 +291,7 @@ class DepreciationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "تم معالجة {$processedCount} أصل بنجاح",
+                'message' => __('Successfully processed :count assets', ['count' => $processedCount]),
                 'processed_count' => $processedCount,
                 'total_amount' => $totalAmount,
                 'errors' => $errors,
@@ -302,7 +302,7 @@ class DepreciationController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء المعالجة المجمعة: '.$e->getMessage(),
+                'message' => __('An error occurred during bulk processing').': '.$e->getMessage(),
             ], 500);
         }
     }

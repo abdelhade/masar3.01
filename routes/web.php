@@ -54,62 +54,46 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('my-settings/appearance', 'my-settings.appearance')->name('my-settings.appearance');
 
 
-    // ############################################################################################################
     // 📁 Projects
     Route::get('projects/statistics', [ProjectController::class, 'statistics'])->name('projects.statistics');
-    // Route::resource('projects', ProjectController::class)->names('projects')->only('index', 'show', 'create', 'edit');
+    Route::resource('projects', ProjectController::class)->names('projects');
 
     // 📁 Items & Units & Prices & Notes
-
     Route::resource('varibals', VaribalController::class)->names('varibals')->middleware('can:view varibals');
     Route::get('varibalValues/{varibalId?}', [VaribalValueController::class, 'index'])->name('varibalValues.index')->middleware('can:view varibalsValues');
-    // Items statistics routes (must be BEFORE resource route to avoid conflicts)
+    
+    // Items routes (statistics and management)
     Route::get('items/statistics', [ItemController::class, 'getStatistics'])->name('items.statistics');
     Route::get('items/statistics/refresh', [ItemController::class, 'refresh'])->name('items.statistics.refresh');
-    Route::get('items/print', [ItemController::class, 'printItems'])->name('items.print');
     Route::get('items/{id}/json', [ItemController::class, 'getItemJson'])->name('items.json');
     Route::resource('items', ItemController::class)->names('items')->only('index', 'show', 'create', 'edit');
-    Route::get('item-movement/print', [ItemController::class, 'printItemMovement'])->name('item-movement.print');
+    
+    // Units, Prices, Notes
     Route::resource('units', UnitController::class)->names('units')->only('index');
     Route::resource('prices', PriceController::class)->names('prices')->only('index');
     Route::resource('notes', NoteController::class)->names('notes')->only('index');
     Route::get('notes/{id}', [NoteController::class, 'noteDetails'])->name('notes.noteDetails');
-    // 📁 Item Movement
-    // 📁 Item Sales Report
-    Route::get('item-sales', [ItemController::class, 'itemSalesReport'])->name('item-sales');
-    // 📁 Item Purchase Report
-    Route::get('item-purchase', [ItemController::class, 'itemPurchaseReport'])->name('item-purchase');
 
-    // 📁 Account Movement
-
+    // 📁 Journals & Cost Centers
     Route::get('journals/statistics', [JournalController::class, 'statistics'])->name('journal.statistics');
-
     Route::resource('journals', JournalController::class)->names('journals');
-
     Route::resource('cost_centers', CostCenterController::class)->names('cost_centers');
 
-    // 📊 User Monitoring Routes (Must be BEFORE resource route to avoid conflicts)
+    // 📁 User Management & Monitoring
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/login-history', [App\Http\Controllers\UserMonitoringController::class, 'loginHistory'])->name('login-history');
         Route::get('/active-sessions', [App\Http\Controllers\UserMonitoringController::class, 'activeSessions'])->name('active-sessions');
         Route::post('/terminate-session/{sessionId}', [App\Http\Controllers\UserMonitoringController::class, 'terminateSession'])->name('terminate-session');
         Route::get('/activity-log', [App\Http\Controllers\UserMonitoringController::class, 'activityLog'])->name('activity-log');
     });
-
     Route::resource('users', UserController::class)->names('users');
 
-
-
-
-
-    // 📁 Transfer Route
-
+    // 📁 Discounts, Vouchers, Transfers
     Route::get('/discounts/general-statistics', [DiscountController::class, 'generalStatistics'])->name('discounts.general-statistics');
     Route::resource('discounts', DiscountController::class)->names('discounts');
 
     Route::get('/vouchers/statistics', [VoucherController::class, 'statistics'])->name('vouchers.statistics');
     Route::resource('vouchers', VoucherController::class)->names('vouchers');
-    Route::resource('projects', ProjectController::class)->names('projects');
 
     Route::get('transfers/statistics', [TransferController::class, 'statistics'])->name('transfers.statistics');
     Route::resource('transfers', TransferController::class)->names('transfers');
@@ -120,32 +104,30 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('multi-journals', MultiJournalController::class)->names('multi-journals');
 
+    // 📁 Production, Rentals, Inventory
     Route::resource('production-orders', ProductionOrderController::class)->names('production-orders');
     Route::resource('rentals', RentalController::class)->names('rentals');
     Route::resource('inventory-balance', InventoryStartBalanceController::class)->names('inventory-balance');
     Route::get('/create', [InventoryStartBalanceController::class, 'create'])->name('inventory-start-balance.create');
     Route::post('/store', [InventoryStartBalanceController::class, 'store'])->name('inventory-start-balance.store');
-    // Redirect GET requests to the create page
     Route::get('/update-opening-balance', function () {
         return redirect()->route('inventory-balance.index');
     });
     Route::post('/update-opening-balance', [InventoryStartBalanceController::class, 'updateOpeningBalance'])->name('inventory-start-balance.update-opening-balance');
 
+    // 📁 Home & POS
     Route::get('home', [HomeController::class, 'index'])->name('home.index');
 
     Route::resource('pos-shifts', PosShiftController::class)->names('pos-shifts');
-    Route::resource('pos-vouchers', PosVouchersController::class)->names('pos-vouchers');
-    Route::get('pos-vouchers/get-items-by-note-detail', [PosVouchersController::class, 'getItemsByNoteDetail'])->name('pos-vouchers.get-items-by-note-detail');
     Route::get('pos-shifts/{shift}/close', [PosShiftController::class, 'close'])->name('pos-shifts.close');
     Route::post('pos-shifts/{shift}/close', [PosShiftController::class, 'closeConfirm'])->name('pos-shifts.close.confirm');
+    
+    Route::resource('pos-vouchers', PosVouchersController::class)->names('pos-vouchers');
+    Route::get('pos-vouchers/get-items-by-note-detail', [PosVouchersController::class, 'getItemsByNoteDetail'])->name('pos-vouchers.get-items-by-note-detail');
 
-
-    Route::get('/items/statistics', [ItemController::class, 'getStatistics'])->name('items.statistics');
-    Route::get('/items/statistics/refresh', [ItemController::class, 'refresh'])->name('items.statistics.refresh');
-
+    // 📁 Module Routes
     require __DIR__ . '/modules/magicals.php';
     require __DIR__ . '/modules/cheques.php';
-    require __DIR__ . '/modules/reports.php';
 });
 
 require __DIR__ . '/auth.php';

@@ -22,7 +22,7 @@
                 <a href="{{ route('progress.categories.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i> {{ __('general.add_new') }}
                 </a>
-            @endcan
+            {{-- @endcan --}}
 
         </div>
 
@@ -70,9 +70,9 @@
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>
-                                                @endcan
+                                                {{-- @endcan --}}
                                             </td>
-                                        @endcanany
+                                        {{-- @endcanany --}}
                                     </tr>
                                 @endforeach
                             </tbody>

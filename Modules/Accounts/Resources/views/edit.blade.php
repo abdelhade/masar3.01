@@ -39,8 +39,8 @@
         $type = $parentTypeMap[$parent] ?? '0';
     @endphp
     @include('components.breadcrumb', [
-        'title' => __('تعديل حساب'),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('تعديل')]],
+        'title' => __('Edit Account'),
+        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Edit')]],
     ])
     <div class="content-wrapper">
         <section class="content-header">
@@ -58,14 +58,14 @@
                         <div class="card-footer mb-3">
                             <div class="d-flex justify-content-start">
                                 <button class="btn btn-success m-1" type="submit" id="updateBtn">
-                                    <i class="las la-save"></i> {{ __('تحديث') }}
+                                    <i class="las la-save"></i> {{ __('Update') }}
                                 </button>
                             </div>
                         </div>
                         
                         <div class="card card-info">
                             <div class="card-header">
-                                <h3>{{ __('تعديل حساب') }}</h3>
+                                <h3>{{ __('Edit Account') }}</h3>
                             </div>
                             <div class="card-body">
                                 @if (session('success'))
@@ -100,7 +100,7 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="code">{{ __('الكود') }} <span
+                                            <label for="code">{{ __('Code') }} <span
                                                     class="text-danger">*</span></label>
                                             <input required readonly class="form-control font-bold" type="text"
                                                 name="code" value="{{ $account->code }}" id="code">
@@ -108,7 +108,7 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="aname">{{ __('الاسم') }} <span
+                                            <label for="aname">{{ __('Name') }} <span
                                                     class="text-danger">*</span></label>
                                             <input required class="form-control font-bold frst" type="text"
                                                 name="aname" value="{{ $account->aname }}" id="aname">
@@ -117,13 +117,13 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="is_basic">{{ __('نوع الحساب') }} <span
+                                            <label for="is_basic">{{ __('Account Type') }} <span
                                                     class="text-danger">*</span></label>
                                             <select class="form-control font-bold" name="is_basic" id="is_basic">
                                                 <option value="1" {{ $account->is_basic == 1 ? 'selected' : '' }}>
-                                                    {{ __('اساسي') }}</option>
+                                                    {{ __('Basic') }}</option>
                                                 <option value="0" {{ $account->is_basic == 0 ? 'selected' : '' }}>
-                                                    {{ __('حساب عادي') }}</option>
+                                                    {{ __('Regular Account') }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -131,7 +131,7 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="parent_id">{{ __('يتبع ل') }} <span
+                                            <label for="parent_id">{{ __('Parent Account') }} <span
                                                     class="text-danger">*</span></label>
                                             <select class="form-control font-bold" name="parent_id" id="parent_id">
                                                 @foreach ($resacs as $rowacs)
@@ -145,7 +145,7 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="phone">{{ __('تليفون') }}</label>
+                                            <label for="phone">{{ __('Phone') }}</label>
                                             <input class="form-control font-bold" type="text" name="phone"
                                                 id="phone" value="{{ $account->phone }}">
                                         </div>
@@ -155,58 +155,58 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="zatca_name">{{ __('الاسم التجاري (ZATCA)') }}</label>
+                                                <label for="zatca_name">{{ __('Trade Name (ZATCA)') }}</label>
                                                 <input class="form-control" type="text" name="zatca_name" id="zatca_name"
                                                     value="{{ $account->zatca_name }}"
-                                                    placeholder="{{ __('الاسم التجاري') }}">
+                                                    placeholder="{{ __('Trade Name') }}">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="vat_number">{{ __('الرقم الضريبي (VAT)') }}</label>
+                                                <label for="vat_number">{{ __('VAT Number') }}</label>
                                                 <input class="form-control" type="text" name="vat_number"
                                                     id="vat_number" value="{{ $account->vat_number }}"
-                                                    placeholder="{{ __('الرقم الضريبي') }}">
+                                                    placeholder="{{ __('VAT Number') }}">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="national_id">{{ __('رقم الهوية') }}</label>
+                                                <label for="national_id">{{ __('National ID') }}</label>
                                                 <input class="form-control" type="text" name="national_id"
                                                     id="national_id" value="{{ $account->national_id }}"
-                                                    placeholder="{{ __('رقم الهوية') }}">
+                                                    placeholder="{{ __('National ID') }}">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="zatca_address">{{ __('العنوان الوطني (ZATCA)') }}</label>
+                                                <label for="zatca_address">{{ __('National Address (ZATCA)') }}</label>
                                                 <input class="form-control" type="text" name="zatca_address"
                                                     id="zatca_address" value="{{ $account->zatca_address }}"
-                                                    placeholder="{{ __('العنوان الوطني') }}">
+                                                    placeholder="{{ __('National Address') }}">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="company_type">{{ __('نوع العميل') }}</label>
+                                                <label for="company_type">{{ __('Client Type') }}</label>
                                                 <select class="form-control" name="company_type" id="company_type">
-                                                    <option value="">{{ __('اختر النوع') }}</option>
+                                                    <option value="">{{ __('Select Type') }}</option>
                                                     <option value="شركة"
                                                         {{ $account->company_type == 'شركة' ? 'selected' : '' }}>
-                                                        {{ __('شركة') }}</option>
+                                                        {{ __('Company') }}</option>
                                                     <option value="فردي"
                                                         {{ $account->company_type == 'فردي' ? 'selected' : '' }}>
-                                                        {{ __('فردي') }}</option>
+                                                        {{ __('Individual') }}</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="nationality">{{ __('الجنسية') }}</label>
+                                                <label for="nationality">{{ __('Nationality') }}</label>
                                                 <input class="form-control" type="text" name="nationality"
                                                     id="nationality" value="{{ $account->nationality }}"
-                                                    placeholder="{{ __('الجنسية') }}">
+                                                    placeholder="{{ __('Nationality') }}">
                                             </div>
                                         </div>
                                     </div>
@@ -217,36 +217,36 @@
                                                 <div class="form-group">
                                                     <label for="debit_limit">
                                                         <i class="fas fa-money-bill-wave"></i>
-                                                        {{ __('حد الائتمان المسموح') }}
+                                                        {{ __('Credit Limit Allowed') }}
                                                     </label>
                                                     <input class="form-control" type="number" step="0.001"
                                                         name="debit_limit" id="debit_limit"
                                                         value="{{ $account->debit_limit }}" placeholder="0.000">
                                                     <small
-                                                        class="text-muted">{{ __('اترك الحقل فارغاً لعدم وضع حد') }}</small>
+                                                        class="text-muted">{{ __('Leave empty for no limit') }}</small>
                                                 </div>
                                             </div>
                                         </div>
                                     @endif
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
-                                            <x-dynamic-search name="country_id" label="الدولة" column="title"
-                                                model="Modules\HR\Models\Country" placeholder="ابحث عن الدولة..."
+                                            <x-dynamic-search name="country_id" :label="__('Country')" column="title"
+                                                model="Modules\HR\Models\Country" :placeholder="__('Search for country...')"
                                                 :required="false" :class="'form-select'" :selected="$account->country_id" />
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <x-dynamic-search name="city_id" label="المدينة" column="title"
-                                                model="Modules\HR\Models\City" placeholder="ابحث عن المدينة..." :required="false"
+                                            <x-dynamic-search name="city_id" :label="__('City')" column="title"
+                                                model="Modules\HR\Models\City" :placeholder="__('Search for city...')" :required="false"
                                                 :class="'form-select'" :selected="$account->city_id" />
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <x-dynamic-search name="state_id" label="المنطقة" column="title"
-                                                model="Modules\HR\Models\State" placeholder="ابحث عن المنطقة..."
+                                            <x-dynamic-search name="state_id" :label="__('State')" column="title"
+                                                model="Modules\HR\Models\State" :placeholder="__('Search for state...')"
                                                 :required="false" :class="'form-select'" :selected="$account->state_id" />
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <x-dynamic-search name="town_id" label="الحي" column="title"
-                                                model="Modules\HR\Models\Town" placeholder="ابحث عن الحي..." :required="false"
+                                            <x-dynamic-search name="town_id" :label="__('District')" column="title"
+                                                model="Modules\HR\Models\Town" :placeholder="__('Search for district...')" :required="false"
                                                 :class="'form-select'" :selected="$account->town_id" />
                                         </div>
                                     </div>
@@ -273,21 +273,21 @@
                                 <div class="row mb-3">
                                     <div class="col-12">
                                         <small class="text-muted">
-                                            الإعدادات الحالية للحساب:
+                                            {{ __('Current Account Settings') }}:
                                             @if ($edit_is_stock)
-                                                <span class="badge bg-info me-1">مخزون</span>
+                                                <span class="badge bg-info me-1">{{ __('Inventory') }}</span>
                                             @endif
                                             @if ($edit_is_fund)
-                                                <span class="badge bg-success me-1">صندوق/بنك</span>
+                                                <span class="badge bg-success me-1">{{ __('Fund/Bank') }}</span>
                                             @endif
                                             @if ($edit_rentable)
-                                                <span class="badge bg-warning me-1">أصل قابل للتأجير</span>
+                                                <span class="badge bg-warning me-1">{{ __('Rentable Asset') }}</span>
                                             @endif
                                             @if ($edit_secret)
-                                                <span class="badge bg-secondary me-1">حساب سري</span>
+                                                <span class="badge bg-secondary me-1">{{ __('Secret Account') }}</span>
                                             @endif
                                             @if ($parent == 44 && $edit_employees_expensses)
-                                                <span class="badge bg-primary me-1">حساب رواتب</span>
+                                                <span class="badge bg-primary me-1">{{ __('Salary Account') }}</span>
                                             @endif
                                         </small>
                                     </div>
@@ -295,7 +295,7 @@
                                 @if ($parent == '12' || $parent == '1202')
                                     <div class="alert alert-warning"
                                         style="font-family: 'Cairo', sans-serif; direction: rtl;">
-                                        {{ __('سيتم اضافة حساب مجمع اهلاك و حساب مصروف اهلاك للأصل') }}
+                                        {{ __('Accumulated depreciation account and depreciation expense account will be added for the asset') }}
                                     </div>
                                     <input hidden type="text" readonly name="reserve" id="reserve" value="1">
                                 @endif
@@ -303,10 +303,10 @@
 
                                 @if (isMultiCurrencyEnabled())
                                     <div class="col-md-6 mb-3">
-                                        <label for="currency_id" class="form-label">{{ __('العملة') }}</label>
+                                        <label for="currency_id" class="form-label">{{ __('Currency') }}</label>
                                         <select name="currency_id" id="currency_id"
                                             class="form-select @error('currency_id') is-invalid @enderror">
-                                            <option value="">{{ __('العملة الافتراضية') }}</option>
+                                            <option value="">{{ __('Default Currency') }}</option>
                                             @foreach ($currencies as $currency)
                                                 <option value="{{ $currency->id }}" {{-- في حالة التعديل أو وجود خطأ validation --}}
                                                     @selected(old('currency_id', $account->currency_id ?? null) == $currency->id)>

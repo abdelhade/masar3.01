@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title">تعديل المورد: {{ $resource->name }}</h4>
+                <h4 class="page-title">{{ __('Edit Resource') }}: {{ $resource->name }}</h4>
             </div>
         </div>
     </div>
