@@ -186,7 +186,7 @@
                     </div>
 
                     <div class="col-6">
-                        <div class="card border-0 shadow-sm bg-dark bg-gradient text-white">
+                        <div class="card border-0 shadow-sm bg-gradient text-white">
                             <div class="card-body text-center">
                                 <i class="fas fa-clock fs-1 mb-2"></i>
                                 <h3 class="mb-0">{{ \App\Models\User::where('created_at', '>=', now()->subDays(7))->count() }}</h3>

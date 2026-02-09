@@ -6,11 +6,11 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => 'سجل تسجيل الدخول',
+        'title' => __('Login History'),
         'items' => [
-            ['label' => 'الرئيسية', 'url' => route('admin.dashboard')],
-            ['label' => 'المستخدمين', 'url' => route('users.index')],
-            ['label' => 'سجل تسجيل الدخول'],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Users'), 'url' => route('users.index')],
+            ['label' => __('Login History')],
         ],
     ])
 
@@ -20,33 +20,33 @@
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="fas fa-sign-in-alt me-2"></i>
-                        سجل تسجيل الدخول
+                        {{ __("Login History") }}
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <x-table-export-actions table-id="login-history-table" filename="login-history"
-                            excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                            :excel-label="__('Export Excel')" :pdf-label="__('Export PDF')" :print-label="__('Print')" />
 
                         <table id="login-history-table" class="table table-hover table-striped">
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th><i class="fas fa-user"></i> المستخدم</th>
-                                    <th><i class="fas fa-envelope"></i> البريد الإلكتروني</th>
-                                    <th><i class="fas fa-sign-in-alt"></i> وقت الدخول</th>
-                                    <th><i class="fas fa-sign-out-alt"></i> وقت الخروج</th>
-                                    <th><i class="fas fa-clock"></i> مدة الجلسة</th>
+                                    <th><i class="fas fa-user"></i> {{ __("User") }}</th>
+                                    <th><i class="fas fa-envelope"></i> {{ __("Email") }}</th>
+                                    <th><i class="fas fa-sign-in-alt"></i> {{ __("Login Time") }}</th>
+                                    <th><i class="fas fa-sign-out-alt"></i> {{ __("Logout Time") }}</th>
+                                    <th><i class="fas fa-clock"></i> {{ __("Session Duration") }}</th>
                                     <th><i class="fas fa-network-wired"></i> IP</th>
-                                    <th><i class="fas fa-desktop"></i> الجهاز</th>
-                                    <th><i class="fas fa-map-marker-alt"></i> الموقع</th>
+                                    <th><i class="fas fa-desktop"></i> {{ __("Device") }}</th>
+                                    <th><i class="fas fa-map-marker-alt"></i> {{ __("Location") }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($loginSessions as $session)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td class="fw-bold">{{ $session->user->name ?? 'غير معروف' }}</td>
+                                        <td class="fw-bold">{{ $session->user->name ?? __('Unknown') }}</td>
                                         <td>{{ $session->user->email ?? 'N/A' }}</td>
                                         <td>
                                             @if($session->login_at)
@@ -63,13 +63,13 @@
                                                     {{ $session->logout_at->format('Y-m-d H:i:s') }}
                                                 </span>
                                             @else
-                                                <span class="badge bg-success">نشط الآن</span>
+                                                <span class="badge bg-success">{{ __("Active Now") }}</span>
                                             @endif
                                         </td>
                                         <td>
                                             @if ($session->session_duration)
                                                 <span class="badge bg-primary">
-                                                    {{ $session->session_duration }} دقيقة
+                                                    {{ $session->session_duration }} {{ __("minutes") }}
                                                 </span>
                                             @else
                                                 <span class="text-muted">-</span>
@@ -96,7 +96,7 @@
                                         <td colspan="9" class="text-center py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="fas fa-info-circle me-2"></i>
-                                                لا توجد سجلات تسجيل دخول
+                                                {{ __("No login records") }}
                                             </div>
                                         </td>
                                     </tr>
