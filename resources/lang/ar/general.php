@@ -875,4 +875,5 @@ return [
     'copy_of' => 'نسخة من',
     'general_statistics' => 'إحصائيات عامة',
     'gantt_chart' => 'مخطط غانت',
+    'serial' => 'المسلسل',
 ];

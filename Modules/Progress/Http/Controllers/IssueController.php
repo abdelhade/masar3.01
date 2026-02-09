@@ -5,7 +5,7 @@ namespace Modules\Progress\Http\Controllers;
 use Modules\Progress\Models\Issue;
 use Modules\Progress\Models\IssueComment;
 use Modules\Progress\Models\IssueAttachment;
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use App\Models\User;
 use Modules\Progress\Models\Employee;
 use Modules\Progress\Http\Requests\StoreIssueRequest;
@@ -73,11 +73,11 @@ class IssueController extends Controller
         }
 
         if ($request->filled('deadline_from')) {
-            $query->where('deadline', '>=', $request->deadline_from);
+            $query->where('due_date', '>=', $request->deadline_from);
         }
 
         if ($request->filled('deadline_to')) {
-            $query->where('deadline', '<=', $request->deadline_to);
+            $query->where('due_date', '<=', $request->deadline_to);
         }
 
         if ($request->filled('search')) {
@@ -195,7 +195,7 @@ class IssueController extends Controller
             }
 
             return redirect()
-                ->route('issues.show', $issue)
+                ->route('progress.issues.show', $issue)
                 ->with('success', __('general.issue_created_successfully'));
 
         } catch (\Exception $e) {
@@ -254,7 +254,7 @@ class IssueController extends Controller
             }
 
             return redirect()
-                ->route('issues.show', $issue)
+                ->route('progress.issues.show', $issue)
                 ->with('success', __('general.issue_updated_successfully'));
 
         } catch (\Exception $e) {
@@ -286,7 +286,7 @@ class IssueController extends Controller
             $issue->delete();
 
             return redirect()
-                ->route('issues.index')
+                ->route('progress.issues.index')
                 ->with('success', __('general.issue_deleted_successfully'));
 
         } catch (\Exception $e) {
@@ -452,8 +452,8 @@ class IssueController extends Controller
                 'Urgent' => (clone $getBaseQuery())->byPriority('Urgent')->count(),
             ],
             'overdue' => (clone $getBaseQuery())
-                ->whereNotNull('deadline')
-                ->where('deadline', '<', now())
+                ->whereNotNull('due_date')
+                ->where('due_date', '<', now())
                 ->where('status', '!=', 'Closed')
                 ->count(),
             'by_project' => (clone $getBaseQuery())

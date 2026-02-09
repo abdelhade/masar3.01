@@ -313,9 +313,22 @@
     .is-valid {
         border-color: #198754 !important;
     }
+    
+    /* Debug: Make sure templates are visible */
+    #templates-list {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    .template-item {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
 </style>
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('js/template-predecessor-fix.js') }}"></script>
+    <script src="{{ asset('js/templates-filter.js') }}"></script>
 @endpush

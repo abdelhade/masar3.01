@@ -15,16 +15,20 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->enum('priority', ['low', 'medium', 'high', 'critical'])->default('medium');
-            $table->enum('status', ['open', 'in_progress', 'resolved', 'closed'])->default('open');
+            $table->string('priority')->default('medium');
+            $table->string('status')->default('open');
+            $table->foreignId('reporter_id')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('reported_by')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
             $table->date('due_date')->nullable();
+            $table->date('deadline')->nullable();
             $table->timestamps();
             $table->softDeletes();
             
             $table->index('project_id');
             $table->index('status');
+            $table->index('reporter_id');
+            $table->index('deadline');
         });
     }
 

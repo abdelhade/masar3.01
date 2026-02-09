@@ -11,9 +11,10 @@ class BackupController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view backup')->only(['index']);
-        $this->middleware('can:create backup')->only(['export', 'import']);
-        $this->middleware('can:delete backup')->only(['destroy']);
+        $this->middleware('can:view progress-backup')->only(['index']);
+        $this->middleware('can:create progress-backup')->only(['export', 'import']);
+        $this->middleware('can:download progress-backup')->only(['download']);
+        $this->middleware('can:delete progress-backup')->only(['destroy']);
     }
 
     /**
@@ -131,7 +132,7 @@ class BackupController extends Controller
             
             DB::commit();
             
-            return redirect()->route('backup.index')
+            return redirect()->route('progress.backup.index')
                 ->with('success', 'تم استيراد النسخة الاحتياطية بنجاح');
                 
         } catch (\Exception $e) {

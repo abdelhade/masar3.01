@@ -11,7 +11,7 @@
 @section('content')
 <div class=" m-3  d-flex justify-content-between align-items-center">
     <h5 class="mb-0">{{ __('general.clients_list') }}</h5>
-    @can('users-create')
+    @can('create progress-clients')
     <a href="{{ route('progress.clients.create') }}" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i> {{ __('general.new_client') }}
     </a>
@@ -30,7 +30,7 @@
                         <th>{{ __('general.contact_person') }}</th>
                         <th>{{ __('general.phone') }}</th>
                         <th>{{ __('general.email') }}</th>
-                        @canany(['users-edit', 'users-delete'])
+                        @canany(['edit progress-clients', 'delete progress-clients'])
                         <th>{{ __('general.actions') }}</th>
                         @endcanany
                     </tr>
@@ -43,14 +43,14 @@
                         <td>{{ $client->contact_person }}</td>
                         <td>{{ $client->phone }}</td>
                         <td>{{ $client->email }}</td>
-                        @canany(['users-edit', 'users-delete'])
+                        @canany(['edit progress-clients', 'delete progress-clients'])
                         <td>
-                            @can('users-edit')
+                            @can('edit progress-clients')
                             <a href="{{ route('progress.clients.edit', $client) }}" class="btn btn-sm btn-success">
                                 <i class="fas fa-edit"></i>
                             </a>
                             @endcan
-                            @can('users-delete')
+                            @can('delete progress-clients')
                             <form action="{{ route('progress.clients.destroy', $client) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')

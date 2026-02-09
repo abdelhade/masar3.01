@@ -64,4 +64,17 @@ class StoreIssueRequest extends FormRequest
             'attachments.*.mimes' => __('general.invalid_file_type'),
         ];
     }
+
+    /**
+     * Prepare the data for validation.
+     * Map 'deadline' input to 'due_date' for database compatibility.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('deadline')) {
+            $this->merge([
+                'due_date' => $this->input('deadline'),
+            ]);
+        }
+    }
 }

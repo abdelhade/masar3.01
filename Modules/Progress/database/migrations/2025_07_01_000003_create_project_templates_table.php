@@ -15,12 +15,16 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->foreignId('project_type_id')->nullable()->constrained('project_types')->onDelete('set null');
+            $table->enum('status', ['active', 'inactive', 'draft'])->default('active');
+            $table->string('working_zone')->nullable();
             $table->tinyInteger('working_days')->default(5);
             $table->tinyInteger('daily_work_hours')->default(8);
             $table->string('weekly_holidays')->nullable();
             $table->json('settings')->nullable();
             $table->timestamps();
             $table->softDeletes();
+            
+            $table->index('status');
         });
     }
 

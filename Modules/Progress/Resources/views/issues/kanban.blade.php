@@ -204,10 +204,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         </small>
                         @endif
                     </div>
-                    @if($issue->deadline)
+                    @if($issue->due_date)
                     <div class="mt-2">
                         <small class="text-muted">
-                            <i class="fas fa-calendar me-1"></i>{{ $issue->deadline->format('Y-m-d') }}
+                            <i class="fas fa-calendar me-1"></i>{{ $issue->due_date->format('Y-m-d') }}
                         </small>
                     </div>
                     @endif

@@ -74,8 +74,8 @@
             <div class="col-md-3">
                 <strong><i class="fas fa-calendar me-2"></i>{{ __('general.deadline') }}:</strong>
                 <p class="mb-0">
-                    @if($issue->deadline)
-                        {{ $issue->deadline->format('Y-m-d') }}
+                    @if($issue->due_date)
+                        {{ $issue->due_date->format('Y-m-d') }}
                     @else
                         <span class="text-muted">-</span>
                     @endif

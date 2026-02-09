@@ -30,7 +30,7 @@
                             <th>{{ __('employees.position') }}</th>
                             <th>{{ __('employees.phone') }}</th>
                             <th>{{ __('employees.email') }}</th>
-                            @canany(['employees-edit', 'employees-permissions', 'employees-delete'])
+                            @canany(['edit progress-employees', 'delete progress-employees'])
                                 <th>{{ __('employees.actions') }}</th>
                             @endcanany
                         </tr>
@@ -43,7 +43,7 @@
                                 <td>{{ $employee->position }}</td>
                                 <td>{{ $employee->phone }}</td>
                                 <td>{{ $employee->email }}</td>
-                                @canany(['employees-edit', 'employees-permissions', 'employees-delete'])
+                                @canany(['edit progress-employees', 'delete progress-employees'])
                                     <td>
                                         @can('edit progress-employees')
                                             <a href="{{ route('progress.employees.edit', $employee) }}" style="10px"
@@ -51,7 +51,7 @@
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                         @endcan
-                                        @can('employees-permissions')
+                                        @can('edit progress-employees')
                                             @if ($employee->user)
                                                 <a href="{{ route('progress.employees.permissions', $employee->user->id) }}"
                                                     class="btn btn-sm btn-dark">

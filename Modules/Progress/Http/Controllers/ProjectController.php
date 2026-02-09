@@ -2,7 +2,7 @@
 
 namespace Modules\Progress\Http\Controllers;
 
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Modules\Progress\Models\Client;
 use Modules\Progress\Models\WorkItem;
 use Modules\Progress\Models\Employee;
@@ -56,11 +56,17 @@ class ProjectController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('admin') || $user->hasRole('manager')) {
-            // الأدمن والمدير يشوفوا كل المشاريع النشطة
             $projects = $this->projectRepository->getAllActive();
+            \Log::info('Projects Index - Admin/Manager', [
+                'user_id' => $user->id,
+                'projects_count' => $projects->count()
+            ]);
         } else {
-            // باقي المستخدمين يشوفوا المشاريع المرتبطة بيهم (user_id يستخدم كـ employee_id)
             $projects = $this->projectRepository->getByUserId($user->id, false);
+            \Log::info('Projects Index - Regular User', [
+                'user_id' => $user->id,
+                'projects_count' => $projects->count()
+            ]);
         }
 
         return view('progress::projects.index', compact('projects'));
@@ -92,7 +98,29 @@ class ProjectController extends Controller
         $clients = Client::orderBy('cname')->get();
         $workItems = WorkItem::with('category')->orderBy('name')->get();
         $employees = $this->employeeRepository->getAll();
-        $templates = ProjectTemplate::withCount('items')->orderBy('name')->get();
+        
+        // Get templates and drafts separately
+        $templates = ProjectTemplate::withCount('items')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get()
+            ->map(function($template) {
+                $template->type = 'template';
+                return $template;
+            });
+            
+        $drafts = ProjectTemplate::withCount('items')
+            ->where('status', 'draft')
+            ->orderBy('updated_at', 'desc')
+            ->get()
+            ->map(function($draft) {
+                $draft->type = 'draft';
+                return $draft;
+            });
+        
+        // Merge templates and drafts
+        $templates = $templates->merge($drafts);
+        
         $projectTypes = ProjectType::orderBy('name')->get();
         $categories = WorkItemCategory::orderBy('name')->get();
         
@@ -119,18 +147,28 @@ class ProjectController extends Controller
     {
         try {
             $validated = $request->validated();
-            
-            // ✅ إضافة save_as_draft إلى البيانات المعتمدة
+            $validated['is_progress'] = 1;
+            $validated['created_by'] = auth()->id();
             $validated['save_as_draft'] = $request->input('save_as_draft');
+            $validated['created_by'] = auth()->id();
+            \Log::info('===== PROJECT STORE - VALIDATED DATA =====', [
+                'is_progress' => 1,
+                'created_by' => auth()->id(),
+            ]);
             
             $project = $this->projectService->createProject($validated);
+            \Log::info('===== PROJECT CREATED =====', [
+                'project_id' => $project->id,
+                'is_progress' => 1,
+                'created_by' => auth()->id(),
+            ]);
 
             $message = !empty($validated['save_as_draft'])
                 ? __('general.draft_saved_successfully')
                 : __('general.project_created_successfully');
 
             return redirect()
-                ->route('progress.projects.index')
+                ->route('progress.projects.show', $project)
                 ->with('success', $message);
 
         } catch (\Exception $e) {
@@ -140,9 +178,6 @@ class ProjectController extends Controller
         }
     }
 
-    /**
-     * عرض تفاصيل المشروع
-     */
     public function show(Project $project)
     {
         $project = $this->projectRepository->getProjectWithProgress($project);
@@ -1640,7 +1675,29 @@ class ProjectController extends Controller
         $clients = Client::orderBy('cname')->get();
         $workItems = WorkItem::with('category')->orderBy('name')->get();
         $employees = $this->employeeRepository->getAll();
-        $templates = ProjectTemplate::withCount('items')->orderBy('name')->get();
+        
+        // Get templates and drafts separately
+        $templates = ProjectTemplate::withCount('items')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get()
+            ->map(function($template) {
+                $template->type = 'template';
+                return $template;
+            });
+            
+        $drafts = ProjectTemplate::withCount('items')
+            ->where('status', 'draft')
+            ->orderBy('updated_at', 'desc')
+            ->get()
+            ->map(function($draft) {
+                $draft->type = 'draft';
+                return $draft;
+            });
+        
+        // Merge templates and drafts
+        $templates = $templates->merge($drafts);
+        
         $projectTypes = ProjectType::orderBy('name')->get();
         $categories = WorkItemCategory::with('workItems')->orderBy('name')->get();
         
@@ -1683,7 +1740,7 @@ class ProjectController extends Controller
     {
         try {
             $validated = $request->validated();
-            
+       
             // 🔍 Debug: Log received items with IDs
             \Log::info('===== PROJECT UPDATE REQUEST =====');
             \Log::info('Project ID: ' . $project->id);
@@ -1718,7 +1775,7 @@ class ProjectController extends Controller
             }
 
             return redirect()
-                ->route('projects.show', $project)
+                ->route('progress.projects.show', $project)
                 ->with('success', __('general.project_updated_successfully'));
 
         } catch (\Exception $e) {
@@ -1741,7 +1798,7 @@ class ProjectController extends Controller
             $this->projectService->deleteProject($project);
 
             return redirect()
-                ->route('projects.index')
+                ->route('progress.projects.index')
                 ->with('success', __('general.project_deleted_successfully'));
 
         } catch (\Exception $e) {
@@ -1762,7 +1819,7 @@ class ProjectController extends Controller
         }
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('progress.projects.show', $project)
             ->with('success', __('general.project_published_successfully'));
     }
 
@@ -1783,12 +1840,12 @@ class ProjectController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => __('general.project_copied_successfully'),
-                    'redirect_url' => route('projects.edit', $newProject)
+                    'redirect_url' => route('progress.projects.edit', $newProject)
                 ]);
             }
 
             return redirect()
-                ->route('projects.edit', $newProject)
+                ->route('progress.projects.edit', $newProject)
                 ->with('success', __('general.project_copied_successfully'));
 
         } catch (\Exception $e) {
@@ -2507,4 +2564,45 @@ class ProjectController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Get project items data for loading into forms (used by drafts)
+     */
+    public function getItemsData(Project $project)
+    {
+        $items = $project->items()
+            ->with('workItem.category')
+            ->orderBy('item_order')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'work_item_id' => $item->work_item_id,
+                    'work_item' => $item->workItem ? [
+                        'id' => $item->workItem->id,
+                        'name' => $item->workItem->name,
+                        'unit' => $item->workItem->unit,
+                        'category' => $item->workItem->category ? $item->workItem->category->name : null,
+                    ] : null,
+                    'total_quantity' => $item->total_quantity,
+                    'estimated_daily_qty' => $item->estimated_daily_qty,
+                    'duration' => $item->duration,
+                    'predecessor' => $item->predecessor,
+                    'dependency_type' => $item->dependency_type,
+                    'lag' => $item->lag,
+                    'notes' => $item->notes,
+                    'subproject_name' => $item->subproject_name,
+                    'start_date' => $item->start_date,
+                    'end_date' => $item->end_date,
+                    'is_measurable' => $item->is_measurable ?? true,
+                    'item_order' => $item->item_order,
+                ];
+            });
+
+        return response()->json([
+            'project_name' => $project->name,
+            'items' => $items
+        ]);
+    }
 }
+

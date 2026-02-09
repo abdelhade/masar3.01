@@ -3,7 +3,7 @@
 namespace Modules\Progress\Policies;
 
 use App\Models\User;
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ProjectPolicy

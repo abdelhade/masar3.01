@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::create('daily_progress', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
             $table->foreignId('project_item_id')->constrained('project_items')->onDelete('cascade');
             $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
             $table->date('progress_date');
@@ -21,9 +22,11 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             
+            $table->index('project_id');
             $table->index('project_item_id');
             $table->index('employee_id');
             $table->index('progress_date');
+            $table->index(['project_id', 'progress_date']);
             $table->index(['project_item_id', 'progress_date']);
             $table->index(['employee_id', 'progress_date']);
         });

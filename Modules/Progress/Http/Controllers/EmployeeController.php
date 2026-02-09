@@ -93,7 +93,7 @@ public function store(Request $request)
         ]);
     }
 
-    return redirect()->route('employees.index')
+    return redirect()->route('progress.employees.index')
         ->with('success', 'User added successfully');
 }
     public function show(Employee $employee)
@@ -139,7 +139,7 @@ public function update(Request $request, Employee $employee)
         $employee->user->update($userData);
     }
 
-    return redirect()->route('employees.index')
+    return redirect()->route('progress.employees.index')
         ->with('success', 'تم تحديث بيانات الموظف بنجاح');
 }
 
@@ -153,13 +153,13 @@ public function destroy(Employee $employee)
         $employee->user()->forceDelete();
     }
 
-    return redirect()->route('employees.index')
+    return redirect()->route('progress.employees.index')
         ->with('success', 'user deleted successfully');
 }
 
 
 
-    public function editpermissions($id)
+    public function editPermissions($id)
 {
     $employee = User::findOrFail($id);
 
@@ -177,7 +177,23 @@ public function destroy(Employee $employee)
 public function updatePermissions(Request $request, $id)
 {
     $employee = User::findOrFail($id);
+    
+    // Log للتأكد من البيانات المرسلة
+    Log::info('Updating permissions for user: ' . $employee->name, [
+        'user_id' => $id,
+        'permissions_received' => $request->permissions ?? [],
+        'permissions_count' => count($request->permissions ?? [])
+    ]);
+    
+    // Sync permissions
     $employee->syncPermissions($request->permissions ?? []);
-    return redirect()->route('employees.index')->with('success', 'تم تحديث الصلاحيات بنجاح');
+    
+    // Log بعد التحديث
+    Log::info('Permissions updated successfully', [
+        'user_id' => $id,
+        'current_permissions' => $employee->permissions->pluck('name')->toArray()
+    ]);
+    
+    return redirect()->route('progress.employees.index')->with('success', 'تم تحديث الصلاحيات بنجاح');
 }
 }

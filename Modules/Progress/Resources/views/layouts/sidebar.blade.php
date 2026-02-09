@@ -136,7 +136,7 @@
                     </a>
                 </li>
             @endcan
-            @can('view progress-recyclebin')
+            @can('view progress-recycle-bin')
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('progress.recycle-bin.*') ? 'active' : '' }}"
                         href="{{ route('progress.recycle-bin.index') }}" data-title="{{ __('general.recycle_bin_title') }}">

@@ -25,6 +25,15 @@ class Project extends Model
         'daily_work_hours',
         'weekly_holidays',
         'is_draft',
+        'is_progress',
+        'created_by',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'is_progress' => 'boolean',
+        'is_draft' => 'boolean',
     ];
 
     public function employees()

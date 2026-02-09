@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Modules\Progress\Models\Client;
 use Modules\Progress\Models\Employee;
-use Modules\Progress\Models\Project;
+use Modules\Progress\Models\ProjectProgress as Project;
 use Modules\Progress\Observers\ClientObserver;
 use Modules\Progress\Observers\EmployeeObserver;
 use Modules\Progress\Observers\ProjectObserver;
