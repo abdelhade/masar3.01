@@ -1,7 +1,7 @@
 @extends('admin.dashboard')
 
 @section('sidebar')
-    @if (in_array($invoice->pro_type, [10, 12, 14, 16, 22, 26]))
+    @if (in_array($invoice->pro_type, [10, 12, 14, 16, 22]))
         @include('components.sidebar.sales-invoices')
     @elseif (in_array($invoice->pro_type, [11, 13, 15, 17, 24, 25]))
         @include('components.sidebar.purchases-invoices')
