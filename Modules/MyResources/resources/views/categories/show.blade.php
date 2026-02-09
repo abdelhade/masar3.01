@@ -10,16 +10,16 @@
         <div class="col-12">
             <div class="page-title-box no-print">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="page-title">عرض التصنيف: {{ $category->name_ar ?? $category->name }}</h4>
+                    <h4 class="page-title">{{ __("Category Details") }}: {{ $category->name_ar ?? $category->name }}</h4>
                     <div class="d-flex gap-2">
                         <a href="{{ route('myresources.categories.edit', $category) }}" class="btn btn-primary">
-                            <i class="fas fa-edit"></i> تعديل
+                            <i class="fas fa-edit"></i> {{ __("Edit") }}
                         </a>
                         <button onclick="window.print()" class="btn btn-info">
-                            <i class="fas fa-print"></i> طباعة
+                            <i class="fas fa-print"></i> {{ __("Print") }}
                         </button>
                         <a href="{{ route('myresources.categories.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-right"></i> رجوع
+                            <i class="fas fa-arrow-right"></i> {{ __("Back") }}
                         </a>
                     </div>
                 </div>
@@ -31,65 +31,65 @@
         <div class="col-12">
             <div class="card printable-content">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-tag"></i> معلومات التصنيف</h5>
+                    <h5 class="mb-0"><i class="fas fa-tag"></i> {{ __("Category Information") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">الاسم:</label>
+                            <label class="form-label fw-bold">{{ __("Name") }}:</label>
                             <div class="form-control-static">{{ $category->name }}</div>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">الاسم العربي:</label>
-                            <div class="form-control-static">{{ $category->name_ar ?? 'غير محدد' }}</div>
+                            <label class="form-label fw-bold">{{ __("Arabic Name") }}:</label>
+                            <div class="form-control-static">{{ $category->name_ar ?? __("Unspecified") }}</div>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-12 mb-3">
-                            <label class="form-label fw-bold">الوصف:</label>
-                            <div class="form-control-static">{{ $category->description ?? 'لا يوجد وصف' }}</div>
+                            <label class="form-label fw-bold">{{ __("Description") }}:</label>
+                            <div class="form-control-static">{{ $category->description ?? __("No description") }}</div>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold">الأيقونة:</label>
+                            <label class="form-label fw-bold">{{ __("Icon") }}:</label>
                             <div class="form-control-static">
                                 @if($category->icon)
                                     <i class="{{ $category->icon }}"></i> {{ $category->icon }}
                                 @else
-                                    غير محدد
+                                    {{ __("Unspecified") }}
                                 @endif
                             </div>
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold">اللون:</label>
+                            <label class="form-label fw-bold">{{ __("Color") }}:</label>
                             <div class="form-control-static">
                                 @if($category->color)
                                     <span class="badge bg-{{ $category->color }}">{{ $category->color }}</span>
                                 @else
-                                    غير محدد
+                                    {{ __("Unspecified") }}
                                 @endif
                             </div>
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold">ترتيب العرض:</label>
+                            <label class="form-label fw-bold">{{ __("Sort Order") }}:</label>
                             <div class="form-control-static">{{ $category->sort_order ?? 0 }}</div>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-12 mb-3">
-                            <label class="form-label fw-bold">الحالة:</label>
+                            <label class="form-label fw-bold">{{ __("Status") }}:</label>
                             <div class="form-control-static">
                                 @if($category->is_active)
-                                    <span class="badge bg-success">نشط</span>
+                                    <span class="badge bg-success">{{ __("Active") }}</span>
                                 @else
-                                    <span class="badge bg-danger">غير نشط</span>
+                                    <span class="badge bg-danger">{{ __("Inactive") }}</span>
                                 @endif
                             </div>
                         </div>

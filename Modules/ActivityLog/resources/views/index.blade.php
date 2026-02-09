@@ -6,10 +6,10 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => 'سجل النشاطات',
+        'title' => __('Activity Log'),
         'items' => [
-            ['label' => 'الرئيسية', 'url' => route('admin.dashboard')],
-            ['label' => 'سجل النشاطات'],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Activity Log')],
         ],
     ])
 
@@ -21,9 +21,9 @@
                     <form action="{{ route('activitylog.index') }}" method="GET">
                         <div class="row g-3">
                             <div class="col-md-3">
-                                <label class="form-label">المستخدم</label>
+                                <label class="form-label">{{ __('User') }}</label>
                                 <select name="user_id" class="form-select">
-                                    <option value="">الكل</option>
+                                    <option value="">{{ __('All') }}</option>
                                     @foreach ($users as $user)
                                         <option value="{{ $user->id }}"
                                             {{ request('user_id') == $user->id ? 'selected' : '' }}>
@@ -33,9 +33,9 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">نوع النشاط</label>
+                                <label class="form-label">{{ __('Activity Type') }}</label>
                                 <select name="event" class="form-select">
-                                    <option value="">الكل</option>
+                                    <option value="">{{ __('All') }}</option>
                                     @foreach ($events as $event)
                                         <option value="{{ $event }}"
                                             {{ request('event') == $event ? 'selected' : '' }}>
@@ -45,9 +45,9 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">نوع الكائن</label>
+                                <label class="form-label">{{ __('Object Type') }}</label>
                                 <select name="subject_type" class="form-select">
-                                    <option value="">الكل</option>
+                                    <option value="">{{ __('All') }}</option>
                                     @foreach ($subjectTypes as $type)
                                         <option value="{{ $type }}"
                                             {{ request('subject_type') == $type ? 'selected' : '' }}>
@@ -57,18 +57,18 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">من تاريخ</label>
+                                <label class="form-label">{{ __('From Date') }}</label>
                                 <input type="date" name="date_from" class="form-control"
                                     value="{{ request('date_from') }}">
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">إلى تاريخ</label>
+                                <label class="form-label">{{ __('To Date') }}</label>
                                 <input type="date" name="date_to" class="form-control"
                                     value="{{ request('date_to') }}">
                             </div>
                             <div class="col-md-1 d-flex align-items-end gap-2">
                                 <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-search"></i> بحث
+                                    <i class="fas fa-search"></i> {{ __('Search') }}
                                 </button>
                                 <a href="{{ route('activitylog.index') }}" class="btn btn-secondary">
                                     <i class="fas fa-redo"></i>
@@ -83,7 +83,7 @@
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="fas fa-list-alt me-2"></i>
-                        سجل نشاطات المستخدمين
+                        {{ __('User Activity Log') }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -92,12 +92,12 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>المستخدم</th>
-                                    <th>الوصف</th>
-                                    <th>نوع النشاط</th>
-                                    <th>الكائن</th>
-                                    <th>التاريخ والوقت</th>
-                                    <th>العمليات</th>
+                                    <th>{{ __('User') }}</th>
+                                    <th>{{ __('Description') }}</th>
+                                    <th>{{ __('Activity Type') }}</th>
+                                    <th>{{ __('Object') }}</th>
+                                    <th>{{ __('Date & Time') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -111,7 +111,7 @@
                                                 <br>
                                                 <small class="text-muted">{{ $activity->causer->email }}</small>
                                             @else
-                                                <span class="text-muted">نظام</span>
+                                                <span class="text-muted">{{ __('System') }}</span>
                                             @endif
                                         </td>
                                         <td>
@@ -148,7 +148,7 @@
                                         </td>
                                         <td>
                                             <a href="{{ route('activitylog.show', $activity->id) }}"
-                                                class="btn btn-sm btn-info" title="عرض التفاصيل">
+                                                class="btn btn-sm btn-info" title="{{ __('View Details') }}">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </td>
@@ -158,7 +158,7 @@
                                         <td colspan="7" class="text-center py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="fas fa-info-circle me-2"></i>
-                                                لا توجد نشاطات
+                                                {{ __('No activities') }}
                                             </div>
                                         </td>
                                     </tr>

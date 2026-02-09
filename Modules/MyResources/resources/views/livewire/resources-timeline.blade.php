@@ -8,7 +8,7 @@
         </div>
         <div class="col-md-3">
             <select wire:model.live="categoryFilter" class="form-control">
-                <option value="">كل التصنيفات</option>
+                <option value="">{{ __("All Categories") }}</option>
                 @foreach($categories as $category)
                     <option value="{{ $category->id }}">{{ $category->name_ar }}</option>
                 @endforeach
@@ -17,18 +17,18 @@
     </div>
 
     <div class="alert alert-info">
-        عرض الجدولة الزمنية للموارد (Timeline View) - يمكن تطويره لاحقاً باستخدام مكتبات JavaScript
+        {{ __("Timeline View for Resources - Can be developed later using JavaScript libraries") }}
     </div>
 
     <div class="table-responsive">
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>المورد</th>
-                    <th>المشروع</th>
-                    <th>تاريخ البداية</th>
-                    <th>تاريخ النهاية</th>
-                    <th>الحالة</th>
+                    <th>{{ __("Resource") }}</th>
+                    <th>{{ __("Project") }}</th>
+                    <th>{{ __("Start Date") }}</th>
+                    <th>{{ __("End Date") }}</th>
+                    <th>{{ __("Status") }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,4 +49,3 @@
         </table>
     </div>
 </div>
-
