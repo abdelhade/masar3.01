@@ -57,19 +57,21 @@ class ProjectController extends Controller
 
         if ($user->hasRole('admin') || $user->hasRole('manager')) {
             $projects = $this->projectRepository->getAllActive();
+            $draftsCount = $this->projectRepository->getAllDrafts()->count();
             \Log::info('Projects Index - Admin/Manager', [
                 'user_id' => $user->id,
                 'projects_count' => $projects->count()
             ]);
         } else {
             $projects = $this->projectRepository->getByUserId($user->id, false);
+            $draftsCount = $this->projectRepository->getByUserId($user->id, true)->count();
             \Log::info('Projects Index - Regular User', [
                 'user_id' => $user->id,
                 'projects_count' => $projects->count()
             ]);
         }
 
-        return view('progress::projects.index', compact('projects'));
+        return view('progress::projects.index', compact('projects', 'draftsCount'));
     }
 
     /**

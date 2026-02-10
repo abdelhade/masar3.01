@@ -313,7 +313,13 @@
             </h2>
             <p class="text-muted mb-0">
                 <i class="fas fa-info-circle me-1"></i>
-                تتبع وإدارة التقدم اليومي للمشاريع
+                @if(request()->boolean('view_all'))
+                    عرض جميع السجلات
+                @elseif(request()->filled('from_date') || request()->filled('to_date'))
+                    عرض السجلات المفلترة
+                @else
+                    عرض سجلات آخر 30 يوم (استخدم "عرض الكل" لرؤية جميع السجلات)
+                @endif
             </p>
         </div>
         <a href="{{ route('progress.daily-progress.create') }}" class="btn btn-primary btn-lg">

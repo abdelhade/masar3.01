@@ -442,7 +442,7 @@
             // تحميل المشاريع الفرعية
             if (projectId) {
                 // تحميل المشاريع الفرعية
-                $.get('/api/projects/' + projectId + '/subprojects', function(response) {
+                $.get('/progress/api/projects/' + projectId + '/subprojects', function(response) {
                     $('#subproject_id').empty().append('<option value="">جميع المشاريع الفرعية</option>');
                     
                     // Handle both response formats: direct array or {success: true, subprojects: [...]}
@@ -464,7 +464,7 @@
                 });
                 
                 // تحميل البنود
-                $.get('/api/project-items/' + projectId, function(data) {
+                $.get('/progress/api/project-items/' + projectId, function(data) {
                     allItemsData = data; // Store data
                     $('#items_table_body').empty();
                     if (data.length > 0) {

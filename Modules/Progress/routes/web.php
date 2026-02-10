@@ -34,9 +34,7 @@ Route::middleware(['auth'])->prefix('progress')->name('progress.')->group(functi
     })->name('test');
     
     // Dashboard
-    Route::get('/dashboard', function() {
-        return view('progress::dashboard-simple');
-    })->name('dashboard');
+    Route::get('/dashboard', [ProjectController::class, 'index'])->name('dashboard');
     
     Route::get('/dashboard-full', [DashboardController::class, 'index'])->name('dashboard.full');
     

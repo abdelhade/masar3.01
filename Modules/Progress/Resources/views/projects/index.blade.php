@@ -430,6 +430,20 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                             @endcan
+                            @can('projects-gantt')
+                                <a href="{{ route('progress.projects.gantt', $project->id) }}"
+                                    class="btn btn-sm btn-outline-warning"
+                                    title="{{ __('general.gantt_chart') }}"
+                                    onclick="event.stopPropagation();"
+                                    style="border-radius: 10px;
+                                           padding: 0.4rem 0.8rem;
+                                           transition: all 0.3s ease;
+                                           border-width: 2px;"
+                                    onmouseover="this.style.transform='translateY(-2px) scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(255,193,7,0.2)'"
+                                    onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none'">
+                                    <i class="fas fa-chart-gantt"></i>
+                                </a>
+                            @endcan
                             <button type="button"
                                 class="btn btn-sm btn-outline-info copy-project-btn"
                                 title="{{ __('general.copy_project') }}"
