@@ -1,11 +1,11 @@
 <div>
     <div class="row mb-3">
         <div class="col-md-6">
-            <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="بحث...">
+            <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="{{ __('Search...') }}">
         </div>
         <div class="col-md-6">
             <select wire:model.live="categoryFilter" class="form-control">
-                <option value="">كل التصنيفات</option>
+                <option value="">{{ __("All Categories") }}</option>
                 @foreach($categories as $category)
                     <option value="{{ $category->id }}">{{ $category->name_ar }}</option>
                 @endforeach
@@ -40,4 +40,3 @@
         @endforeach
     </div>
 </div>
-

@@ -223,7 +223,6 @@ class SaveInvoiceService
                 'fat_net' => $component->total_after_additional * $currencyRate,
                 'price_list' => $component->selectedPriceType,
                 'accural_date' => $component->accural_date,
-                'expected_delivery_date' => in_array($component->type ?? 0, [15, 17]) ? ($component->expected_delivery_date ?? null) : null,
                 'pro_serial' => $component->serial_number,
                 'fat_disc_per' => $component->discount_percentage,
                 'fat_disc' => $component->discount_value,

@@ -21,9 +21,9 @@ class ActivityLogServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->registerTranslations();
         $this->registerCommands();
         $this->registerCommandSchedules();
-        $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
@@ -68,8 +68,8 @@ class ActivityLogServiceProvider extends ServiceProvider
             $this->loadTranslationsFrom($langPath, $this->nameLower);
             $this->loadJsonTranslationsFrom($langPath);
         } else {
-            $this->loadTranslationsFrom(module_path($this->name, 'lang'), $this->nameLower);
-            $this->loadJsonTranslationsFrom(module_path($this->name, 'lang'));
+            $this->loadTranslationsFrom(module_path($this->name, 'resources/lang'), $this->nameLower);
+            $this->loadJsonTranslationsFrom(module_path($this->name, 'resources/lang'));
         }
     }
 
