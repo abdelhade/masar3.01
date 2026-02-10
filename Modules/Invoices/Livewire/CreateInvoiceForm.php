@@ -1860,6 +1860,10 @@ class CreateInvoiceForm extends Component
                 'unit_id' => 1,
             ]);
 
+            // ✅ تحديث version الـ cache عشان الصنف الجديد يظهر في البحث
+            $currentVersion = Cache::get('items_cache_version', 1);
+            Cache::put('items_cache_version', $currentVersion + 1, now()->addDays(30));
+
             // إعادة تحميل الصنف مع الـ relationships
             $newItem = Item::with([
                 'units' => fn($q) => $q->orderBy('item_units.u_val', 'asc'),
