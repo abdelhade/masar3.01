@@ -69,9 +69,9 @@ class DailyProgressController extends Controller
         } elseif ($request->filled('progress_date')) {
             // دعم الحقل القديم للتوافق
             $query->whereDate('progress_date', $request->progress_date);
-        } elseif (!$request->boolean('view_all')) {
-            // إذا لم يتم تحديد أي تاريخ ولم يكن view_all، عرض اليوم فقط
-            $query->whereDate('progress_date', today());
+        } elseif (!$request->boolean('view_all') && !$request->has('show_all')) {
+            // إذا لم يتم تحديد أي تاريخ ولم يكن view_all أو show_all، عرض آخر 30 يوم
+            $query->whereDate('progress_date', '>=', today()->subDays(30));
         }
 
         // فلترة المشروع

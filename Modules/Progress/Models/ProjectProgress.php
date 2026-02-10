@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Progress\Models;
 
 use Modules\Progress\Models\Client;
@@ -30,6 +32,22 @@ class ProjectProgress extends Model
         // Actually holidays is string like "5,6" in controller, so explicit cast might break if not handled carefully.
         // Let's stick to just settings for now to minimize risk.
     ];
+
+    /**
+     * Scope للمشاريع النشطة (غير المحذوفة)
+     */
+    public function scopeActive($query)
+    {
+        return $query->whereNull('deleted_at');
+    }
+
+    /**
+     * Scope للمشاريع المنشورة (غير المسودة)
+     */
+    public function scopePublished($query)
+    {
+        return $query->where('is_draft', false);
+    }
 
     public function employees()
     {
