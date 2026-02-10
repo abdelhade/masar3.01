@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title">تعديل الحالة</h4>
+                <h4 class="page-title">{{ __("Edit Status") }}</h4>
             </div>
         </div>
     </div>
@@ -24,7 +24,7 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">الاسم <span class="text-danger">*</span></label>
+                                <label for="name" class="form-label">{{ __("Name") }} <span class="text-danger">*</span></label>
                                 <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $status->name) }}" required>
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -32,7 +32,7 @@
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label for="name_ar" class="form-label">الاسم العربي</label>
+                                <label for="name_ar" class="form-label">{{ __("Arabic Name") }}</label>
                                 <input type="text" name="name_ar" id="name_ar" class="form-control @error('name_ar') is-invalid @enderror" value="{{ old('name_ar', $status->name_ar) }}">
                                 @error('name_ar')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -42,7 +42,7 @@
 
                         <div class="row">
                             <div class="col-12 mb-3">
-                                <label for="description" class="form-label">الوصف</label>
+                                <label for="description" class="form-label">{{ __("Description") }}</label>
                                 <textarea name="description" id="description" rows="3" class="form-control @error('description') is-invalid @enderror">{{ old('description', $status->description) }}</textarea>
                                 @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -52,23 +52,23 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="icon" class="form-label">الأيقونة</label>
-                                <input type="text" name="icon" id="icon" class="form-control @error('icon') is-invalid @enderror" value="{{ old('icon', $status->icon) }}" placeholder="مثال: fas fa-check-circle">
-                                <small class="text-muted">استخدم Font Awesome icons</small>
+                                <label for="icon" class="form-label">{{ __("Icon") }}</label>
+                                <input type="text" name="icon" id="icon" class="form-control @error('icon') is-invalid @enderror" value="{{ old('icon', $status->icon) }}" placeholder="{{ __('Example') }}: fas fa-check-circle">
+                                <small class="text-muted">{{ __("Use Font Awesome icons") }}</small>
                                 @error('icon')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label for="color" class="form-label">اللون</label>
+                                <label for="color" class="form-label">{{ __("Color") }}</label>
                                 <select name="color" id="color" class="form-select @error('color') is-invalid @enderror">
-                                    <option value="primary" {{ old('color', $status->color) == 'primary' ? 'selected' : '' }}>أزرق</option>
-                                    <option value="success" {{ old('color', $status->color) == 'success' ? 'selected' : '' }}>أخضر</option>
-                                    <option value="info" {{ old('color', $status->color ?: 'info') == 'info' ? 'selected' : '' }}>فاتح</option>
-                                    <option value="warning" {{ old('color', $status->color) == 'warning' ? 'selected' : '' }}>أصفر</option>
-                                    <option value="danger" {{ old('color', $status->color) == 'danger' ? 'selected' : '' }}>أحمر</option>
-                                    <option value="secondary" {{ old('color', $status->color) == 'secondary' ? 'selected' : '' }}>رمادي</option>
+                                    <option value="primary" {{ old('color', $status->color) == 'primary' ? 'selected' : '' }}>{{ __("Blue") }}</option>
+                                    <option value="success" {{ old('color', $status->color) == 'success' ? 'selected' : '' }}>{{ __("Green") }}</option>
+                                    <option value="info" {{ old('color', $status->color ?: 'info') == 'info' ? 'selected' : '' }}>{{ __("Light") }}</option>
+                                    <option value="warning" {{ old('color', $status->color) == 'warning' ? 'selected' : '' }}>{{ __("Yellow") }}</option>
+                                    <option value="danger" {{ old('color', $status->color) == 'danger' ? 'selected' : '' }}>{{ __("Red") }}</option>
+                                    <option value="secondary" {{ old('color', $status->color) == 'secondary' ? 'selected' : '' }}>{{ __("Gray") }}</option>
                                 </select>
                                 @error('color')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -81,7 +81,7 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $status->is_active) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="is_active">
-                                        نشط
+                                        {{ __("Active") }}
                                     </label>
                                 </div>
                             </div>
@@ -90,10 +90,10 @@
                         <div class="row">
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> تحديث
+                                    <i class="fas fa-save"></i> {{ __("Update") }}
                                 </button>
                                 <a href="{{ route('myresources.statuses.index') }}" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> إلغاء
+                                    <i class="fas fa-times"></i> {{ __("Cancel") }}
                                 </a>
                             </div>
                         </div>

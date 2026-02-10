@@ -10,16 +10,16 @@
         <div class="col-12">
             <div class="page-title-box no-print">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="page-title">عرض النوع: {{ $type->name_ar ?? $type->name }}</h4>
+                    <h4 class="page-title">{{ __("Type Details") }}: {{ $type->name_ar ?? $type->name }}</h4>
                     <div class="d-flex gap-2">
                         <a href="{{ route('myresources.types.edit', $type) }}" class="btn btn-primary">
-                            <i class="fas fa-edit"></i> تعديل
+                            <i class="fas fa-edit"></i> {{ __("Edit") }}
                         </a>
                         <button onclick="window.print()" class="btn btn-info">
-                            <i class="fas fa-print"></i> طباعة
+                            <i class="fas fa-print"></i> {{ __("Print") }}
                         </button>
                         <a href="{{ route('myresources.types.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-right"></i> رجوع
+                            <i class="fas fa-arrow-right"></i> {{ __("Back") }}
                         </a>
                     </div>
                 </div>
@@ -31,47 +31,47 @@
         <div class="col-12">
             <div class="card printable-content">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-list"></i> معلومات النوع</h5>
+                    <h5 class="mb-0"><i class="fas fa-list"></i> {{ __("Type Information") }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">الاسم:</label>
+                            <label class="form-label fw-bold">{{ __("Name") }}:</label>
                             <div class="form-control-static">{{ $type->name }}</div>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">الاسم العربي:</label>
-                            <div class="form-control-static">{{ $type->name_ar ?? 'غير محدد' }}</div>
+                            <label class="form-label fw-bold">{{ __("Arabic Name") }}:</label>
+                            <div class="form-control-static">{{ $type->name_ar ?? __("Unspecified") }}</div>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-12 mb-3">
-                            <label class="form-label fw-bold">الوصف:</label>
-                            <div class="form-control-static">{{ $type->description ?? 'لا يوجد وصف' }}</div>
+                            <label class="form-label fw-bold">{{ __("Description") }}:</label>
+                            <div class="form-control-static">{{ $type->description ?? __("No description") }}</div>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">التصنيف:</label>
+                            <label class="form-label fw-bold">{{ __("Category") }}:</label>
                             <div class="form-control-static">
                                 @if($type->category)
                                     {{ $type->category->name_ar ?? $type->category->name }}
                                 @else
-                                    غير محدد
+                                    {{ __("Unspecified") }}
                                 @endif
                             </div>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">الحالة:</label>
+                            <label class="form-label fw-bold">{{ __("Status") }}:</label>
                             <div class="form-control-static">
                                 @if($type->is_active)
-                                    <span class="badge bg-success">نشط</span>
+                                    <span class="badge bg-success">{{ __("Active") }}</span>
                                 @else
-                                    <span class="badge bg-danger">غير نشط</span>
+                                    <span class="badge bg-danger">{{ __("Inactive") }}</span>
                                 @endif
                             </div>
                         </div>

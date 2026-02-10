@@ -6,11 +6,11 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => 'تفاصيل النشاط',
+        'title' => __('Activity Details'),
         'items' => [
-            ['label' => 'الرئيسية', 'url' => route('admin.dashboard')],
-            ['label' => 'سجل النشاطات', 'url' => route('activitylog.index')],
-            ['label' => 'تفاصيل النشاط'],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Activity Log'), 'url' => route('activitylog.index')],
+            ['label' => __('Activity Details')],
         ],
     ])
 
@@ -20,32 +20,32 @@
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="fas fa-info-circle me-2"></i>
-                        تفاصيل النشاط
+                        {{ __('Activity Details') }}
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <h6 class="text-muted mb-3">معلومات المستخدم</h6>
+                            <h6 class="text-muted mb-3">{{ __('User Information') }}</h6>
                             <table class="table table-bordered">
                                 <tr>
-                                    <th width="40%">المستخدم:</th>
+                                    <th width="40%">{{ __('User') }}:</th>
                                     <td>
                                         @if ($activity->causer)
                                             <span class="fw-bold">{{ $activity->causer->name }}</span>
                                             <br>
                                             <small class="text-muted">{{ $activity->causer->email }}</small>
                                         @else
-                                            <span class="text-muted">نظام</span>
+                                            <span class="text-muted">{{ __('System') }}</span>
                                         @endif
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>الوصف:</th>
+                                    <th>{{ __('Description') }}:</th>
                                     <td><span class="fw-bold">{{ $activity->description }}</span></td>
                                 </tr>
                                 <tr>
-                                    <th>نوع النشاط:</th>
+                                    <th>{{ __('Activity Type') }}:</th>
                                     <td>
                                         @php
                                             $eventColors = [
@@ -63,10 +63,10 @@
                             </table>
                         </div>
                         <div class="col-md-6">
-                            <h6 class="text-muted mb-3">معلومات الكائن</h6>
+                            <h6 class="text-muted mb-3">{{ __('Object Information') }}</h6>
                             <table class="table table-bordered">
                                 <tr>
-                                    <th width="40%">نوع الكائن:</th>
+                                    <th width="40%">{{ __('Object Type') }}:</th>
                                     <td>
                                         @if ($activity->subject_type)
                                             <span class="badge bg-secondary">
@@ -78,7 +78,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>معرف الكائن:</th>
+                                    <th>{{ __('Object ID') }}:</th>
                                     <td>
                                         @if ($activity->subject_id)
                                             <code>{{ $activity->subject_id }}</code>
@@ -88,7 +88,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>التاريخ والوقت:</th>
+                                    <th>{{ __('Date & Time') }}:</th>
                                     <td>
                                         <span class="fw-bold">{{ $activity->created_at->format('Y-m-d H:i:s') }}</span>
                                         <br>
@@ -102,7 +102,7 @@
                     @if ($activity->properties && count($activity->properties) > 0)
                         <div class="row">
                             <div class="col-12">
-                                <h6 class="text-muted mb-3">الخصائص</h6>
+                                <h6 class="text-muted mb-3">{{ __('Properties') }}</h6>
                                 <div class="card bg-light">
                                     <div class="card-body">
                                         <pre class="mb-0" style="max-height: 400px; overflow-y: auto;"><code>{{ json_encode($activity->properties, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</code></pre>
@@ -115,14 +115,14 @@
                     @if ($activity->changes && count($activity->changes) > 0)
                         <div class="row mt-4">
                             <div class="col-12">
-                                <h6 class="text-muted mb-3">التغييرات</h6>
+                                <h6 class="text-muted mb-3">{{ __('Changes') }}</h6>
                                 <div class="table-responsive">
                                     <table class="table table-bordered">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>الحقل</th>
-                                                <th>القيمة القديمة</th>
-                                                <th>القيمة الجديدة</th>
+                                                <th>{{ __('Field') }}</th>
+                                                <th>{{ __('Old Value') }}</th>
+                                                <th>{{ __('New Value') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -159,7 +159,7 @@
                     <div class="mt-4">
                         <a href="{{ route('activitylog.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-right me-2"></i>
-                            العودة للقائمة
+                            {{ __('Back to List') }}
                         </a>
                     </div>
                 </div>

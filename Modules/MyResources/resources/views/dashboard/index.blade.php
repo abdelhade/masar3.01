@@ -13,9 +13,9 @@
                 <div class="card-body">
                     <h2 class="mb-0">
                         <i class="fas fa-cubes me-2"></i>
-                        لوحة تحكم الموارد
+                        {{ __('Resources Dashboard') }}
                     </h2>
-                    <p class="mb-0 mt-2">لوحة تحكم شاملة لمتابعة جميع الموارد والتكاليف</p>
+                    <p class="mb-0 mt-2">{{ __('Comprehensive dashboard to track all resources and costs') }}</p>
                 </div>
             </div>
         </div>
@@ -29,10 +29,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">إجمالي الموارد</h6>
+                            <h6 class="text-muted mb-2">{{ __('Total Resources') }}</h6>
                             <h3 class="mb-0">{{ $totalResources }}</h3>
                             <small class="text-success">
-                                <i class="fas fa-check-circle"></i> نشطة: {{ $activeResources }}
+                                <i class="fas fa-check-circle"></i> {{ __('Active') }}: {{ $activeResources }}
                             </small>
                         </div>
                         <div class="text-primary" style="font-size: 3rem;">
@@ -49,10 +49,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">التعيينات النشطة</h6>
+                            <h6 class="text-muted mb-2">{{ __('Active Assignments') }}</h6>
                             <h3 class="mb-0">{{ $activeAssignments }}</h3>
                             <small class="text-info">
-                                <i class="fas fa-clock"></i> مجدولة: {{ $scheduledAssignments }}
+                                <i class="fas fa-clock"></i> {{ __('Scheduled') }}: {{ $scheduledAssignments }}
                             </small>
                         </div>
                         <div class="text-info" style="font-size: 3rem;">
@@ -69,10 +69,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">صيانة قادمة</h6>
+                            <h6 class="text-muted mb-2">{{ __('Upcoming Maintenance') }}</h6>
                             <h3 class="mb-0">{{ $upcomingMaintenance->count() }}</h3>
                             <small class="text-warning">
-                                <i class="fas fa-calendar-alt"></i> خلال 7 أيام
+                                <i class="fas fa-calendar-alt"></i> {{ __('Within 7 days') }}
                             </small>
                         </div>
                         <div class="text-warning" style="font-size: 3rem;">
@@ -89,10 +89,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">حسب الحالة</h6>
+                            <h6 class="text-muted mb-2">{{ __('By Status') }}</h6>
                             <h3 class="mb-0">{{ $resourcesByStatus->count() }}</h3>
                             <small class="text-muted">
-                                <i class="fas fa-chart-pie"></i> حالات مختلفة
+                                <i class="fas fa-chart-pie"></i> {{ __('Different statuses') }}
                             </small>
                         </div>
                         <div class="text-secondary" style="font-size: 3rem;">
@@ -112,7 +112,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-chart-pie me-2"></i>
-                        الموارد حسب التصنيف
+                        {{ __('Resources by Category') }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -120,21 +120,21 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>التصنيف</th>
-                                    <th class="text-center">العدد</th>
+                                    <th>{{ __('Category') }}</th>
+                                    <th class="text-center">{{ __('Count') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($resourcesByCategory as $category)
                                 <tr>
-                                    <td>{{ $category->category->name ?? $category->category->name_ar ?? 'غير محدد' }}</td>
+                                    <td>{{ $category->category->name ?? $category->category->name_ar ?? __('Unspecified') }}</td>
                                     <td class="text-center">
                                         <span class="badge bg-primary">{{ $category->count }}</span>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="2" class="text-center">لا توجد موارد</td>
+                                    <td colspan="2" class="text-center">{{ __('No resources found') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -150,7 +150,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-chart-bar me-2"></i>
-                        الموارد حسب الحالة
+                        {{ __('Resources by Status') }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -158,8 +158,8 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>الحالة</th>
-                                    <th class="text-center">العدد</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th class="text-center">{{ __('Count') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -167,7 +167,7 @@
                                 <tr>
                                     <td>
                                         <span >
-                                            {{ $status->status->name ?? $status->status->name_ar ?? 'غير محدد' }}
+                                            {{ $status->status->name ?? $status->status->name_ar ?? __('Unspecified') }}
                                         </span>
                                     </td>
                                     <td class="text-center">
@@ -176,7 +176,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="2" class="text-center">لا توجد حالات</td>
+                                    <td colspan="2" class="text-center">{{ __('No statuses found') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -195,7 +195,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-wrench me-2"></i>
-                        صيانة قادمة (خلال 7 أيام)
+                        {{ __('Upcoming Maintenance (within 7 days)') }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -203,9 +203,9 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>المورد</th>
-                                    <th>تاريخ الصيانة</th>
-                                    <th>الحالة</th>
+                                    <th>{{ __('Resource') }}</th>
+                                    <th>{{ __('Maintenance Date') }}</th>
+                                    <th>{{ __('Status') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -218,13 +218,13 @@
                                     <td>{{ $resource->next_maintenance_date?->format('Y-m-d') ?? '---' }}</td>
                                     <td>
                                         <span class="badge bg-{{ $resource->status->color ?? 'secondary' }}">
-                                            {{ $resource->status->name ?? $resource->status->name_ar ?? 'غير محدد' }}
+                                            {{ $resource->status->name ?? $resource->status->name_ar ?? __('Unspecified') }}
                                         </span>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="3" class="text-center">لا توجد صيانة قادمة</td>
+                                    <td colspan="3" class="text-center">{{ __('No upcoming maintenance') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -240,7 +240,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-history me-2"></i>
-                        آخر التعيينات
+                        {{ __('Recent Assignments') }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -248,10 +248,10 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>المورد</th>
-                                    <th>المشروع</th>
-                                    <th>تاريخ البدء</th>
-                                    <th>الحالة</th>
+                                    <th>{{ __('Resource') }}</th>
+                                    <th>{{ __('Project') }}</th>
+                                    <th>{{ __('Start Date') }}</th>
+                                    <th>{{ __('Status') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -279,7 +279,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">لا توجد تعيينات</td>
+                                    <td colspan="4" class="text-center">{{ __('No assignments found') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -297,7 +297,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-bolt me-2"></i>
-                        إجراءات سريعة
+                        {{ __('Quick Actions') }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -305,25 +305,25 @@
                         <div class="col-md-3">
                             <a href="{{ route('myresources.index') }}" class="btn btn-primary w-100">
                                 <i class="fas fa-list me-2"></i>
-                                قائمة الموارد
+                                {{ __('Resources List') }}
                             </a>
                         </div>
                         <div class="col-md-3">
                             <a href="{{ route('myresources.create') }}" class="btn btn-success w-100">
                                 <i class="fas fa-plus-circle me-2"></i>
-                                مورد جديد
+                                {{ __('New Resource') }}
                             </a>
                         </div>
                         <div class="col-md-3">
                             <a href="{{ route('myresources.assignments.create') }}" class="btn btn-info w-100">
                                 <i class="fas fa-tasks me-2"></i>
-                                تعيين جديد
+                                {{ __('New Assignment') }}
                             </a>
                         </div>
                         <div class="col-md-3">
                             <a href="{{ route('myresources.categories.index') }}" class="btn btn-warning w-100">
                                 <i class="fas fa-folder me-2"></i>
-                                التصنيفات
+                                {{ __('Categories') }}
                             </a>
                         </div>
                     </div>
