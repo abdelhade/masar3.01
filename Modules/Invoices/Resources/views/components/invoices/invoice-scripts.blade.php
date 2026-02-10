@@ -372,10 +372,13 @@
                 console.log(isBackground ? '🔄 loadItems (Background)...' : '🚀 loadItems (Manual)...', { branch: this.branchId, type: this.invoiceType });
                 
                 try {
-                    const response = await fetch(`/api/items/lite?branch_id=${this.branchId}&type=${this.invoiceType}`, {
+                    // ✅ إضافة timestamp لتجنب browser cache
+                    const timestamp = new Date().getTime();
+                    const response = await fetch(`/api/items/lite?branch_id=${this.branchId}&type=${this.invoiceType}&_t=${timestamp}`, {
                         headers: {
                             'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Cache-Control': 'no-cache'
                         }
                     });
 
