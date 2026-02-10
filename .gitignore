@@ -7,7 +7,6 @@
 /storage/pail
 /storage/framework
 /storage/framework
-/Modules/Progress
 /vendor
 .env
 .env.backup
