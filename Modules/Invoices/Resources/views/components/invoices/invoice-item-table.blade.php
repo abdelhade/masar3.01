@@ -4,35 +4,31 @@
     <style>
         .invoice-data-grid {
             border-collapse: separate !important;
-            /* Required for sticky to work on borders properly */
             border-spacing: 0;
             width: 100%;
             border: none;
         }
 
         .invoice-data-grid th {
-            padding: 12px !important;
+            padding: 6px !important;
             background-color: #bbc8d6ff;
             border: 1px solid #dee2e6;
-            border-top: none;
-            /* Container has border */
+            border-top: none;   
             vertical-align: middle;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 0.8rem;
             position: sticky;
-            /* Sticky Header */
             top: 0;
             z-index: 10;
             box-shadow: 0 1px 0 #dee2e6;
-            /* Border fix for sticky */
         }
 
         .invoice-data-grid td {
             padding: 0 !important;
             border: 1px solid #5f5f5fff;
             vertical-align: middle;
-            height: 48px;
-            font-size: 1.05rem;
+            height: 32px;
+            font-size: 0.75rem;
         }
 
         /* Zebra Striping */
@@ -41,7 +37,7 @@
         }
 
         .invoice-data-grid tbody tr:nth-of-type(even) {
-            background-color: #cfcfcf8e; /* Light blue-gray for contrast */
+            background-color: #cfcfcf8e;
         }
 
         /* Inputs and Selects styling */
@@ -54,11 +50,11 @@
             box-shadow: none !important;
             width: 100% !important;
             height: 100% !important;
-            min-height: 48px;
-            padding: 6px 10px !important;
+            min-height: 32px;
+            padding: 4px 6px !important;
             background-color: transparent;
             margin: 0 !important;
-            font-size: 1.05rem;
+            font-size: 0.75rem;
         }
 
         .invoice-data-grid .form-control:focus,
@@ -94,7 +90,7 @@
 
         /* Action button cell */
         .invoice-data-grid td.action-cell {
-            padding: 4px !important;
+            padding: 2px !important;
             text-align: center;
         }
 
@@ -102,13 +98,13 @@
         .invoice-data-grid .static-text {
             display: flex;
             align-items: center;
-            padding: 0 10px;
+            padding: 0 6px;
             height: 100%;
             width: 100%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-size: 1.05rem;
+            font-size: 0.75rem;
         }
     </style>
 
@@ -135,12 +131,12 @@
                                 'sub_value' => __('Value'),
                             ];
                         @endphp
-                        <th class="font-bold fw-bold font-14 text-center" style="width: {{ $width }}%">
+                        <th class="font-bold fw-bold text-center" style="width: {{ $width }}%; font-size: 0.8rem;">
                             {{ __($columnNames[$columnKey] ?? $columnKey) }}
                         </th>
                     @endif
                 @endforeach
-                <th class="font-bold fw-bold font-14 text-center">{{ __('Action') }}</th>
+                <th class="font-bold fw-bold text-center" style="font-size: 0.8rem;">{{ __('Action') }}</th>
             </tr>
         </thead>
 
