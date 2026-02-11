@@ -5,16 +5,16 @@
 @endsection
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('الفروع'),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('الفروع')]],
+        'title' => __('Branches'),
+        'items' => [['label' => __('Dashboard'), 'url' => route('admin.dashboard')], ['label' => __('Branches')]],
     ])
     <div class="row">
         <div class="col-lg-12">
-            @can('create branches')
-            <a href="{{ route('branches.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
-                اضافه جديده
-                <i class="fas fa-plus me-2"></i>
-            </a>
+            @can('create Branches')
+                <a href="{{ route('branches.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
+                    {{ __('Add New') }}
+                    <i class="fas fa-plus me-2"></i>
+                </a>
             @endcan
             <br>
             <br>
@@ -23,18 +23,19 @@
                     <div class="table-responsive" style="overflow-x: auto;">
 
                         <x-table-export-actions table-id="branches-table" filename="branches-table"
-                            excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                            excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
+                            print-label="{{ __('Print') }}" />
 
                         <table id="branches-table" class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th>#</th>
-                                    <th>{{ __('الاسم') }}</th>
-                                    <th>{{ __('كود الفرع') }}</th>
-                                    <th>{{ __('العنوان') }}</th>
-                                    <th>{{ __('الحالة') }}</th>
-                                    @canany(['edit branches', 'delete branches'])
-                                    <th>{{ __('العمليات') }}</th>
+                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Branch Code') }}</th>
+                                    <th>{{ __('Address') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    @canany(['edit Branches', 'delete Branches'])
+                                        <th>{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
@@ -55,28 +56,32 @@
                                         </td>
 
 
-                                    @canany(['edit branches', 'delete branches'])
+                                        @canany(['edit Branches', 'delete Branches'])
+                                            <td>
+                                                @can('edit Branches')
+                                                    <a class="btn btn-primary btn-icon-square-sm"
+                                                        href="{{ route('branches.show', $branch->id) }}">
+                                                        <i class="las la-eye"></i>
+                                                    </a>
 
-                                        <td>
-                                            @can('edit branches')
-                                            <a class="btn btn-success btn-icon-square-sm"
-                                                href="{{ route('branches.edit', $branch->id) }}">
-                                                <i class="las la-edit"></i>
-                                            </a>
-                                            @endcan
+                                                    <a class="btn btn-success btn-icon-square-sm"
+                                                        href="{{ route('branches.edit', $branch->id) }}">
+                                                        <i class="las la-edit"></i>
+                                                    </a>
+                                                @endcan
 
-                                                @can('delete branches')
-                                            <form action="{{ route('branches.destroy', $branch->id) }}" method="POST"
-                                                style="display:inline-block;"
-                                                onsubmit="return confirm('هل أنت متأكد من حذف هذا الفرع؟');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-icon-square-sm">
-                                                    <i class="las la-trash"></i>
-                                                </button>
-                                            </form>
-                                            @endcan
-                                        </td>
+                                                @can('delete Branches')
+                                                    <form action="{{ route('branches.destroy', $branch->id) }}" method="POST"
+                                                        style="display:inline-block;"
+                                                        onsubmit="return confirm('{{ __('Are you sure you want to delete this branch?') }}');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-icon-square-sm">
+                                                            <i class="las la-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            </td>
                                         @endcanany
                                     </tr>
                                 @empty
@@ -85,7 +90,7 @@
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                لا توجد بيانات
+                                                {{ __('No data available') }}
                                             </div>
                                         </td>
                                     </tr>
