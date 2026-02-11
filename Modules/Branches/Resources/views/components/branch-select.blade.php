@@ -2,7 +2,7 @@
 
 @if ($branches->count() > 1)
     <div class="mb-3 col-lg-2">
-        <label for="branch_id">{{ __('الفرع') }}</label>
+        <label for="branch_id">{{ __('Branch') }}</label>
         <select class="form-control" id="branch_id" name="branch_id"
             @if ($model) wire:model="{{ $model }}" @endif>
             @foreach ($branches as $branch)
@@ -19,7 +19,7 @@
     <input type="hidden" name="branch_id" value="{{ $branches->first()->id }}"
         @if ($model) wire:model="{{ $model }}" @endif>
     {{-- <div class="mb-3 col-lg-3">
-        <label class="form-label">{{ __('الفرع') }}</label>
+        <label class="form-label">{{ __('Branch') }}</label>
         <input type="text" class="form-control" value="{{ $branches->first()->name }}" disabled>
     </div> --}}
 @endif

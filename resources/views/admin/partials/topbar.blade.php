@@ -12,14 +12,19 @@
 
             {{-- Theme switcher dropdown --}}
             <li class="dropdown me-3" data-masar-theme-dropdown>
-                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false" title="{{ __('Theme') }}" style="color: #34d3a3;">
+                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                    aria-haspopup="false" aria-expanded="false" title="{{ __('Theme') }}" style="color: #34d3a3;">
                     <i class="fas fa-palette fa-2x" style="color: #34d3a3;"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
-                    <a class="dropdown-item" href="#" data-masar-theme="classic"><i class="fas fa-palette me-1"></i> Classic (Bootstrap)</a>
-                    <a class="dropdown-item" href="#" data-masar-theme="mint-green"><i class="fas fa-leaf me-1"></i> Mint Green</a>
-                    <a class="dropdown-item" href="#" data-masar-theme="dark"><i class="fas fa-moon me-1"></i> Dark Mode</a>
-                    <a class="dropdown-item" href="#" data-masar-theme="monokai"><i class="fas fa-code me-1"></i> Monokai</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="classic"><i
+                            class="fas fa-palette me-1"></i> Classic (Bootstrap)</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="mint-green"><i
+                            class="fas fa-leaf me-1"></i> Mint Green</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="dark"><i class="fas fa-moon me-1"></i>
+                        Dark Mode</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="monokai"><i class="fas fa-code me-1"></i>
+                        Monokai</a>
                 </div>
             </li>
 
@@ -126,7 +131,7 @@
                     const sidebar = document.querySelector('.left-sidenav');
                     const pageWrapper = document.querySelector('.page-wrapper');
                     const toggleIcon = document.getElementById('sidebar-toggle-icon');
-                    
+
                     if (!sidebar || !pageWrapper) {
                         console.warn('Sidebar or page wrapper not found');
                         return;
@@ -134,14 +139,14 @@
 
                     // Get current state from localStorage or check DOM
                     const currentState = localStorage.getItem('sidebarHidden');
-                    const isCurrentlyHidden = currentState === 'true' || 
-                                             sidebar.style.display === 'none' ||
-                                             window.getComputedStyle(sidebar).display === 'none';
-                    
+                    const isCurrentlyHidden = currentState === 'true' ||
+                        sidebar.style.display === 'none' ||
+                        window.getComputedStyle(sidebar).display === 'none';
+
                     // Toggle state
                     const newState = !isCurrentlyHidden;
                     localStorage.setItem('sidebarHidden', newState.toString());
-                    
+
                     // Apply new state
                     if (newState) {
                         // Hide sidebar
@@ -168,15 +173,15 @@
                 function updateSidebarToggleIcon() {
                     const sidebar = document.querySelector('.left-sidenav');
                     const toggleIcon = document.getElementById('sidebar-toggle-icon');
-                    
+
                     if (!sidebar || !toggleIcon) {
                         return;
                     }
 
                     const isHidden = localStorage.getItem('sidebarHidden') === 'true' ||
-                                     sidebar.style.display === 'none' ||
-                                     window.getComputedStyle(sidebar).display === 'none';
-                    
+                        sidebar.style.display === 'none' ||
+                        window.getComputedStyle(sidebar).display === 'none';
+
                     if (isHidden) {
                         toggleIcon.classList.remove('fa-times');
                         toggleIcon.classList.add('fa-bars');
@@ -206,16 +211,13 @@
         <ul class="list-unstyled topbar-nav mb-0 d-flex align-items-center order-first">
             {{-- Sidebar Toggle Button --}}
             <li class="me-3">
-                <button type="button" 
-                        id="sidebar-toggle-btn" 
-                        class="btn btn-lg transition-base sidebar-toggle-btn"
-                        title="{{ __('إظهار/إخفاء القائمة الجانبية') }}"
-                        onclick="toggleSidebarMenu()"
-                        style="background: none; border: none; color: #34d3a3; cursor: pointer; padding: 8px 12px;">
+                <button type="button" id="sidebar-toggle-btn" class="btn btn-lg transition-base sidebar-toggle-btn"
+                    title="{{ __('إظهار/إخفاء القائمة الجانبية') }}" onclick="toggleSidebarMenu()"
+                    style="background: none; border: none; color: #34d3a3; cursor: pointer; padding: 8px 12px;">
                     <i id="sidebar-toggle-icon" class="fas fa-bars fa-2x" style="color: #34d3a3;"></i>
                 </button>
             </li>
-            
+
             <li>
                 <a title="help" href="https://www.updates.elhadeerp.com" class="nav-link transition-base"
                     target="_blank" style="color: #34d3a3;">
