@@ -28,8 +28,31 @@
                     {{ $titles[$type] ?? 'فاتورة' }}
                 </h5>
             </div>
+
             <div class="col-md-6 text-end">
                 @if ($type != 21 && $showBalance)
+                    <small class="me-3">
+                        <button type="button" class="btn btn-success btn-sm"
+                            onclick="InvoiceApp.saveInvoice(); return false;">
+                            <i class="fas fa-save me-2"></i>
+                            {{ __('حفظ الفاتورة') }}
+                        </button>
+                    </small>
+
+                    <small class="me-3">
+                        <button type="button" class="btn btn-primary btn-sm " onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>
+                            {{ __('طباعة') }}
+                        </button>
+                    </small>
+
+                    <small class="me-3">
+                        <a href="{{ url()->previous() }}" class="btn btn-danger btn-sm ">
+                            <i class="fas fa-arrow-right me-2"></i>
+                            {{ __('رجوع') }}
+                        </a>
+                    </small>
+
                     <small class="me-3">
                         <strong>{{ __('Current Balance:') }}</strong>
                         <span id="current-balance-header" class="badge bg-light text-dark">0.00</span>
