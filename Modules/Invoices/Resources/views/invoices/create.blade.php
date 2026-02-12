@@ -1,5 +1,7 @@
 @extends('admin.dashboard')
 
+@section('body_class', 'invoice-page-fixed')
+
 @section('sidebar')
     @if (in_array($type, [10, 12, 14, 16, 22, 26]))
         @include('components.sidebar.sales-invoices')
@@ -12,34 +14,64 @@
 
 @push('styles')
     <style>
-        /* Remove body padding - footer will be in content area */
-        body {
-            padding-bottom: 0 !important;
+        /* Body padding for fixed footer - NO SCROLL */
+        /* NO PAGE SCROLL - Fixed layout components */
+        body.invoice-page-fixed {
+            height: 100vh !important;
+            overflow: hidden !important;
+        }
+        
+        .invoice-page-fixed .page-wrapper {
+            height: 100vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
         }
 
-        /* Main content wrapper */
-        #invoice-app {
-            display: flex;
-            flex-direction: column;
-            min-height: calc(100vh - 100px);
-            padding-bottom: 20px;
+        .invoice-page-fixed .page-content {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            padding: 0 !important;
         }
 
-        /* Invoice footer - NOT fixed, stays at bottom of content */
-        .invoice-footer-container {
-            margin-top: auto;
-            background: white;
-            border-top: 3px solid #dee2e6;
-            padding: 15px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        .invoice-page-fixed .container-fluid,
+        .invoice-page-fixed .container-fluid > .row {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        /* Invoice table container */
-        .invoice-scroll-container {
-            flex: 1;
-            min-height: 400px;
-            max-height: calc(100vh - 500px);
-            overflow-y: auto;
+        .invoice-page-fixed #invoice-app {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            background: #fff;
+        }
+
+        .invoice-page-fixed #invoice-form {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .invoice-page-fixed .invoice-scroll-container {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            padding: 15px !important;
+        }
+
+        .invoice-page-fixed #invoice-fixed-footer {
+            flex-shrink: 0 !important;
+            width: 100% !important;
+            z-index: 10;
         }
 
         /* Header styling to match image */
@@ -70,34 +102,6 @@
         .invoice-data-grid .search-row {
             background: #e3f2fd !important;
         }
-
-        /* Footer styling to match image */
-        .invoice-footer-container {
-            background: linear-gradient(to bottom, #ffffff 0%, #f5f5f5 100%);
-        }
-
-        .footer-section {
-            background: white;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-        }
-
-        .footer-label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 5px;
-        }
-
-        .footer-value {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #212529;
-            padding: 8px;
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
             text-align: center;
         }
 
@@ -124,17 +128,6 @@
             box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
         }
 
-        /* Ensure content doesn't overlap with sidebar */
-        .main-content {
-            margin-left: 0;
-            transition: margin-left 0.3s ease;
-        }
-
-        @media (min-width: 768px) {
-            .main-content {
-                margin-left: 250px; /* Sidebar width */
-            }
-        }
 
         /* Hidden class */
         .hidden {
@@ -149,7 +142,7 @@
         <form id="invoice-form">
             @csrf
 
-            {{-- Invoice Header --}}
+            {{-- Part 1: Invoice Header --}}
             <div class="invoice-header-card">
                 @include('invoices::components.invoices.invoice-head', [
                     'type' => $type,
@@ -169,22 +162,23 @@
                 ])
             </div>
 
-            {{-- Invoice Items Table --}}
+            {{-- Part 2: Invoice Items Table --}}
             @include('invoices::components.invoices.invoice-item-table', [
                 'type' => $type,
                 'branchId' => $branchId,
             ])
         </form>
+    </div>
 
         {{-- Invoice Footer - NOT fixed, at bottom of content --}}
         <div class="invoice-footer-container">
-            @include('invoices::components.invoices.invoice-footer', [
-                'type' => $type,
-                'vatPercentage' => setting('vat_percentage', 15),
-                'withholdingTaxPercentage' => setting('withholding_tax_percentage', 0),
-                'showBalance' => setting('show_balance', '1') === '1',
-                'cashAccounts' => $cashAccounts,
-            ])
+    @include('invoices::components.invoices.invoice-footer', [
+        'type' => $type,
+        'vatPercentage' => setting('vat_percentage', 15),
+        'withholdingTaxPercentage' => setting('withholding_tax_percentage', 0),
+        'showBalance' => setting('show_balance', '1') === '1',
+        'cashAccounts' => $cashAccounts,
+    ])
         </div>
     </div>
 @endsection

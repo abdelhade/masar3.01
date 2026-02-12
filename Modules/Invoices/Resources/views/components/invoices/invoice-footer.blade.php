@@ -1,6 +1,5 @@
-{{-- Invoice Footer - Pure JavaScript (No Livewire) --}}
-<div id="invoice-fixed-footer" class="p-2 mt-auto" style="z-index: 999; background: #fff;">
-    <div class="row border border-secondary border-3 rounded p-2 mb-2">
+<div id="invoice-fixed-footer" class="p-2" style="background: #fff; border-top: 3px solid #dee2e6; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
+    <div class="row border border-secondary border-3 rounded p-2 mb-0">
         @if (setting('invoice_show_item_details'))
             <div class="col-3">
                 <div class="card" style="font-size: 0.75rem;" id="item-details-card">
@@ -280,3 +279,7 @@
         </div>
     </div>
 </div>
+
+{{-- CSS for Fixed Footer within content --}}
+<style>
+    /* Footer fixed within content area - responsive automatically */

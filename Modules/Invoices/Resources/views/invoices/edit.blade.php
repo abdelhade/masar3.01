@@ -1,5 +1,7 @@
 @extends('admin.dashboard')
 
+@section('body_class', 'invoice-page-fixed')
+
 @section('sidebar')
     @if (in_array($type ?? 10, [10, 12, 14, 16, 22, 26]))
         @include('components.sidebar.sales-invoices')
@@ -13,6 +15,67 @@
 @push('styles')
     <style>
         [x-cloak] { display: none !important; }
+
+        /* NO PAGE SCROLL - Fixed layout components */
+        body.invoice-page-fixed {
+            height: 100vh !important;
+            overflow: hidden !important;
+        }
+        
+        .invoice-page-fixed .page-wrapper {
+            height: 100vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .invoice-page-fixed .page-content {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            padding: 0 !important;
+            margin-top: 52px !important; /* Match topbar height */
+        }
+
+        .invoice-page-fixed .container-fluid,
+        .invoice-page-fixed .container-fluid > .row {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .invoice-page-fixed [x-data="invoiceForm"] {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .invoice-page-fixed form {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        .invoice-scroll-container {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            padding: 15px !important;
+        }
+
+        .invoice-footer-container {
+            flex-shrink: 0 !important;
+            background: #fff;
+            border-top: 2px solid #dee2e6;
+            padding: 10px 15px !important;
+            z-index: 10;
+        }
     </style>
 @endpush
 
@@ -116,8 +179,9 @@
                 </div>
                 
                 <!-- Invoice Items Table -->
-                <div class="card mb-3">
-                    <div class="card-body">
+                <div class="invoice-scroll-container">
+                    <div class="card mb-3">
+                        <div class="card-body">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -224,38 +288,46 @@
                                     </tr>
                                 </table>
                             </div>
+                    </div>
+                </div> <!-- End scroll container -->
+
+                <!-- Actions / Totals Footer -->
+                <div class="invoice-footer-container">
+                    <div class="row align-items-center">
+                        <div class="col-md-9">
+                            <button type="submit" 
+                                    class="btn btn-primary" 
+                                    :disabled="ui.saving">
+                                <span x-show="!ui.saving">
+                                    <i class="fas fa-save"></i> {{ __('invoices.update') }}
+                                </span>
+                                <span x-show="ui.saving">
+                                    <span class="spinner-border spinner-border-sm"></span>
+                                    {{ __('invoices.updating') }}
+                                </span>
+                            </button>
+                            
+                            <button type="button" 
+                                    @click="saveAndPrint()" 
+                                    class="btn btn-warning"
+                                    :disabled="ui.saving">
+                                <i class="fas fa-print"></i> {{ __('invoices.save_and_print') }}
+                            </button>
+                            
+                            <a href="{{ route('invoices.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> {{ __('invoices.cancel') }}
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <table class="table table-sm table-borderless mb-0">
+                                <tr class="table-primary">
+                                    <th class="py-2">{{ __('invoices.total') }}:</th>
+                                    <th class="text-end py-2" style="font-size: 1.2rem;" x-text="formatCurrency(calculations.total)"></th>
+                                </tr>
+                            </table>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Actions -->
-                <div class="card">
-                    <div class="card-body">
-                        <button type="submit" 
-                                class="btn btn-primary" 
-                                :disabled="ui.saving">
-                            <span x-show="!ui.saving">
-                                <i class="fas fa-save"></i> {{ __('invoices.update') }}
-                            </span>
-                            <span x-show="ui.saving">
-                                <span class="spinner-border spinner-border-sm"></span>
-                                {{ __('invoices.updating') }}
-                            </span>
-                        </button>
-                        
-                        <button type="button" 
-                                @click="saveAndPrint()" 
-                                class="btn btn-warning"
-                                :disabled="ui.saving">
-                            <i class="fas fa-print"></i> {{ __('invoices.save_and_print') }}
-                        </button>
-                        
-                        <a href="{{ route('invoices.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> {{ __('invoices.cancel') }}
-                        </a>
-                    </div>
-                </div>
-                
             </form>
         </div>
     </div>
