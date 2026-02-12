@@ -113,17 +113,15 @@
         }
 
         .search-results-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
+            position: fixed !important;
             max-height: 400px;
             overflow-y: auto;
             background: white;
             border: 2px solid #0d6efd;
             border-top: none;
-            z-index: 9999 !important;
+            z-index: 999999 !important;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 400px;
         }
 
         .search-results-dropdown .list-group-item {

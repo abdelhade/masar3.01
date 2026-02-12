@@ -31,6 +31,29 @@
 
             <div class="col-md-6 text-end">
                 @if ($type != 21 && $showBalance)
+
+
+                    <small class="me-3">
+                        <strong>{{ __('Current Balance:') }}</strong>
+                        <span id="current-balance-header" class="badge bg-light text-dark">0.00</span>
+                    </small>
+
+                    <small>
+                        <strong>{{ __('After Invoice:') }}</strong>
+                        <span id="balance-after-header" class="badge bg-light text-dark">0.00</span>
+                    </small>
+
+                    <small class="me-3">
+                        @if (setting('enable_installment_from_invoice') && $type == 10)
+                            <div class="col-3 text-left">
+                                <button type="button" class="btn btn-md btn-info"
+                                    style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                    <i class="las la-calendar-check"></i> {{ __('Installment') }}
+                                </button>
+                            </div>
+                        @endif
+                    </small>
+
                     <small class="me-3">
                         <button type="button" class="btn btn-success btn-sm"
                             onclick="InvoiceApp.saveInvoice(); return false;">
@@ -51,15 +74,6 @@
                             <i class="fas fa-arrow-right me-2"></i>
                             {{ __('رجوع') }}
                         </a>
-                    </small>
-
-                    <small class="me-3">
-                        <strong>{{ __('Current Balance:') }}</strong>
-                        <span id="current-balance-header" class="badge bg-light text-dark">0.00</span>
-                    </small>
-                    <small>
-                        <strong>{{ __('After Invoice:') }}</strong>
-                        <span id="balance-after-header" class="badge bg-light text-dark">0.00</span>
                     </small>
                 @endif
             </div>
@@ -118,7 +132,23 @@
                     </select>
                 </div>
             @endif
+            <div class="col-md-1">
+                <label class="form-label mb-1 fw-semibold"
+                    style="font-size: 0.85rem;">{{ __('Invoice Pattern') }}</label>
 
+                <select id="invoice-template" class="form-select form-select-sm">
+                    <option value="">{{ __('اختر النمط...') }}</option>
+                    @php
+                        $templates = DB::table('invoice_templates')->get();
+                    @endphp
+                    @foreach ($templates as $template)
+                        <option value="{{ $template->id }}" data-columns="{{ $template->visible_columns }}"
+                            {{ $template->is_active ? 'selected' : '' }}>
+                            {{ $template->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             {{-- التاريخ --}}
             <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('التاريخ') }}</label>
@@ -139,8 +169,10 @@
                 </div>
             @endif
 
+
+
             {{-- ملاحظات --}}
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('ملاحظات') }}</label>
                 <input id="notes" class="form-control form-control-sm" rows="2"
                     placeholder="أدخل ملاحظات إضافية..."></input>

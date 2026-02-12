@@ -134,7 +134,7 @@
                             <div class="col-3 text-left text-primary" id="display-subtotal" style="font-size: 0.85rem;">0</div>
                         </div>
                     @endif
-                    
+
                     @if ($type != 18 && $type != 21)
                         <div class="row mb-1 align-items-center">
                             <div class="col-2 text-right font-weight-bold">
@@ -229,14 +229,14 @@
                     @endif
 
                     <hr class="my-1">
-                    
+
                     @if ($type != 21)
                         <div class="row mb-1">
                             <div class="col-3 text-right fw-bolder" style="font-size: 0.9rem;">{{ __('Net') }}</div>
                             <div class="col-3 text-left font-weight-bold main-num" id="display-total" style="font-size: 0.9rem;">0</div>
                         </div>
                     @endif
-                    
+
                     <div class="row mb-1">
                         @if ($type != 21)
                             @php
@@ -252,20 +252,6 @@
                             </div>
                             <div class="col-3 text-left font-weight-bold" id="display-received" style="font-size: 0.8rem;">0</div>
                         @endif
-                        
-                        <div class="col-3 text-left">
-                            <button type="submit" class="btn btn-md btn-main" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
-                                <i class="fas fa-save"></i> {{ __('Save Invoice') }}
-                            </button>
-                        </div>
-
-                        @if (setting('enable_installment_from_invoice') && $type == 10)
-                            <div class="col-3 text-left">
-                                <button type="button" class="btn btn-md btn-info" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
-                                    <i class="las la-calendar-check"></i> {{ __('Installment') }}
-                                </button>
-                            </div>
-                        @endif
                     </div>
 
                     @if ($type != 21)
@@ -280,6 +266,4 @@
     </div>
 </div>
 
-{{-- CSS for Fixed Footer within content --}}
-<style>
-    /* Footer fixed within content area - responsive automatically */
+{{-- CSS for Fixed Footer within content area - responsive automatically --}}
