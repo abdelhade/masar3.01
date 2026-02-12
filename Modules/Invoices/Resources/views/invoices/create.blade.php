@@ -619,7 +619,7 @@
                 const showBatchExpiry = [10, 11, 12, 13, 19, 20].includes(this.type);
 
                 return `
-                    <tr data-index="${index}">
+                    <tr data-index="${index}" onclick="InvoiceApp.showItemDetails(${index})" style="cursor: pointer;">
                         <td style="width: 18%;">
                             <div class="static-text" style="font-weight: 900; font-size: 1.2rem; color: #000;">
                                 ${item.name}
@@ -628,7 +628,7 @@
                         <td style="width: 10%;">
                             <div class="static-text">${item.code}</div>
                         </td>
-                        <td style="width: 10%;">
+                        <td style="width: 10%;" onclick="event.stopPropagation();">
                             <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                 ${(item.available_units || []).map(unit => `
                                     <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
@@ -637,13 +637,13 @@
                                 `).join('')}
                             </select>
                         </td>
-                        <td style="width: 10%;">
+                        <td style="width: 10%;" onclick="event.stopPropagation();">
                             <input type="number" id="quantity-${index}" class="form-control text-center"
                                    value="${item.quantity}" step="0.001" min="0"
                                    data-index="${index}" data-field="quantity">
                         </td>
                         ${showBatchExpiry ? `
-                            <td style="width: 12%;">
+                            <td style="width: 12%;" onclick="event.stopPropagation();">
                                 <input type="text" id="batch-${index}" class="form-control text-center"
                                        value="${item.batch_number || ''}"
                                        data-index="${index}" data-field="batch">
@@ -782,20 +782,40 @@
 
             // Update totals display
             updateTotalsDisplay() {
-                const updates = {
-                    'subtotal-display': this.subtotal,
-                    'discount-value-display': this.discountValue,
-                    'additional-value-display': this.additionalValue,
-                    'vat-value-display': this.vatValue,
-                    'withholding-tax-value-display': this.withholdingTaxValue,
-                    'total-display': this.totalAfterAdditional,
-                    'remaining-display': this.remaining
+                // Update all display fields
+                const displayUpdates = {
+                    'display-subtotal': this.subtotal.toFixed(2),
+                    'display-total': this.totalAfterAdditional.toFixed(2),
+                    'display-received': this.receivedFromClient.toFixed(2),
+                    'display-remaining': this.remaining.toFixed(2)
                 };
 
-                Object.entries(updates).forEach(([id, value]) => {
+                Object.entries(displayUpdates).forEach(([id, value]) => {
                     const el = document.getElementById(id);
-                    if (el) el.textContent = value.toFixed(2);
+                    if (el) el.textContent = value;
                 });
+
+                // Update readonly input fields
+                const inputUpdates = {
+                    'vat-value-display': this.vatValue.toFixed(2),
+                    'withholding-tax-value-display': this.withholdingTaxValue.toFixed(2)
+                };
+
+                Object.entries(inputUpdates).forEach(([id, value]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = value;
+                });
+
+                // Update remaining color
+                const remainingEl = document.getElementById('display-remaining');
+                if (remainingEl) {
+                    remainingEl.classList.remove('text-danger', 'text-success');
+                    if (this.remaining > 0.01) {
+                        remainingEl.classList.add('text-danger');
+                    } else if (this.remaining < -0.01) {
+                        remainingEl.classList.add('text-success');
+                    }
+                }
             },
 
             // Remove item
@@ -805,6 +825,24 @@
                     this.renderItems();
                     this.calculateTotals();
                 }
+            },
+
+            // Show item details in footer (Client-Side)
+            showItemDetails(index) {
+                const item = this.invoiceItems[index];
+                if (!item) return;
+
+                console.log('📋 Showing item details:', item);
+
+                // Update footer with item details
+                document.getElementById('selected-item-name').textContent = item.name || '-';
+                document.getElementById('selected-item-store').textContent = '-'; // Store name would come from item data
+                document.getElementById('selected-item-available').textContent = '-'; // Available quantity would come from API
+                document.getElementById('selected-item-total').textContent = '-'; // Total quantity would come from API
+                document.getElementById('selected-item-unit').textContent = item.unit_name || '-';
+                document.getElementById('selected-item-price').textContent = (item.price || 0).toFixed(2);
+                document.getElementById('selected-item-last-price').textContent = '-'; // Would come from API
+                document.getElementById('selected-item-avg-cost').textContent = '-'; // Would come from API
             },
 
             /**
