@@ -343,10 +343,13 @@
             lastUpdated: null,
 
             async init() {
-                console.log('invoiceSearch (Client-Side) init - config:', config);
+                console.log('✅ invoiceSearch initialized - config:', config);
+                console.log('📦 Invoice Type:', this.invoiceType, 'Branch:', this.branchId);
                 
                 // 1. Load Items from API
+                console.log('🔄 Starting to load items...');
                 await this.loadItems();
+                console.log('✅ Items loaded:', this.allItems.length);
                 
                 // 2. Setup Background Refresh (Every 60 seconds)
                 this._refreshInterval = setInterval(() => {
@@ -354,27 +357,29 @@
                     this.loadItems(true);
                 }, 60000);
 
-                // 3. Watch for Livewire changes
-                if (this.$wire) {
-                    this.$watch('$wire.invoiceItems', (items) => {
-                        this.currentItems = items || [];
-                    });
-                }
-                
+                // 3. Setup keyboard navigation
                 this.$nextTick(() => {
                     this.setupKeyboardNavigation();
                 });
+                
+                console.log('✅ invoiceSearch init complete');
             },
 
             async loadItems(isBackground = false, showNotification = false) {
                 if (!isBackground) this.loading = true;
                 
-                console.log(isBackground ? '🔄 loadItems (Background)...' : '🚀 loadItems (Manual)...', { branch: this.branchId, type: this.invoiceType });
+                console.log(isBackground ? '🔄 loadItems (Background)...' : '🚀 loadItems (Manual)...', { 
+                    branch: this.branchId, 
+                    type: this.invoiceType 
+                });
                 
                 try {
                     // ✅ إضافة timestamp لتجنب browser cache
                     const timestamp = new Date().getTime();
-                    const response = await fetch(`/api/items/lite?branch_id=${this.branchId}&type=${this.invoiceType}&_t=${timestamp}`, {
+                    const url = `/api/items/lite?branch_id=${this.branchId}&type=${this.invoiceType}&_t=${timestamp}`;
+                    console.log('📡 Fetching from:', url);
+                    
+                    const response = await fetch(url, {
                         headers: {
                             'Accept': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest',
@@ -382,21 +387,27 @@
                         }
                     });
 
+                    console.log('📡 Response status:', response.status, response.ok ? '✅' : '❌');
+
                     if (!response.ok) {
-                        if (!isBackground) { // Only log error prominently if manual
-                            const text = await response.text();
-                            console.error('❌ loadItems: Server Error:', text);
+                        const text = await response.text();
+                        console.error('❌ loadItems: Server Error:', response.status, text);
+                        
+                        if (!isBackground) {
                             throw new Error('Failed to fetch items: ' + response.status);
                         }
                         return;
                     }
                     
                     const newData = await response.json();
+                    console.log('📦 Received data:', Array.isArray(newData) ? newData.length + ' items' : typeof newData);
                     
                     // Only update if we got data
                     if (Array.isArray(newData)) {
                         this.allItems = newData;
                         this.lastUpdated = new Date();
+                        
+                        console.log('✅ Items updated. Total:', this.allItems.length);
                         
                         // Re-Initialize Fuse.js
                         if (window.Fuse) {
@@ -406,12 +417,14 @@
                                 ignoreLocation: true
                             };
                             this.fuse = new Fuse(this.allItems, options);
-                            console.log(`✅ Items refreshed. Count: ${this.allItems.length}. Time: ${this.lastUpdated.toLocaleTimeString()}`);
+                            console.log(`✅ Fuse.js initialized with ${this.allItems.length} items`);
+                        } else {
+                            console.error('❌ Fuse.js library not loaded!');
                         }
                         
                         // Show success notification (only when explicitly requested)
                         if (showNotification && window.Swal) {
-                            const itemsCount = newData.length; // Use newData.length instead of this.allItems.length
+                            const itemsCount = newData.length;
                             
                             const Toast = Swal.mixin({
                                 toast: true,
@@ -430,12 +443,14 @@
                                 title: `تم تحديث ${itemsCount} صنف بنجاح`
                             });
                         }
+                    } else {
+                        console.error('❌ Invalid data format received:', newData);
                     }
 
                 } catch (error) {
                     console.error('🔥 loadItems: Error:', error);
-                    if (!isBackground) {
-                         Swal.fire({ icon: 'error', title: 'خطأ', text: 'فشل تحديث البيانات' });
+                    if (!isBackground && window.Swal) {
+                        Swal.fire({ icon: 'error', title: 'خطأ', text: 'فشل تحديث البيانات: ' + error.message });
                     }
                 } finally {
                     if (!isBackground) this.loading = false;
@@ -447,44 +462,65 @@
              */
             setupKeyboardNavigation() {
                 const searchInput = document.getElementById('search-input');
-                if (!searchInput) return;
+                if (!searchInput) {
+                    console.warn('⚠️ Search input not found for keyboard navigation');
+                    return;
+                }
                 
                 const component = this;
-                const keydownHandler = (e) => {
-                    const searchTerm = component.searchTerm || '';
-                    const searchResults = Array.isArray(component.searchResults) ? component.searchResults : [];
-                    
-                    if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        requestAnimationFrame(() => {
-                            if (searchResults.length > 0 || searchTerm.length > 0) component.selectNext();
-                        });
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        requestAnimationFrame(() => {
-                            if (searchResults.length > 0 || searchTerm.length > 0) component.selectPrevious();
-                        });
-                    } else if (e.key === 'Enter') {
-                        e.preventDefault();
-                        requestAnimationFrame(() => {
-                            if (searchResults.length > 0 || searchTerm.length > 0) component.addSelectedItem();
-                        });
-                    } else if (e.key === 'Escape') {
-                        e.preventDefault();
-                        component.clearSearch(true);
-                    }
-                };
                 
+                // Remove old handler if exists
                 if (this._keydownHandler) {
                     searchInput.removeEventListener('keydown', this._keydownHandler, true);
                 }
+                
+                const keydownHandler = (e) => {
+                    const searchTerm = component.searchTerm || '';
+                    const searchResults = Array.isArray(component.searchResults) ? component.searchResults : [];
+                    const showResults = component.showResults;
+                    
+                    // Only handle if we have search term or results
+                    if (!showResults && searchTerm.length === 0) {
+                        return;
+                    }
+                    
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        component.selectNext();
+                        console.log('⬇️ Arrow Down pressed');
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        component.selectPrevious();
+                        console.log('⬆️ Arrow Up pressed');
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        component.addSelectedItem();
+                        console.log('✅ Enter pressed');
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        component.clearSearch(false);
+                        console.log('❌ Escape pressed');
+                    }
+                };
+                
                 searchInput.addEventListener('keydown', keydownHandler, true);
                 this._keydownHandler = keydownHandler;
+                
+                console.log('✅ Keyboard navigation setup complete');
             },
             
             handleSearchFocus() {
+                console.log('🎯 Search focused. searchTerm:', this.searchTerm, 'results:', this.searchResults.length);
+                
                 if ((this.searchTerm && this.searchTerm.length > 0) || this.searchResults.length > 0) {
                     this.showResults = true;
+                    console.log('✅ Showing results dropdown');
+                } else {
+                    console.log('ℹ️ No search term or results to show');
                 }
             },
 
@@ -492,7 +528,15 @@
              * البحث عن الأصناف Use Fuse.js
              */
             search() {
-                if (!this.searchTerm || this.searchTerm.length < 2) {
+                console.log('🔍 search() called. searchTerm:', this.searchTerm, 'length:', this.searchTerm?.length);
+                console.log('📊 Current state:', {
+                    allItems: this.allItems ? this.allItems.length : 0,
+                    fuse: !!this.fuse,
+                    showResults: this.showResults
+                });
+                
+                if (!this.searchTerm || this.searchTerm.length < 1) {
+                    console.log('❌ Search term too short or empty');
                     this.searchResults = [];
                     this.showResults = false;
                     this.selectedIndex = -1;
@@ -500,21 +544,51 @@
                     return;
                 }
 
+                console.log('✅ Search term valid. Fuse available:', !!this.fuse, 'Items count:', this.allItems.length);
                 this.showResults = true;
                 
                 if (this.fuse) {
                     // Client-Side Search
                     const results = this.fuse.search(this.searchTerm);
+                    console.log('🔍 Fuse search results:', results.length);
+                    
                     // Map back to item and limit results
                     this.searchResults = results.map(result => result.item).slice(0, 50);
+                    console.log('📋 Mapped search results:', this.searchResults.length);
                     
                     if (this.searchResults.length > 0) {
                         this.selectedIndex = 0;
                         this.isCreateNewItemSelected = false;
+                        console.log('✅ Found items. Selected first item:', this.searchResults[0].name);
                     } else {
                         // No results -> Suggest creation
                         this.selectedIndex = 0;
                         this.isCreateNewItemSelected = true;
+                        console.log('➕ No results. Suggesting create new item.');
+                    }
+                    
+                    console.log('📊 Final state - Results:', this.searchResults.length, 'ShowResults:', this.showResults, 'CreateNew:', this.isCreateNewItemSelected);
+                } else {
+                    console.error('❌ Fuse.js not initialized!');
+                    console.log('🔄 Attempting to initialize Fuse.js now...');
+                    
+                    if (this.allItems && this.allItems.length > 0 && window.Fuse) {
+                        const options = {
+                            keys: ['name', 'code', 'barcode'], 
+                            threshold: 0.3,
+                            ignoreLocation: true
+                        };
+                        this.fuse = new Fuse(this.allItems, options);
+                        console.log('✅ Fuse.js initialized with', this.allItems.length, 'items');
+                        
+                        // Try search again
+                        this.search();
+                    } else {
+                        console.error('❌ Cannot initialize Fuse.js:', {
+                            allItems: !!this.allItems,
+                            itemsLength: this.allItems?.length,
+                            Fuse: !!window.Fuse
+                        });
                     }
                 }
             },
@@ -562,28 +636,55 @@
 
             selectNext() {
                 const totalItems = this.searchResults.length;
+                
+                // If no results and we have search term, select "create new"
                 if (totalItems === 0 && this.searchTerm?.length > 0) {
                     this.selectedIndex = 0;
                     this.isCreateNewItemSelected = true;
+                    console.log('📍 Selected: Create New Item');
                     return;
                 }
+                
+                // If we have results
                 if (totalItems > 0) {
-                    this.isCreateNewItemSelected = false;
-                    this.selectedIndex = this.selectedIndex < totalItems - 1 ? this.selectedIndex + 1 : 0;
+                    // If we're on "create new", move to first item
+                    if (this.isCreateNewItemSelected) {
+                        this.isCreateNewItemSelected = false;
+                        this.selectedIndex = 0;
+                        console.log('📍 Selected item:', 0);
+                    } else {
+                        // Move to next item (wrap around)
+                        this.selectedIndex = this.selectedIndex < totalItems - 1 ? this.selectedIndex + 1 : 0;
+                        console.log('📍 Selected item:', this.selectedIndex);
+                    }
                     this.scrollToSelected();
                 }
             },
 
             selectPrevious() {
                 const totalItems = this.searchResults.length;
+                
+                // If no results and we have search term, stay on "create new"
                 if (totalItems === 0 && this.searchTerm?.length > 0) {
                     this.selectedIndex = 0;
                     this.isCreateNewItemSelected = true;
+                    console.log('📍 Selected: Create New Item');
                     return;
                 }
+                
+                // If we have results
                 if (totalItems > 0) {
-                    this.isCreateNewItemSelected = false;
-                    this.selectedIndex = this.selectedIndex > 0 ? this.selectedIndex - 1 : totalItems - 1;
+                    // If we're on first item, don't go to "create new" (no create option when results exist)
+                    if (this.selectedIndex === 0) {
+                        this.selectedIndex = totalItems - 1; // Wrap to last item
+                        this.isCreateNewItemSelected = false;
+                        console.log('📍 Selected item:', this.selectedIndex);
+                    } else {
+                        // Move to previous item
+                        this.selectedIndex = this.selectedIndex - 1;
+                        this.isCreateNewItemSelected = false;
+                        console.log('📍 Selected item:', this.selectedIndex);
+                    }
                     this.scrollToSelected();
                 }
             },
@@ -598,78 +699,120 @@
             },
 
             addSelectedItem() {
-                if (this.isCreateNewItemSelected || (this.searchResults.length === 0 && this.searchTerm?.length > 0)) {
+                console.log('🎯 addSelectedItem called. isCreateNew:', this.isCreateNewItemSelected, 'selectedIndex:', this.selectedIndex, 'results:', this.searchResults.length);
+                
+                // If "create new" is selected
+                if (this.isCreateNewItemSelected) {
+                    console.log('➕ Creating new item');
                     this.createNewItem();
                     return;
                 }
+                
+                // If we have no results but have search term, create new
+                if (this.searchResults.length === 0 && this.searchTerm?.length > 0) {
+                    console.log('➕ No results, creating new item');
+                    this.createNewItem();
+                    return;
+                }
+                
+                // If we have a selected item, add it
                 if (this.selectedIndex >= 0 && this.searchResults[this.selectedIndex]) {
-                    this.addItemFast(this.searchResults[this.selectedIndex]);
+                    const item = this.searchResults[this.selectedIndex];
+                    console.log('✅ Adding item:', item.name);
+                    this.addItemFast(item);
+                } else {
+                    console.warn('⚠️ No item selected or invalid index');
                 }
             },
 
             /**
-             * إضافة صنف للفاتورة (يرسل ID للسيرفر فقط)
+             * إضافة صنف للفاتورة - Client-Side with API
              */
             async addItemFast(item) {
                 if (!item?.id) return;
                 
-                // 1. UI Optimization: Hide results immediately
+                // 1. Clear search immediately
                 this.showResults = false;
-                this.searchTerm = ''; // Clear search immediately
+                this.searchTerm = '';
+                this.searchResults = [];
+                this.selectedIndex = -1;
+                this.isCreateNewItemSelected = false;
                 
-                this.loading = true; // Show spinner if needed (optional)
+                this.loading = true;
                 
                 try {
-                    // 2. Call Server to Add Item (Calculations happen there)
-                    const result = await this.$wire.call('addItemFromSearchFast', item.id);
-                    
-                    if (result?.success) {
-                        // 3. Update Row Total Calculation
-                        if (result.index !== undefined) {
-                            window.handleCalculateRowTotal(result.index);
-                            
-                            // 4. Focus First Editable Field in the new row
-                            this.$nextTick(() => {
-                                setTimeout(() => {
-                                    // Get editable fields order from Alpine store
-                                    const editableFieldsOrder = Alpine.store('invoiceNavigation')?.editableFieldsOrder || 
-                                        ['unit', 'quantity', 'batch_number', 'expiry_date', 'length', 'width', 'height', 'density', 'price', 'discount', 'sub_value'];
-                                    
-                                    // Find first visible field
-                                    let focused = false;
-                                    for (const fieldName of editableFieldsOrder) {
-                                        const field = document.getElementById(`${fieldName}-${result.index}`);
-                                        if (field && this.isFieldVisible(field)) {
-                                            field.focus();
-                                            if (field.tagName === 'INPUT') field.select();
-                                            focused = true;
-                                            console.log(`✅ Focused on ${fieldName}-${result.index}`);
-                                            break;
-                                        }
-                                    }
-                                    
-                                    // Fallback: focus quantity if nothing else worked
-                                    if (!focused) {
-                                        const quantityField = document.getElementById(`quantity-${result.index}`);
-                                        if (quantityField) {
-                                            quantityField.focus();
-                                            quantityField.select();
-                                        }
-                                    }
-                                }, 100);
-                            });
-                        }
-                        
-                        // ✅ تحديث lastUpdated timestamp لتجنب reload غير ضروري
-                        this.lastUpdated = new Date();
+                    // 2. Get the main Alpine component (invoiceCalculations)
+                    const form = document.querySelector('form[x-data*="invoiceCalculations"]');
+                    if (!form || !form._x_dataStack || !form._x_dataStack[0]) {
+                        throw new Error('Invoice form component not found');
                     }
+                    
+                    const invoiceComponent = form._x_dataStack[0];
+                    
+                    // 3. Add item to invoiceItems array
+                    const newItem = {
+                        id: item.id,
+                        item_id: item.id,
+                        name: item.name,
+                        code: item.code,
+                        unit_id: item.default_unit_id || item.unit_id,
+                        quantity: 1,
+                        price: item.price || 0,
+                        item_price: item.price || 0, // Base price for unit conversion
+                        discount: 0,
+                        sub_value: item.price || 0,
+                        batch_number: '',
+                        expiry_date: null,
+                        available_units: item.units || [],
+                    };
+                    
+                    invoiceComponent.invoiceItems.push(newItem);
+                    const newIndex = invoiceComponent.invoiceItems.length - 1;
+                    
+                    // 4. Calculate totals
+                    invoiceComponent.calculateItemTotal(newIndex);
+                    
+                    // 5. Focus first editable field
+                    this.$nextTick(() => {
+                        setTimeout(() => {
+                            const editableFieldsOrder = invoiceComponent.editableFieldsOrder || 
+                                ['unit', 'quantity', 'batch_number', 'expiry_date', 'price', 'discount', 'sub_value'];
+                            
+                            let focused = false;
+                            for (const fieldName of editableFieldsOrder) {
+                                const field = document.getElementById(`${fieldName}-${newIndex}`);
+                                if (field && this.isFieldVisible(field)) {
+                                    field.focus();
+                                    if (field.tagName === 'INPUT') field.select();
+                                    focused = true;
+                                    console.log(`✅ Focused on ${fieldName}-${newIndex}`);
+                                    break;
+                                }
+                            }
+                            
+                            if (!focused) {
+                                const quantityField = document.getElementById(`quantity-${newIndex}`);
+                                if (quantityField) {
+                                    quantityField.focus();
+                                    quantityField.select();
+                                }
+                            }
+                        }, 100);
+                    });
+                    
+                    console.log('✅ Item added successfully:', item.name);
+                    
                 } catch (error) {
                     console.error('Error adding item:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'خطأ',
-                        text: error.message || 'فشل في إضافة الصنف'
-                    });
+                    if (window.Swal) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ',
+                            text: error.message || 'فشل في إضافة الصنف'
+                        });
+                    } else {
+                        alert('فشل في إضافة الصنف');
+                    }
                 } finally {
                     this.loading = false;
                 }
@@ -700,54 +843,78 @@
                 this.showResults = false;
                 const itemName = this.searchTerm.trim();
                 this.searchTerm = '';
+                this.searchResults = [];
+                this.selectedIndex = -1;
+                this.isCreateNewItemSelected = false;
                 
-                try {
-                    const result = await this.$wire.call('createNewItem', itemName);
-                    
-                    if (result?.success && result.index !== undefined) {
-                        // ✅ إعادة تحميل الأصناف من السيرفر بعد الإنشاء
-                        console.log('🔄 Reloading items after creating new item...');
-                        await this.loadItems(false);
-                        
-                        this.$nextTick(() => {
-                            setTimeout(() => {
-                                // Get editable fields order from Alpine store
-                                const editableFieldsOrder = Alpine.store('invoiceNavigation')?.editableFieldsOrder || 
-                                    ['unit', 'quantity', 'batch_number', 'expiry_date', 'length', 'width', 'height', 'density', 'price', 'discount', 'sub_value'];
-                                
-                                // Find first visible field
-                                let focused = false;
-                                for (const fieldName of editableFieldsOrder) {
-                                    const field = document.getElementById(`${fieldName}-${result.index}`);
-                                    if (field && this.isFieldVisible(field)) {
-                                        field.focus();
-                                        if (field.tagName === 'INPUT') field.select();
-                                        focused = true;
-                                        console.log(`✅ Focused on ${fieldName}-${result.index} after creating item`);
-                                        break;
-                                    }
-                                }
-                                
-                                // Fallback: focus quantity
-                                if (!focused) {
-                                    const quantityField = document.getElementById(`quantity-${result.index}`);
-                                    if (quantityField) {
-                                        quantityField.focus();
-                                        quantityField.select();
-                                    }
-                                }
-                            }, 200);
-                        });
+                // Show modal or redirect to create item page
+                if (window.Swal) {
+                    Swal.fire({
+                        title: 'إنشاء صنف جديد',
+                        html: `
+                            <p>هل تريد إنشاء صنف جديد باسم: <strong>${itemName}</strong>؟</p>
+                            <p class="text-muted small">سيتم فتح صفحة إنشاء الصنف في نافذة جديدة</p>
+                        `,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'نعم، إنشاء',
+                        cancelButtonText: 'إلغاء',
+                        confirmButtonColor: '#0d6efd',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Open create item page in new window
+                            const createUrl = `/items/create?name=${encodeURIComponent(itemName)}`;
+                            window.open(createUrl, '_blank');
+                            
+                            // Show message to refresh after creating
+                            Swal.fire({
+                                title: 'تم فتح صفحة الإنشاء',
+                                text: 'بعد إنشاء الصنف، اضغط على زر "تحديث" لتحميل الصنف الجديد',
+                                icon: 'info',
+                                confirmButtonText: 'حسناً'
+                            });
+                        }
+                    });
+                } else {
+                    if (confirm(`هل تريد إنشاء صنف جديد باسم: ${itemName}؟`)) {
+                        const createUrl = `/items/create?name=${encodeURIComponent(itemName)}`;
+                        window.open(createUrl, '_blank');
+                        alert('بعد إنشاء الصنف، اضغط على زر "تحديث" لتحميل الصنف الجديد');
                     }
-                } catch (error) {
-                    console.error('Error creating item:', error);
-                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'فشل في إنشاء الصنف' });
                 }
             },
 
             clearSearch(focusSearch = false) {
                 this.searchTerm = '';
                 this.searchResults = [];
+                this.showResults = false;
+                this.selectedIndex = -1;
+                this.isCreateNewItemSelected = false;
+                
+                if (focusSearch) {
+                    this.$nextTick(() => {
+                        const searchInput = document.getElementById('search-input');
+                        if (searchInput) {
+                            searchInput.focus();
+                        }
+                    });
+                }
+            },
+            
+            /**
+             * Cleanup on destroy
+             */
+            destroy() {
+                if (this._refreshInterval) {
+                    clearInterval(this._refreshInterval);
+                }
+                
+                const searchInput = document.getElementById('search-input');
+                if (searchInput && this._keydownHandler) {
+                    searchInput.removeEventListener('keydown', this._keydownHandler, true);
+                }
+            }
+        }));
                 this.showResults = false;
                 this.selectedIndex = -1;
                 this.isCreateNewItemSelected = false;

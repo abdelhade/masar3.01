@@ -1,9 +1,52 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-// use Modules\Invoices\Http\Controllers\InvoicesController;
+declare(strict_types=1);
 
-// Commented out - InvoicesController does not exist
-// Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-//     Route::apiResource('invoices', InvoicesController::class)->names('invoices');
-// });
+use Illuminate\Support\Facades\Route;
+use Modules\Invoices\Http\Controllers\Api\InvoiceApiController;
+use Modules\Invoices\Http\Controllers\Api\InvoiceDataApiController;
+use Modules\Invoices\Http\Controllers\Api\ItemSearchApiController;
+
+/*
+|--------------------------------------------------------------------------
+| Invoice API Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth:sanctum'])->prefix('invoices')->group(function () {
+    
+    // Initial Data
+    Route::get('/initial-data', [InvoiceDataApiController::class, 'getInitialData'])
+        ->name('api.invoices.initial-data');
+    
+    Route::get('/{invoiceId}/edit-data', [InvoiceDataApiController::class, 'getInvoiceForEdit'])
+        ->name('api.invoices.edit-data');
+    
+    // Item Search
+    Route::get('/items/search', [ItemSearchApiController::class, 'searchItems'])
+        ->name('api.invoices.items.search');
+    
+    Route::get('/items/{itemId}/details', [ItemSearchApiController::class, 'getItemDetails'])
+        ->name('api.invoices.items.details');
+    
+    Route::get('/customers/{customerId}/recommended-items', [ItemSearchApiController::class, 'getRecommendedItems'])
+        ->name('api.invoices.customers.recommended-items');
+    
+    // Invoice CRUD
+    Route::post('/', [InvoiceApiController::class, 'store'])
+        ->name('api.invoices.store');
+    
+    Route::put('/{invoiceId}', [InvoiceApiController::class, 'update'])
+        ->name('api.invoices.update');
+    
+    Route::delete('/{invoiceId}', [InvoiceApiController::class, 'destroy'])
+        ->name('api.invoices.destroy');
+});
+
+// Items Lite endpoint (outside invoices prefix for simpler URL)
+Route::middleware(['auth:sanctum'])->get('/items/lite', [ItemSearchApiController::class, 'getLiteItems'])
+    ->name('api.items.lite');
+
+// Quick create item endpoint
+Route::middleware(['auth:sanctum'])->post('/items/quick-create', [ItemSearchApiController::class, 'quickCreateItem'])
+    ->name('api.items.quick-create');

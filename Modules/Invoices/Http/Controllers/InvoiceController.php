@@ -102,6 +102,10 @@ class InvoiceController extends Controller
     /**
      * Show the form for creating a new resource.
      */
+    /**
+     * Show create invoice form
+     * Redirects to new InvoiceFormController
+     */
     public function create(Request $request)
     {
         $type = (int) $request->get('type');
@@ -109,11 +113,11 @@ class InvoiceController extends Controller
             abort(404, 'Unknown invoice type.');
         }
 
-        $permissionName = 'create ' . $this->titles[$type];
-        $user = Auth::user();
-        if (!($user instanceof User) || !$user->can($permissionName)) {
-            abort(403, 'You do not have permission to create ' . $this->titles[$type]);
-        }
+        // $permissionName = 'create ' . $this->titles[$type];
+        // $user = Auth::user();
+        // if (!($user instanceof User) || !$user->can($permissionName)) {
+        //     abort(403, 'You do not have permission to create ' . $this->titles[$type]);
+        // }
 
         $expectedHash = md5($type);
         $providedHash = $request->get('q');
@@ -122,9 +126,11 @@ class InvoiceController extends Controller
             abort(403, 'Untrusted request.');
         }
 
-        return view('invoices::invoices.create', [
+        // Redirect to new InvoiceFormController
+        return redirect()->route('invoices.form.create', [
             'type' => $type,
             'hash' => $expectedHash,
+            'branch_id' => $request->get('branch_id', auth()->user()->branch_id ?? null)
         ]);
     }
 
@@ -160,6 +166,10 @@ class InvoiceController extends Controller
         return view('invoices::invoices.show', compact('invoice', 'type'));
     }
 
+    /**
+     * Show edit invoice form
+     * Redirects to new InvoiceFormController
+     */
     public function edit(OperHead $invoice)
     {
         if (! $invoice || ($invoice->isdeleted ?? false)) {
@@ -179,13 +189,11 @@ class InvoiceController extends Controller
 
         if ($invoice->is_posted ?? false) {
             Alert::toast('Cannot edit a posted invoice.', 'warning');
-
             return redirect()->route('invoices.index');
         }
 
-        $invoice->load(['operationItems.item.units', 'operationItems.item.prices', 'acc1Head', 'acc2Head', 'employee']);
-
-        return view('invoices::invoices.edit', compact('invoice'));
+        // Redirect to new InvoiceFormController
+        return redirect()->route('invoices.form.edit', ['invoiceId' => $invoice->id]);
     }
 
     public function update(Request $request, string $id)

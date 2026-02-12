@@ -1,246 +1,124 @@
-@push('styles')
-    <style>
-        .card-title {
-            padding-inline-start: 80px;
-        }
-    </style>
-@endpush
-
 @php
     $titles = [
-        10 => 'Sales Invoice',
-        11 => 'Purchase Invoice',
-        12 => 'Sales Return',
-        13 => 'Purchase Return',
-        14 => 'Sales Order',
-        15 => 'Purchase Order',
-        16 => 'Quotation to Customer',
-        17 => 'Quotation from Supplier',
-        18 => 'Damaged Goods Invoice',
-        19 => 'Dispatch Order',
-        20 => 'Addition Order',
-        21 => 'Store-to-Store Transfer',
-        22 => 'Booking Order',
-        24 => 'Service Invoice',
-        25 => 'Requisition',
-        26 => 'Pricing Agreement',
+        10 => 'فاتورة مبيعات',
+        11 => 'فاتورة مشتريات',
+        12 => 'مرتجع مبيعات',
+        13 => 'مرتجع مشتريات',
+        14 => 'أمر بيع',
+        15 => 'أمر شراء',
+        16 => 'عرض سعر للعميل',
+        17 => 'عرض سعر من المورد',
+        18 => 'فاتورة تالف',
+        19 => 'أمر صرف',
+        20 => 'أمر إضافة',
+        21 => 'تحويل مخزني',
+        22 => 'أمر حجز',
+        24 => 'فاتورة خدمة',
+        25 => 'طلب شراء',
+        26 => 'اتفاقية تسعير',
     ];
 @endphp
 
-
-<div class="row card border border-secondary border-3">
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap py-2">
-        <div class="d-flex align-items-center">
-            <h3 class="card-title fw-bold m-0 ms-2" style="font-size: 1.1rem;">
-                {{ __($titles[$type]) }}
-            </h3>
-            @php
-                $colorClass = '';
-                if (in_array($type, [10, 14, 16, 22])) {
-                    $colorClass = 'bg-primary';
-                } elseif (in_array($type, [11, 15, 17, 24, 25])) {
-                    $colorClass = 'bg-danger';
-                } elseif (in_array($type, [12, 13, 18, 19, 20, 21])) {
-                    $colorClass = 'bg-warning';
-                }
-            @endphp
-
-            <div class="rounded-circle {{ $colorClass }}" style="width: 20px; height: 20px; min-width: 20px;">
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    {{ $titles[$type] ?? 'فاتورة' }}
+                </h5>
             </div>
-
-            @if ($branches->count() > 1)
-                <div class="ms-2" style="min-width: 130px;">
-                    <label class="form-label mb-0" style="font-size: 0.75rem;">{{ __('Branch') }}</label>
-                    <select wire:model.live="branch_id" class="form-control form-control-sm"
-                        style="font-size: 0.75rem; height: 1.8em; padding: 2px 4px;">
-                        @foreach ($branches as $branch)
-                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            @endif
+            <div class="col-md-6 text-end">
+                @if ($type != 21 && $showBalance)
+                    <small class="me-3">
+                        <strong>{{ __('Current Balance:') }}</strong>
+                        <span id="current-balance-header" class="badge bg-light text-dark">0.00</span>
+                    </small>
+                    <small>
+                        <strong>{{ __('After Invoice:') }}</strong>
+                        <span id="balance-after-header" class="badge bg-light text-dark">0.00</span>
+                    </small>
+                @endif
+            </div>
         </div>
-
-        @if (isMultiCurrencyEnabled())
-            <div class="col-lg-3">
-                <x-settings::currency-converter-mini :inline="false" sourceField="#pro_value" :showAmount="true"
-                    :showResult="true" :selectedCurrency="$currency_id" :exchangeRate="$currency_rate"
-                    wire:key="currency-converter-{{ $currency_id }}-{{ $currency_rate }}"
-                    wire:model.live="currency_id" />
-            </div>
-        @else
-            <input type="hidden" wire:model="currency_id" value="1">
-            <input type="hidden" wire:model="currency_rate" value="1">
-        @endif
-
-        @if ($type != 21)
-            @if ($showBalance)
-                <div class="mt-1">
-                    <div class="row" style="min-width: 350px; font-size: 0.75rem;">
-                        <div class="col-6">
-                            <label style="font-size: 0.75rem;">{{ __('Current Balance: ') }}</label>
-                            <span class="fw-bold text-primary"
-                                x-text="window.formatNumberFixed(currentBalance)">{{ number_format($currentBalance) }}</span>
-                        </div>
-                        <div class="col-6">
-                            <label style="font-size: 0.75rem;">{{ __('Balance After Invoice: ') }}</label>
-                            <span class="fw-bold" :class="calculatedBalanceAfter < 0 ? 'text-danger' : 'text-success'"
-                                x-text="window.formatNumberFixed(calculatedBalanceAfter)">
-                                {{ number_format($balanceAfterInvoice) }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            @endif
-        @endif
     </div>
 
-    <div class="card-body p-2">
-        <div class="row">
-            <input type="hidden" wire:model="type">
+    <div class="card-body p-3" style="background: #f8f9fa;">
+        <div class="row g-2">
+            <input type="hidden" name="type" value="{{ $type }}">
 
-            {{-- الحساب المتغير acc1 --}}
-            <div class="col-lg-2" wire:key="acc1-{{ $branch_id }}">
-                <div class="flex-grow-1">
-                    @if ($type != 21 && setting('invoice_show_add_clients_suppliers'))
-                        @php
-                            $accountType = 'client';
-                            if (in_array($type, [11, 13, 15, 17])) {
-                                $accountType = 'supplier';
-                            }
-                        @endphp
-
-                        <label class="form-label mb-0" style="font-size: 0.75rem;">{{ $acc1Role }}</label>
-
-                        <div class="input-group input-group-sm">
-                            <div class="flex-grow-1">
-                                <livewire:async-select name="acc1_id" wire:model.live="acc1_id" :options="$acc1Options"
-                                    placeholder="{{ __('Search for ') . $acc1Role . __('...') }}" ui="bootstrap"
-                                    :key="'acc1-async-add-' . $type . '-' . $branch_id . '-' . count($acc1Options)"
-                                    x-on:change="if ($wire && typeof $wire.updateCurrencyFromAccount === 'function') $wire.updateCurrencyFromAccount($event.target.value)" />
-                            </div>
-
-                            @canany(['create ' . $titles[$type], 'create invoices'])
-                                <livewire:accounts::account-creator :type="$accountType" :button-class="'btn btn-success btn-sm'" :button-text="'+'"
-                                    :key="'account-creator-' . $type . '-' . $branch_id" />
-                            @endcanany
-                        </div>
-                    @else
-                        <label class="form-label mb-0" style="font-size: 0.75rem;">{{ $acc1Role }}</label>
-                        <livewire:async-select name="acc1_id" wire:model.live="acc1_id" :options="$acc1Options"
-                            placeholder="{{ __('Search for ') . $acc1Role . __('...') }}" ui="bootstrap"
-                            :key="'acc1-async-' . $type . '-' . $branch_id . '-' . count($acc1Options)"
-                            x-on:change="if (typeof updateCurrencyFromAccount === 'function') updateCurrencyFromAccount($event.target.value)" />
-                    @endif
-
-                    @error('acc1_id')
-                        <span class="text-danger small d-block mt-1" style="font-size: 0.7rem;"><strong>{{ $message }}</strong></span>
-                    @enderror
-                </div>
+            {{-- العميل/المورد --}}
+            <div class="col-md-2">
+                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ $acc1Role }}</label>
+                <select id="acc1-id" class="form-select form-select-sm">
+                    <option value="">{{ __('اختر') }} {{ $acc1Role }}</option>
+                    @foreach ($acc1Options as $option)
+                        <option value="{{ $option->id }}">{{ $option->aname }}</option>
+                    @endforeach
+                </select>
             </div>
 
-            {{-- المخزن acc2 --}}
-            <div class="col-lg-2" wire:key="acc2-{{ $branch_id }}">
-                <label class="form-label mb-0" style="font-size: 0.75rem;">{{ $acc2Role }}</label>
-                <select wire:model.live="acc2_id"
-                    class="form-control form-control-sm @error('acc2_id') is-invalid @enderror"
-                    style="font-size: 0.75rem; height: 1.8em; padding: 2px 4px;"
-                    @cannot('edit ' . $titles[$type]) disabled @endcannot <option value="">{{ __('Select ') }}
-                    {{ $acc2Role }}</option>
+            {{-- المخزن --}}
+            <div class="col-md-2">
+                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ $acc2Role }}</label>
+                <select id="acc2-id" class="form-select form-select-sm">
+                    <option value="">{{ __('اختر') }} {{ $acc2Role }}</option>
                     @foreach ($acc2List as $acc)
                         <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
                     @endforeach
                 </select>
-                @error('acc2_id')
-                    <span class="invalid-feedback" style="font-size: 0.7rem;"><strong>{{ $message }}</strong></span>
-                @enderror
             </div>
 
             {{-- الموظف --}}
-            <div class="col-lg-2" wire:key="emp-{{ $branch_id }}">
-                <label for="emp_id" class="form-label mb-0" style="font-size: 0.75rem;">{{ __('Employee') }}</label>
-                <select wire:model="emp_id"
-                    class="form-control form-control-sm @error('emp_id') is-invalid @enderror"
-                    style="font-size: 0.75rem; height: 1.8em; padding: 2px 4px;"
-                    @cannot('edit ' . $titles[$type]) disabled @endcannot <option
-                    value="">{{ __('Select Employee') }}</option>
+            <div class="col-md-1">
+                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('الموظف') }}</label>
+                <select id="emp-id" class="form-select form-select-sm">
+                    <option value="">{{ __('اختر الموظف') }}</option>
                     @foreach ($employees as $employee)
                         <option value="{{ $employee->id }}">{{ $employee->aname }}</option>
                     @endforeach
                 </select>
-                @error('emp_id')
-                    <span class="invalid-feedback" style="font-size: 0.7rem;"><strong>{{ $message }}</strong></span>
-                @enderror
             </div>
 
             @if ($type != 21)
-                <div class="col-lg-2" wire:key="delivery-{{ $branch_id }}">
-                    <label for="delivery_id" class="form-label mb-0" style="font-size: 0.75rem;">{{ __('Delegate') }}</label>
-                    <select wire:model="delivery_id"
-                        class="form-control form-control-sm @error('delivery_id') is-invalid @enderror"
-                        style="font-size: 0.75rem; height: 1.8em; padding: 2px 4px;"
-                        @cannot('edit ' . __($titles[$type])) disabled @endcannot>
-                        <option value="">{{ __('Select Delegate') }}</option>
+                {{-- المندوب --}}
+                <div class="col-md-1">
+                    <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('المندوب') }}</label>
+                    <select id="delivery-id" class="form-select form-select-sm">
+                        <option value="">{{ __('اختر المندوب') }}</option>
                         @foreach ($deliverys as $delivery)
                             <option value="{{ $delivery->id }}">{{ $delivery->aname }}</option>
                         @endforeach
                     </select>
-                    @error('delivery_id')
-                        <span class="invalid-feedback" style="font-size: 0.7rem;"><strong>{{ $message }}</strong></span>
-                    @enderror
                 </div>
             @endif
 
             {{-- التاريخ --}}
-            <div class="col-lg-1">
-                <label for="pro_date" class="form-label mb-0" style="font-size: 0.75rem;">{{ __('Date') }}</label>
-                <input type="date" wire:model="pro_date"
-                    class="form-control form-control-sm @error('pro_date') is-invalid @enderror"
-                    style="font-size: 0.75rem; height: 1.8em; padding: 2px 4px;"
-                    @if (setting('invoice_prevent_date_edit') ||
-                            !auth()->user()->can('edit ' . $titles[$type])) readonly @endif
-                    @error('pro_date')
-                    <span class="invalid-feedback" style="font-size: 0.7rem;"><strong>{{ $message }}</strong></span>
-                @enderror
+            <div class="col-md-1">
+                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('التاريخ') }}</label>
+                <input type="date" id="pro-date" class="form-control form-control-sm" value="{{ date('Y-m-d') }}">
             </div>
 
-            @if (setting('invoice_use_due_date'))
-                @if ($type != 21)
-                    <div class="col-lg-1">
-                        <label for="accural_date" class="form-label mb-0" style="font-size: 0.75rem;">{{ __('Due Date') }}</label>
-                        <input type="date" wire:model="accural_date"
-                            class="form-control form-control-sm @error('accural_date') is-invalid @enderror"
-                            style="font-size: 0.75rem; height: 1.8em; padding: 2px 4px;"
-                            @cannot('edit ' . $titles[$type]) readonly @endcannot
-                            @error('accural_date')
-                        <span class="invalid-feedback" style="font-size: 0.7rem;"><strong>{{ $message }}</strong></span>
-                    @enderror
-                    </div>
-                @endif
-            @endif
-
-            <div class="col-lg-1">
-                <label for="pro_id" class="form-label mb-0" style="font-size: 0.75rem;">{{ __('Invoice Number') }}</label>
-                <input type="number" wire:model="pro_id"
-                    class="form-control form-control-sm @error('pro_id') is-invalid @enderror"
-                    readonly style="font-size: 0.75rem; height: 1.8em; padding: 2px 4px;">
-                @error('pro_id')
-                    <span class="invalid-feedback" style="font-size: 0.7rem;"><strong>{{ $message }}</strong></span>
-                @enderror
+            {{-- رقم الفاتورة --}}
+            <div class="col-md-1">
+                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('رقم الفاتورة') }}</label>
+                <input type="text" id="pro-id" class="form-control form-control-sm" readonly placeholder="تلقائي">
             </div>
 
             @if ($type != 21)
-                <div class="col-lg-1">
-                    <label for="serial_number" class="form-label mb-0" style="font-size: 0.75rem;">{{ __('S.N') }}</label>
-                    <input type="text" wire:model="serial_number"
-                        class="form-control form-control-sm @error('serial_number') is-invalid @enderror"
-                        style="font-size: 0.75rem; height: 1.8em; padding: 2px 4px;"
-                        @cannot('edit ' . $titles[$type]) readonly @endcannot
-                        @error('serial_number')
-                    <span class="invalid-feedback" style="font-size: 0.7rem;"><strong>{{ $message }}</strong></span>
-                @enderror
+                {{-- S.N --}}
+                <div class="col-md-1">
+                    <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('S.N') }}</label>
+                    <input type="text" id="serial-number" class="form-control form-control-sm">
                 </div>
             @endif
+
+            {{-- ملاحظات --}}
+            <div class="col-md-3">
+                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('ملاحظات') }}</label>
+                <input id="notes" class="form-control form-control-sm" rows="2"
+                    placeholder="أدخل ملاحظات إضافية..."></input>
             </div>
         </div>
     </div>
+</div>
