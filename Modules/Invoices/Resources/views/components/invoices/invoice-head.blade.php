@@ -47,11 +47,14 @@
         <div class="row g-2">
             <input type="hidden" name="type" value="{{ $type }}">
 
-            {{-- العميل/المورد --}}
+            {{-- العميل/المورد - With Select2 Search --}}
             <div class="col-md-2">
-                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ $acc1Role }}</label>
-                <select id="acc1-id" class="form-select form-select-sm">
-                    <option value="">{{ __('اختر') }} {{ $acc1Role }}</option>
+                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">
+                    {{ $acc1Role }}
+                    <span class="text-danger">*</span>
+                </label>
+                <select id="acc1-id" class="form-select form-select-sm" style="width: 100%;">
+                    <option value="">{{ __('ابحث عن') }} {{ $acc1Role }}...</option>
                     @foreach ($acc1Options as $option)
                         <option value="{{ $option->id }}">{{ $option->aname }}</option>
                     @endforeach
@@ -60,7 +63,7 @@
 
             {{-- المخزن --}}
             <div class="col-md-2">
-                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ $acc2Role }}</label>
+                <label class="form-label mb-1 fw-semibold" style="font-siتze: 0.85rem;">{{ $acc2Role }}</label>
                 <select id="acc2-id" class="form-select form-select-sm">
                     <option value="">{{ __('اختر') }} {{ $acc2Role }}</option>
                     @foreach ($acc2List as $acc)

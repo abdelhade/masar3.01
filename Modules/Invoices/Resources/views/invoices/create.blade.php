@@ -16,7 +16,7 @@
         body {
             padding-bottom: 0 !important;
         }
-        
+
         /* Main content wrapper */
         #invoice-app {
             display: flex;
@@ -24,7 +24,7 @@
             min-height: calc(100vh - 100px);
             padding-bottom: 20px;
         }
-        
+
         /* Invoice footer - NOT fixed, stays at bottom of content */
         .invoice-footer-container {
             margin-top: auto;
@@ -33,7 +33,7 @@
             padding: 15px;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         }
-        
+
         /* Invoice table container */
         .invoice-scroll-container {
             flex: 1;
@@ -41,7 +41,7 @@
             max-height: calc(100vh - 500px);
             overflow-y: auto;
         }
-        
+
         /* Header styling to match image */
         .invoice-header-card {
             background: #f8f9fa;
@@ -49,14 +49,14 @@
             border-radius: 8px;
             margin-bottom: 15px;
         }
-        
+
         .invoice-header-card .card-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-radius: 6px 6px 0 0;
             padding: 10px 15px;
         }
-        
+
         /* Table header styling to match image */
         .invoice-data-grid thead th {
             background: linear-gradient(135deg, #a8c0ff 0%, #c5d9ff 100%) !important;
@@ -65,31 +65,31 @@
             text-align: center;
             border: 1px solid #90a4ae;
         }
-        
+
         /* Search row styling */
         .invoice-data-grid .search-row {
             background: #e3f2fd !important;
         }
-        
+
         /* Footer styling to match image */
         .invoice-footer-container {
             background: linear-gradient(to bottom, #ffffff 0%, #f5f5f5 100%);
         }
-        
+
         .footer-section {
             background: white;
             border: 2px solid #dee2e6;
             border-radius: 8px;
             padding: 15px;
         }
-        
+
         .footer-label {
             font-size: 0.85rem;
             font-weight: 600;
             color: #495057;
             margin-bottom: 5px;
         }
-        
+
         .footer-value {
             font-size: 1rem;
             font-weight: 700;
@@ -100,13 +100,13 @@
             border-radius: 4px;
             text-align: center;
         }
-        
+
         .footer-value.total {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             font-size: 1.2rem;
         }
-        
+
         /* Button styling */
         .btn-save-invoice {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
@@ -118,24 +118,24 @@
             box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
             transition: all 0.3s ease;
         }
-        
+
         .btn-save-invoice:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
         }
-        
+
         /* Ensure content doesn't overlap with sidebar */
         .main-content {
             margin-left: 0;
             transition: margin-left 0.3s ease;
         }
-        
+
         @media (min-width: 768px) {
             .main-content {
                 margin-left: 250px; /* Sidebar width */
             }
         }
-        
+
         /* Hidden class */
         .hidden {
             display: none !important;
@@ -148,7 +148,7 @@
     <div id="invoice-app">
         <form id="invoice-form">
             @csrf
-            
+
             {{-- Invoice Header --}}
             <div class="invoice-header-card">
                 @include('invoices::components.invoices.invoice-head', [
@@ -175,7 +175,7 @@
                 'branchId' => $branchId,
             ])
         </form>
-        
+
         {{-- Invoice Footer - NOT fixed, at bottom of content --}}
         <div class="invoice-footer-container">
             @include('invoices::components.invoices.invoice-footer', [
@@ -190,13 +190,10 @@
 @endsection
 
 @push('scripts')
-    {{-- Fuse.js for search --}}
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    
     {{-- Main Invoice JavaScript --}}
     <script>
         console.log('🚀 Invoice System Loading...');
-        
+
         // Invoice State (Global)
         window.InvoiceApp = {
             // Config
@@ -204,12 +201,12 @@
             branchId: {{ $branchId ?? 'null' }},
             vatPercentage: {{ setting('vat_percentage', 15) }},
             withholdingTaxPercentage: {{ setting('withholding_tax_percentage', 0) }},
-            
+
             // Data
             invoiceItems: [],
             allItems: [],
             fuse: null,
-            
+
             // Totals
             subtotal: 0,
             discountPercentage: 0,
@@ -221,25 +218,87 @@
             totalAfterAdditional: 0,
             receivedFromClient: 0,
             remaining: 0,
-            
+
             // Search
             searchResults: [],
             selectedIndex: -1,
-            
+
             // Initialize
             init() {
                 console.log('🎬 Initializing Invoice App...');
+                this.initializeSelect2();
+                this.setDefaultValues();
                 this.loadItems();
                 this.attachEventListeners();
                 this.renderItems();
                 console.log('✅ Invoice App Ready');
             },
-            
+
+            // Initialize Select2 for searchable dropdowns
+            initializeSelect2() {
+                // Initialize Select2 for acc1 (Customer/Supplier) with search
+                $('#acc1-id').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: 'ابحث عن عميل/مورد...',
+                    allowClear: true,
+                    language: {
+                        noResults: () => 'لا توجد نتائج',
+                        searching: () => 'جاري البحث...'
+                    }
+                }).on('change', (e) => {
+                    const accountId = e.target.value;
+                    if (accountId) {
+                        this.updateAccountBalance(accountId);
+                    }
+                });
+
+                console.log('✅ Select2 initialized for acc1');
+            },
+
+            // Set default values from settings
+            setDefaultValues() {
+                // Set default employee
+                const defaultEmployeeId = '{{ $defaultEmployeeId ?? "" }}';
+                if (defaultEmployeeId) {
+                    document.getElementById('emp-id').value = defaultEmployeeId;
+                    console.log('✅ Default employee set:', defaultEmployeeId);
+                }
+
+                // Set default delivery
+                const defaultDeliveryId = '{{ $defaultDeliveryId ?? "" }}';
+                if (defaultDeliveryId) {
+                    document.getElementById('delivery-id').value = defaultDeliveryId;
+                    console.log('✅ Default delivery set:', defaultDeliveryId);
+                }
+
+                // Set default store
+                const defaultStoreId = '{{ $defaultStoreId ?? "" }}';
+                if (defaultStoreId) {
+                    document.getElementById('acc2-id').value = defaultStoreId;
+                    console.log('✅ Default store set:', defaultStoreId);
+                }
+
+                // Set default customer/supplier based on invoice type
+                const invoiceType = {{ $type }};
+                const defaultCustomerId = '{{ $defaultCustomerId ?? "" }}';
+                const defaultSupplierId = '{{ $defaultSupplierId ?? "" }}';
+
+                if ([10, 12, 14, 16, 19, 22].includes(invoiceType) && defaultCustomerId) {
+                    // Sales invoices - set default customer
+                    $('#acc1-id').val(defaultCustomerId).trigger('change');
+                    console.log('✅ Default customer set:', defaultCustomerId);
+                } else if ([11, 13, 15, 17, 20, 23].includes(invoiceType) && defaultSupplierId) {
+                    // Purchase invoices - set default supplier
+                    $('#acc1-id').val(defaultSupplierId).trigger('change');
+                    console.log('✅ Default supplier set:', defaultSupplierId);
+                }
+            },
+
             // Load items from API
             loadItems() {
                 console.log('📡 Loading items...');
                 const url = `/api/items/lite?branch_id=${this.branchId}&type=${this.type}&_t=${Date.now()}`;
-                
+
                 fetch(url, {
                     headers: {
                         'Accept': 'application/json',
@@ -250,7 +309,7 @@
                 .then(data => {
                     console.log('📦 Received', data.length, 'items');
                     this.allItems = data;
-                    
+
                     if (typeof Fuse !== 'undefined') {
                         this.fuse = new Fuse(this.allItems, {
                             keys: ['name', 'code', 'barcode'],
@@ -266,7 +325,7 @@
                     this.updateStatus('خطأ في تحميل الأصناف', 'danger');
                 });
             },
-            
+
             // Attach event listeners
             attachEventListeners() {
                 // Search input
@@ -275,7 +334,7 @@
                     searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
                     searchInput.addEventListener('keydown', (e) => this.handleSearchKeydown(e));
                 }
-                
+
                 // Form submit
                 const form = document.getElementById('invoice-form');
                 if (form) {
@@ -284,61 +343,61 @@
                         this.saveInvoice();
                     });
                 }
-                
+
                 // Discount/Additional inputs
                 document.getElementById('discount-percentage')?.addEventListener('input', (e) => {
                     this.discountPercentage = parseFloat(e.target.value) || 0;
                     this.calculateTotals();
                 });
-                
+
                 document.getElementById('discount-value')?.addEventListener('input', (e) => {
                     this.discountValue = parseFloat(e.target.value) || 0;
                     this.calculateTotals();
                 });
-                
+
                 document.getElementById('additional-percentage')?.addEventListener('input', (e) => {
                     this.additionalPercentage = parseFloat(e.target.value) || 0;
                     this.calculateTotals();
                 });
-                
+
                 document.getElementById('additional-value')?.addEventListener('input', (e) => {
                     this.additionalValue = parseFloat(e.target.value) || 0;
                     this.calculateTotals();
                 });
-                
+
                 document.getElementById('received-from-client')?.addEventListener('input', (e) => {
                     this.receivedFromClient = parseFloat(e.target.value) || 0;
                     this.calculateTotals();
                 });
-                
+
                 console.log('✅ Event listeners attached');
             },
-            
+
             // Handle search
             handleSearch(term) {
                 if (!term || term.length < 1) {
                     this.hideSearchResults();
                     return;
                 }
-                
+
                 if (!this.fuse) {
                     console.error('❌ Fuse not ready');
                     return;
                 }
-                
+
                 const results = this.fuse.search(term);
                 this.searchResults = results.map(r => r.item).slice(0, 50);
                 this.selectedIndex = this.searchResults.length > 0 ? 0 : -1;
-                
+
                 this.renderSearchResults();
                 this.showSearchResults();
             },
-            
+
             // Handle search keydown
             handleSearchKeydown(e) {
                 const dropdown = document.getElementById('search-results-dropdown');
                 if (!dropdown || dropdown.classList.contains('hidden')) return;
-                
+
                 switch(e.key) {
                     case 'ArrowDown':
                         e.preventDefault();
@@ -371,14 +430,14 @@
                         break;
                 }
             },
-            
+
             // Render search results
             renderSearchResults() {
                 const dropdown = document.getElementById('search-results-dropdown');
                 if (!dropdown) return;
-                
+
                 dropdown.innerHTML = '';
-                
+
                 if (this.searchResults.length === 0) {
                     const searchInput = document.getElementById('search-input');
                     const btn = document.createElement('button');
@@ -405,7 +464,7 @@
                     });
                 }
             },
-            
+
             // Show/hide search results
             showSearchResults() {
                 const dropdown = document.getElementById('search-results-dropdown');
@@ -414,7 +473,7 @@
                     dropdown.style.display = 'block';
                 }
             },
-            
+
             hideSearchResults() {
                 const dropdown = document.getElementById('search-results-dropdown');
                 if (dropdown) {
@@ -422,11 +481,11 @@
                     dropdown.style.display = 'none';
                 }
             },
-            
+
             // Add item to invoice
             addItem(item) {
                 console.log('➕ Adding item:', item.name);
-                
+
                 const newItem = {
                     id: Date.now(), // Temporary ID
                     item_id: item.id,
@@ -442,18 +501,18 @@
                     expiry_date: null,
                     available_units: item.units || []
                 };
-                
+
                 this.invoiceItems.push(newItem);
                 this.renderItems();
                 this.calculateTotals();
-                
+
                 // Clear search
                 const searchInput = document.getElementById('search-input');
                 if (searchInput) searchInput.value = '';
                 this.hideSearchResults();
-                
+
                 this.updateStatus('✓ تم إضافة الصنف', 'success');
-                
+
                 // Focus on quantity
                 setTimeout(() => {
                     const qtyField = document.getElementById('quantity-' + (this.invoiceItems.length - 1));
@@ -462,17 +521,17 @@
                         qtyField.select();
                     }
                 }, 100);
-                
+
                 console.log('✅ Item added. Total items:', this.invoiceItems.length);
             },
-            
+
             // Create new item
             createNewItem(name) {
                 if (!name || name.trim().length === 0) return;
-                
+
                 console.log('➕ Creating new item:', name);
                 this.updateStatus('جاري إنشاء الصنف...', 'primary');
-                
+
                 fetch('/api/items/quick-create', {
                     method: 'POST',
                     headers: {
@@ -492,7 +551,7 @@
                 .then(data => {
                     if (data.item) {
                         this.allItems.push(data.item);
-                        
+
                         // Re-init Fuse
                         if (typeof Fuse !== 'undefined') {
                             this.fuse = new Fuse(this.allItems, {
@@ -501,7 +560,7 @@
                                 ignoreLocation: true
                             });
                         }
-                        
+
                         this.updateStatus('تم تحميل ' + this.allItems.length + ' صنف - البحث جاهز ✓', 'success');
                         this.addItem(data.item);
                     }
@@ -510,15 +569,15 @@
                     console.error('❌ Error creating item:', error);
                     this.updateStatus('خطأ في إنشاء الصنف', 'danger');
                 });
-                
+
                 this.hideSearchResults();
             },
-            
+
             // Render items table
             renderItems() {
                 const tbody = document.getElementById('invoice-items-tbody');
                 if (!tbody) return;
-                
+
                 if (this.invoiceItems.length === 0) {
                     tbody.innerHTML = `
                         <tr>
@@ -531,17 +590,17 @@
                     `;
                     return;
                 }
-                
+
                 tbody.innerHTML = this.invoiceItems.map((item, index) => this.renderItemRow(item, index)).join('');
-                
+
                 // Attach event listeners to inputs
                 this.attachItemEventListeners();
             },
-            
+
             // Render single item row
             renderItemRow(item, index) {
                 const showBatchExpiry = [10, 11, 12, 13, 19, 20].includes(this.type);
-                
+
                 return `
                     <tr data-index="${index}">
                         <td style="width: 18%;">
@@ -562,34 +621,34 @@
                             </select>
                         </td>
                         <td style="width: 10%;">
-                            <input type="number" id="quantity-${index}" class="form-control text-center" 
+                            <input type="number" id="quantity-${index}" class="form-control text-center"
                                    value="${item.quantity}" step="0.001" min="0"
                                    data-index="${index}" data-field="quantity">
                         </td>
                         ${showBatchExpiry ? `
                             <td style="width: 12%;">
-                                <input type="text" id="batch-${index}" class="form-control text-center" 
-                                       value="${item.batch_number || ''}" 
+                                <input type="text" id="batch-${index}" class="form-control text-center"
+                                       value="${item.batch_number || ''}"
                                        data-index="${index}" data-field="batch">
                             </td>
                             <td style="width: 12%;">
-                                <input type="date" id="expiry-${index}" class="form-control text-center" 
-                                       value="${item.expiry_date || ''}" 
+                                <input type="date" id="expiry-${index}" class="form-control text-center"
+                                       value="${item.expiry_date || ''}"
                                        data-index="${index}" data-field="expiry">
                             </td>
                         ` : ''}
                         <td style="width: 15%;">
-                            <input type="number" id="price-${index}" class="form-control text-center" 
+                            <input type="number" id="price-${index}" class="form-control text-center"
                                    value="${item.price}" step="0.01"
                                    data-index="${index}" data-field="price">
                         </td>
                         <td style="width: 15%;">
-                            <input type="number" id="discount-${index}" class="form-control text-center" 
+                            <input type="number" id="discount-${index}" class="form-control text-center"
                                    value="${item.discount}" step="0.01"
                                    data-index="${index}" data-field="discount">
                         </td>
                         <td style="width: 15%;">
-                            <input type="number" id="sub-value-${index}" class="form-control text-center" 
+                            <input type="number" id="sub-value-${index}" class="form-control text-center"
                                    value="${item.sub_value}" readonly>
                         </td>
                         <td class="action-cell" style="width: 50px;">
@@ -600,7 +659,7 @@
                     </tr>
                 `;
             },
-            
+
             // Attach event listeners to item inputs
             attachItemEventListeners() {
                 // Quantity, price, discount inputs
@@ -609,35 +668,35 @@
                         const index = parseInt(e.target.dataset.index);
                         const field = e.target.dataset.field;
                         const value = parseFloat(e.target.value) || 0;
-                        
+
                         this.invoiceItems[index][field] = value;
                         this.calculateItemTotal(index);
                     });
-                    
+
                     input.addEventListener('focus', (e) => e.target.select());
                 });
-                
+
                 // Unit select
                 document.querySelectorAll('[data-field="unit"]').forEach(select => {
                     select.addEventListener('change', (e) => {
                         const index = parseInt(e.target.dataset.index);
                         const selectedOption = e.target.options[e.target.selectedIndex];
                         const uVal = parseFloat(selectedOption.dataset.uVal) || 1;
-                        
+
                         this.invoiceItems[index].unit_id = parseInt(e.target.value);
                         this.invoiceItems[index].price = (this.invoiceItems[index].item_price || 0) * uVal;
-                        
+
                         this.calculateItemTotal(index);
                         this.renderItems();
                     });
                 });
-                
+
                 // Batch and expiry
                 document.querySelectorAll('[data-field="batch"], [data-field="expiry"]').forEach(input => {
                     input.addEventListener('input', (e) => {
                         const index = parseInt(e.target.dataset.index);
                         const field = e.target.dataset.field;
-                        
+
                         if (field === 'batch') {
                             this.invoiceItems[index].batch_number = e.target.value;
                         } else if (field === 'expiry') {
@@ -646,64 +705,64 @@
                     });
                 });
             },
-            
+
             // Calculate item total
             calculateItemTotal(index) {
                 const item = this.invoiceItems[index];
                 const quantity = parseFloat(item.quantity) || 0;
                 const price = parseFloat(item.price) || 0;
                 const discount = parseFloat(item.discount) || 0;
-                
+
                 item.sub_value = parseFloat(((quantity * price) - discount).toFixed(2));
-                
+
                 // Update display
                 const subValueInput = document.getElementById('sub-value-' + index);
                 if (subValueInput) {
                     subValueInput.value = item.sub_value;
                 }
-                
+
                 this.calculateTotals();
             },
-            
+
             // Calculate totals
             calculateTotals() {
                 // Subtotal
                 this.subtotal = this.invoiceItems.reduce((sum, item) => sum + (parseFloat(item.sub_value) || 0), 0);
                 this.subtotal = parseFloat(this.subtotal.toFixed(2));
-                
+
                 // Discount
                 if (this.discountPercentage > 0) {
                     this.discountValue = parseFloat(((this.subtotal * this.discountPercentage) / 100).toFixed(2));
                 } else if (this.subtotal > 0 && this.discountValue > 0) {
                     this.discountPercentage = parseFloat(((this.discountValue / this.subtotal) * 100).toFixed(2));
                 }
-                
+
                 const afterDiscount = parseFloat((this.subtotal - this.discountValue).toFixed(2));
-                
+
                 // Additional
                 if (this.additionalPercentage > 0) {
                     this.additionalValue = parseFloat(((afterDiscount * this.additionalPercentage) / 100).toFixed(2));
                 } else if (afterDiscount > 0 && this.additionalValue > 0) {
                     this.additionalPercentage = parseFloat(((this.additionalValue / afterDiscount) * 100).toFixed(2));
                 }
-                
+
                 const afterAdditional = parseFloat((afterDiscount + this.additionalValue).toFixed(2));
-                
+
                 // VAT
                 this.vatValue = parseFloat(((afterAdditional * this.vatPercentage) / 100).toFixed(2));
-                
+
                 // Withholding Tax
                 this.withholdingTaxValue = parseFloat(((afterAdditional * this.withholdingTaxPercentage) / 100).toFixed(2));
-                
+
                 // Total
                 this.totalAfterAdditional = parseFloat((afterAdditional + this.vatValue - this.withholdingTaxValue).toFixed(2));
-                
+
                 // Remaining
                 this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(2));
-                
+
                 this.updateTotalsDisplay();
             },
-            
+
             // Update totals display
             updateTotalsDisplay() {
                 const updates = {
@@ -715,13 +774,13 @@
                     'total-display': this.totalAfterAdditional,
                     'remaining-display': this.remaining
                 };
-                
+
                 Object.entries(updates).forEach(([id, value]) => {
                     const el = document.getElementById(id);
                     if (el) el.textContent = value.toFixed(2);
                 });
             },
-            
+
             // Remove item
             removeItem(index) {
                 if (confirm('هل تريد حذف هذا الصنف؟')) {
@@ -730,16 +789,66 @@
                     this.calculateTotals();
                 }
             },
-            
+
+            /**
+             * Update account balance when account changes
+             */
+            updateAccountBalance(accountId) {
+                if (!accountId) {
+                    this.currentBalance = 0;
+                    this.calculateBalance();
+                    return;
+                }
+
+                // Fetch account balance from API
+                fetch(`/api/accounts/${accountId}/balance`)
+                    .then(response => response.json())
+                    .then(data => {
+                        this.currentBalance = parseFloat(data.balance) || 0;
+                        this.calculateBalance();
+
+                        // Update display
+                        const balanceDisplay = document.getElementById('current-balance-header');
+                        if (balanceDisplay) {
+                            balanceDisplay.textContent = this.currentBalance.toFixed(2);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching account balance:', error);
+                    });
+            },
+
+            /**
+             * Calculate balance after invoice
+             */
+            calculateBalance() {
+                const invoiceType = parseInt(this.type) || 10;
+
+                if ([10, 12, 14, 16].includes(invoiceType)) {
+                    // Sales invoices - increase debit balance
+                    this.calculatedBalanceAfter = this.currentBalance + this.totalAfterAdditional;
+                } else {
+                    // Purchase invoices - decrease debit balance
+                    this.calculatedBalanceAfter = this.currentBalance - this.totalAfterAdditional;
+                }
+
+                // Update display
+                const balanceAfterDisplay = document.getElementById('balance-after-header');
+                if (balanceAfterDisplay) {
+                    balanceAfterDisplay.textContent = this.calculatedBalanceAfter.toFixed(2);
+                    balanceAfterDisplay.className = this.calculatedBalanceAfter < 0 ? 'badge bg-danger' : 'badge bg-success';
+                }
+            },
+
             // Save invoice
             saveInvoice() {
                 console.log('💾 Saving invoice...');
-                
+
                 if (this.invoiceItems.length === 0) {
                     alert('يرجى إضافة صنف واحد على الأقل');
                     return;
                 }
-                
+
                 const invoiceData = {
                     type: this.type,
                     branch_id: this.branchId,
@@ -765,7 +874,7 @@
                     subtotal: this.subtotal,
                     total: this.totalAfterAdditional,
                 };
-                
+
                 fetch('/api/invoices', {
                     method: 'POST',
                     headers: {
@@ -789,7 +898,7 @@
                     alert('حدث خطأ أثناء حفظ الفاتورة');
                 });
             },
-            
+
             // Update status message
             updateStatus(text, type = 'info') {
                 const status = document.getElementById('search-status');
@@ -799,14 +908,14 @@
                 }
             }
         };
-        
+
         // Initialize when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => InvoiceApp.init());
         } else {
             InvoiceApp.init();
         }
-        
+
         // Expose reload function
         window.reloadSearchItems = () => InvoiceApp.loadItems();
     </script>
