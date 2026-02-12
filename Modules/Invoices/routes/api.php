@@ -13,7 +13,7 @@ use Modules\Invoices\Http\Controllers\Api\ItemSearchApiController;
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:sanctum'])->prefix('invoices')->group(function () {
+Route::middleware(['web', 'auth'])->prefix('invoices')->group(function () {
     
     // Initial Data
     Route::get('/initial-data', [InvoiceDataApiController::class, 'getInitialData'])
@@ -44,9 +44,9 @@ Route::middleware(['auth:sanctum'])->prefix('invoices')->group(function () {
 });
 
 // Items Lite endpoint (outside invoices prefix for simpler URL)
-Route::middleware(['auth:sanctum'])->get('/items/lite', [ItemSearchApiController::class, 'getLiteItems'])
+Route::middleware(['web', 'auth'])->get('/items/lite', [ItemSearchApiController::class, 'getLiteItems'])
     ->name('api.items.lite');
 
 // Quick create item endpoint
-Route::middleware(['auth:sanctum'])->post('/items/quick-create', [ItemSearchApiController::class, 'quickCreateItem'])
+Route::middleware(['web', 'auth'])->post('/items/quick-create', [ItemSearchApiController::class, 'quickCreateItem'])
     ->name('api.items.quick-create');

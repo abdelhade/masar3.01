@@ -311,34 +311,66 @@ class ItemSearchRepository
                 'items.id',
                 'items.name',
                 'items.code',
-                'items.barcode',
-                'items.price',
-                'items.unit_id as default_unit_id',
             ])
-            ->where('items.active', 1);
+            ->where('items.isdeleted', 0);
 
         // Add branch filter if provided
         if ($branchId) {
-            $query->where('items.branch_id', $branchId);
+            $query->where(function ($q) use ($branchId) {
+                $q->where('items.branch_id', $branchId)
+                    ->orWhereNull('items.branch_id');
+            });
         }
 
         $items = $query->limit(8000)->get()->toArray();
 
-        // Get units for each item
-        foreach ($items as &$item) {
+        // Get units and barcodes for each item
+        $result = [];
+        foreach ($items as $item) {
             $item = (array) $item;
 
-            // Get units
+            // Get units with pivot data
             $units = DB::table('item_units')
-                ->where('item_id', $item['id'])
-                ->select(['id', 'name', 'u_val'])
+                ->join('units', 'units.id', '=', 'item_units.unit_id')
+                ->where('item_units.item_id', $item['id'])
+                ->select([
+                    'units.id',
+                    'units.name',
+                    'item_units.u_val',
+                    'item_units.cost',
+                ])
                 ->get()
                 ->toArray();
 
-            $item['units'] = array_map(fn($u) => (array) $u, $units);
+            // Get first barcode if exists
+            $barcode = DB::table('barcodes')
+                ->where('item_id', $item['id'])
+                ->value('barcode');
+
+            // Get first price if exists
+            $price = DB::table('item_prices')
+                ->where('item_id', $item['id'])
+                ->value('price') ?? 0;
+
+            $result[] = [
+                'id' => $item['id'],
+                'name' => $item['name'],
+                'code' => $item['code'] ?? '',
+                'barcode' => $barcode ?? '',
+                'price' => (float) $price,
+                'units' => array_map(function ($u) {
+                    $u = (array) $u;
+                    return [
+                        'id' => $u['id'],
+                        'name' => $u['name'],
+                        'u_val' => (float) ($u['u_val'] ?? 1),
+                        'cost' => (float) ($u['cost'] ?? 0),
+                    ];
+                }, $units),
+            ];
         }
 
-        return array_values($items);
+        return $result;
     }
 
 
@@ -352,18 +384,22 @@ class ItemSearchRepository
     {
         // Generate code if AUTO
         if (!isset($data['code']) || $data['code'] === 'AUTO') {
-            $lastItem = DB::table('items')->orderBy('id', 'desc')->first();
-            $data['code'] = 'ITEM-' . str_pad(($lastItem->id ?? 0) + 1, 6, '0', STR_PAD_LEFT);
+            $lastCode = DB::table('items')->max('code');
+            $data['code'] = ((int) $lastCode) + 1;
         }
 
         // Insert item
         $itemId = DB::table('items')->insertGetId([
             'name' => $data['name'],
             'code' => $data['code'],
-            'price' => $data['price'],
-            'unit_id' => $data['unit_id'],
-            'active' => 1,
+            'is_active' => 1,
+            'isdeleted' => 0,
             'branch_id' => auth()->user()->branch_id ?? 1,
+            'type' => 1, // Default type
+            'average_cost' => 0,
+            'min_order_quantity' => 0,
+            'max_order_quantity' => 0,
+            'tenant' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -372,11 +408,29 @@ class ItemSearchRepository
         DB::table('item_units')->insert([
             'item_id' => $itemId,
             'unit_id' => $data['unit_id'],
-            'name' => DB::table('units')->where('id', $data['unit_id'])->value('name') ?? 'قطعة',
             'u_val' => 1,
+            'cost' => 0,
+            'quick_access' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // Create default price if provided
+        if (isset($data['price']) && $data['price'] > 0) {
+            // Get first price type (usually "سعر البيع")
+            $priceTypeId = DB::table('prices')->orderBy('id')->value('id') ?? 1;
+            
+            DB::table('item_prices')->insert([
+                'item_id' => $itemId,
+                'price_id' => $priceTypeId,
+                'unit_id' => $data['unit_id'],
+                'price' => $data['price'],
+                'discount' => 0,
+                'tax_rate' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         // Get unit info
         $unit = DB::table('units')->where('id', $data['unit_id'])->first();
@@ -385,15 +439,15 @@ class ItemSearchRepository
         return [
             'id' => $itemId,
             'name' => $data['name'],
-            'code' => $data['code'],
-            'barcode' => null,
-            'price' => $data['price'],
-            'default_unit_id' => $data['unit_id'],
+            'code' => (string) $data['code'],
+            'barcode' => '',
+            'price' => (float) ($data['price'] ?? 0),
             'units' => [
                 [
                     'id' => $data['unit_id'],
                     'name' => $unit->name ?? 'قطعة',
                     'u_val' => 1,
+                    'cost' => 0,
                 ]
             ],
         ];

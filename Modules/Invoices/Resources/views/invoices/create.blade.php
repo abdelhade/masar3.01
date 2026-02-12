@@ -297,7 +297,9 @@
             // Load items from API
             loadItems() {
                 console.log('📡 Loading items...');
+                console.log('🔗 Branch ID:', this.branchId, 'Type:', this.type);
                 const url = `/api/items/lite?branch_id=${this.branchId}&type=${this.type}&_t=${Date.now()}`;
+                console.log('🌐 Fetching from:', url);
 
                 fetch(url, {
                     headers: {
@@ -305,20 +307,22 @@
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('📦 Received', data.length, 'items');
-                    this.allItems = data;
-
-                    if (typeof Fuse !== 'undefined') {
-                        this.fuse = new Fuse(this.allItems, {
-                            keys: ['name', 'code', 'barcode'],
-                            threshold: 0.3,
-                            ignoreLocation: true
-                        });
-                        console.log('✅ Fuse initialized');
-                        this.updateStatus('تم تحميل ' + data.length + ' صنف - البحث جاهز ✓', 'success');
+                .then(response => {
+                    console.log('📨 Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📦 Received data:', data);
+                    console.log('📦 Data type:', typeof data, 'Is array:', Array.isArray(data));
+                    console.log('📦 Items count:', data.length);
+                    if (data.length > 0) {
+                        console.log('📦 First item:', data[0]);
+                    }
+                    this.allItems = data;
+                    this.updateStatus('تم تحميل ' + data.length + ' صنف - البحث جاهز ✓', 'success');
                 })
                 .catch(error => {
                     console.error('❌ Error loading items:', error);
@@ -375,19 +379,31 @@
 
             // Handle search
             handleSearch(term) {
+                console.log('🔍 handleSearch called with term:', term);
+                console.log('📦 allItems count:', this.allItems.length);
+                console.log('📦 allItems sample:', this.allItems.slice(0, 2));
+                
                 if (!term || term.length < 1) {
+                    console.log('⚠️ Term too short, hiding results');
                     this.hideSearchResults();
                     return;
                 }
 
-                if (!this.fuse) {
-                    console.error('❌ Fuse not ready');
-                    return;
-                }
-
-                const results = this.fuse.search(term);
-                this.searchResults = results.map(r => r.item).slice(0, 50);
+                console.log('🔍 Searching for:', term);
+                
+                // Simple vanilla JS search - no Fuse.js
+                const lowerTerm = term.toLowerCase();
+                this.searchResults = this.allItems.filter(item => {
+                    const nameMatch = item.name && item.name.toLowerCase().includes(lowerTerm);
+                    const codeMatch = item.code && item.code.toString().toLowerCase().includes(lowerTerm);
+                    const barcodeMatch = item.barcode && item.barcode.toLowerCase().includes(lowerTerm);
+                    return nameMatch || codeMatch || barcodeMatch;
+                }).slice(0, 50);
+                
                 this.selectedIndex = this.searchResults.length > 0 ? 0 : -1;
+                
+                console.log('📋 Found', this.searchResults.length, 'results');
+                console.log('📋 First 3 results:', this.searchResults.slice(0, 3));
 
                 this.renderSearchResults();
                 this.showSearchResults();
@@ -551,16 +567,6 @@
                 .then(data => {
                     if (data.item) {
                         this.allItems.push(data.item);
-
-                        // Re-init Fuse
-                        if (typeof Fuse !== 'undefined') {
-                            this.fuse = new Fuse(this.allItems, {
-                                keys: ['name', 'code', 'barcode'],
-                                threshold: 0.3,
-                                ignoreLocation: true
-                            });
-                        }
-
                         this.updateStatus('تم تحميل ' + this.allItems.length + ' صنف - البحث جاهز ✓', 'success');
                         this.addItem(data.item);
                     }
@@ -578,20 +584,31 @@
                 const tbody = document.getElementById('invoice-items-tbody');
                 if (!tbody) return;
 
+                // Find the search row
+                const searchRow = tbody.querySelector('.search-row');
+                
                 if (this.invoiceItems.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="20" class="p-3 text-center">
-                                <div class="alert alert-info mb-0">
-                                    لم يتم إضافة أصناف. استخدم البحث أعلاه لإضافة أصناف.
-                                </div>
-                            </td>
-                        </tr>
-                    `;
+                    // Remove all rows except search row
+                    const rows = tbody.querySelectorAll('tr:not(.search-row)');
+                    rows.forEach(row => row.remove());
                     return;
                 }
 
-                tbody.innerHTML = this.invoiceItems.map((item, index) => this.renderItemRow(item, index)).join('');
+                // Generate items HTML
+                const itemsHTML = this.invoiceItems.map((item, index) => this.renderItemRow(item, index)).join('');
+                
+                // Insert items BEFORE search row
+                if (searchRow) {
+                    // Remove old item rows (keep search row)
+                    const rows = tbody.querySelectorAll('tr:not(.search-row)');
+                    rows.forEach(row => row.remove());
+                    
+                    // Insert new items before search row
+                    searchRow.insertAdjacentHTML('beforebegin', itemsHTML);
+                } else {
+                    // Fallback: just set innerHTML
+                    tbody.innerHTML = itemsHTML;
+                }
 
                 // Attach event listeners to inputs
                 this.attachItemEventListeners();

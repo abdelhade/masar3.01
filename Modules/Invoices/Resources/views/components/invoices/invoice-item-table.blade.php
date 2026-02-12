@@ -123,7 +123,7 @@
             border: 2px solid #0d6efd;
             border-top: none;
             z-index: 9999 !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .search-results-dropdown .list-group-item {
@@ -172,12 +172,12 @@
                     ];
 
                     $visibleColumns = ['item_name', 'code', 'unit', 'quantity'];
-                    
+
                     if (in_array($type, [10, 11, 12, 13, 19, 20])) {
                         $visibleColumns[] = 'batch_number';
                         $visibleColumns[] = 'expiry_date';
                     }
-                    
+
                     $visibleColumns = array_merge($visibleColumns, ['price', 'discount', 'sub_value']);
                 @endphp
 
@@ -190,31 +190,25 @@
             </tr>
         </thead>
 
-        <tbody>
-            {{-- Search Row --}}
+        <tbody id="invoice-items-tbody">
+            {{-- Invoice Items (rendered by JavaScript) - will appear here ABOVE search row --}}
+
+            {{-- Search Row - Always at bottom --}}
             <tr class="search-row">
                 <td colspan="2" style="position: relative;">
-                    <input type="text"
-                           id="search-input"
-                           class="form-control"
-                           placeholder="{{ __('ابحث عن صنف بالاسم أو الكود...') }}"
-                           style="min-height: 36px; font-size: 0.85rem;"
-                           autocomplete="off">
+                    <input type="text" id="search-input" class="form-control"
+                        placeholder="{{ __('ابحث عن صنف بالاسم أو الكود...') }}"
+                        style="min-height: 36px; font-size: 0.85rem;" autocomplete="off">
 
                     {{-- Search Results Dropdown --}}
-                    <div id="search-results-dropdown"
-                         class="search-results-dropdown hidden"
-                         style="display: none;">
+                    <div id="search-results-dropdown" class="search-results-dropdown hidden" style="display: none;">
                         {{-- Results rendered by JavaScript --}}
                     </div>
                 </td>
 
                 <td colspan="2">
-                    <input type="text"
-                           id="barcode-input"
-                           class="form-control"
-                           placeholder="{{ __('امسح الباركود...') }}"
-                           style="min-height: 36px; font-size: 0.85rem;">
+                    <input type="text" id="barcode-input" class="form-control"
+                        placeholder="{{ __('امسح الباركود...') }}" style="min-height: 36px; font-size: 0.85rem;">
                 </td>
 
                 <td colspan="20">
@@ -223,25 +217,12 @@
                             <i class="fas fa-spinner fa-spin me-1"></i>
                             جاري تحميل الأصناف...
                         </small>
-                        <button type="button"
-                                id="reload-items-btn"
-                                onclick="window.reloadSearchItems && window.reloadSearchItems()"
-                                class="btn btn-sm btn-outline-primary"
-                                style="font-size: 0.7rem; padding: 2px 8px;">
+                        <button type="button" id="reload-items-btn"
+                            onclick="window.reloadSearchItems && window.reloadSearchItems()"
+                            class="btn btn-sm btn-outline-primary" style="font-size: 0.7rem; padding: 2px 8px;">
                             <i class="fas fa-sync-alt"></i>
                             تحديث
                         </button>
-                    </div>
-                </td>
-            </tr>
-
-            {{-- Invoice Items (rendered by JavaScript) --}}
-        </tbody>
-        <tbody id="invoice-items-tbody">
-            <tr>
-                <td colspan="20" class="p-3 text-center">
-                    <div class="alert alert-info mb-0">
-                        {{ __('No items have been added. Use the search above to add items.') }}
                     </div>
                 </td>
             </tr>

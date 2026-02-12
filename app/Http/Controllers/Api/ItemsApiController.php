@@ -23,54 +23,54 @@ class ItemsApiController extends Controller
         $type = $request->input('type');
 
         // ✅ Build cache key with version
-        $cacheVersion = Cache::get('items_cache_version', 1);
-        $cacheKey = 'items_lite_v' . $cacheVersion . '_' . md5($term . '_' . $branchId . '_' . $type);
+        // $cacheVersion = Cache::get('items_cache_version', 1);
+        // $cacheKey = 'items_lite_v' . $cacheVersion . '_' . md5($term . '_' . $branchId . '_' . $type);
 
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($term, $branchId, $type) {
-            $query = Item::query()
-                ->select(['id', 'name', 'code'])
-                ->with(['barcodes:id,item_id,barcode'])
-                ->where('isdeleted', 0);
+        // return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($term, $branchId, $type) {
+        $query = Item::query()
+            ->select(['id', 'name', 'code'])
+            ->with(['barcodes:id,item_id,barcode'])
+            ->where('isdeleted', 0);
 
-            // Filter by branch if provided
-            if ($branchId) {
-                $query->where(function($q) use ($branchId) {
-                    $q->where('branch_id', $branchId)
-                      ->orWhereNull('branch_id');
-                });
-            }
-
-            // If term provided, search for it
-            if (strlen($term) >= 1) {
-                $query->where(function($q) use ($term) {
-                    // Search in name (substring)
-                    $q->where('name', 'LIKE', '%' . $term . '%');
-
-                    // If numeric, also check for exact Code or Barcode match
-                    if (is_numeric($term)) {
-                        $q->orWhere('code', $term)
-                          ->orWhereHas('barcodes', function($bq) use ($term) {
-                              $bq->where('barcode', $term);
-                          });
-                    }
-                });
-
-                $items = $query->limit(20)->get();
-            } else {
-                // No term: return items for client-side fuzzy search (limited to 500)
-                $items = $query->limit(500)->get();
-            }
-
-            // Format items with barcode for client-side search
-            return $items->map(function($item) {
-                return [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'code' => $item->code,
-                    'barcode' => $item->barcodes->first()->barcode ?? null,
-                ];
+        // Filter by branch if provided
+        if ($branchId) {
+            $query->where(function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId)
+                    ->orWhereNull('branch_id');
             });
+        }
+
+        // If term provided, search for it
+        if (strlen($term) >= 1) {
+            $query->where(function ($q) use ($term) {
+                // Search in name (substring)
+                $q->where('name', 'LIKE', '%' . $term . '%');
+
+                // If numeric, also check for exact Code or Barcode match
+                if (is_numeric($term)) {
+                    $q->orWhere('code', $term)
+                        ->orWhereHas('barcodes', function ($bq) use ($term) {
+                            $bq->where('barcode', $term);
+                        });
+                }
+            });
+
+            $items = $query->limit(50)->get();
+        } else {
+            // No term: return ALL items for client-side search (max 8000)
+            $items = $query->limit(8000)->get();
+        }
+
+        // Format items with barcode for client-side search
+        return $items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'code' => $item->code,
+                'barcode' => $item->barcodes->first()->barcode ?? null,
+            ];
         });
+        // });
     }
 
     /**
@@ -97,7 +97,7 @@ class ItemsApiController extends Controller
                 'barcodes' => $item->barcodes->pluck('barcode')->toArray(),
                 'price' => $price,
                 'average_cost' => $item->average_cost,
-                'units' => $item->units->map(function($u) {
+                'units' => $item->units->map(function ($u) {
                     return [
                         'id' => $u->id,
                         'name' => $u->name,
