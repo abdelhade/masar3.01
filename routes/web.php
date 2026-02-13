@@ -42,6 +42,11 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->name('home');
 
+// Gradient Theme Demo (Development Only)
+Route::get('/gradient-theme-demo', function () {
+    return view('examples.gradient-theme-demo');
+})->name('gradient-theme-demo');
+
 Route::get('dashboard', function () {
     return redirect()->route('admin.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

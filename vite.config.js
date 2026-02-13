@@ -8,6 +8,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/design-system.css',
+                'resources/css/themes/bootstrap-gradient-theme.css',
                 'resources/css/app.css', 
                 'resources/js/app.js',
                 'resources/js/components/employee-form-scripts.js'
