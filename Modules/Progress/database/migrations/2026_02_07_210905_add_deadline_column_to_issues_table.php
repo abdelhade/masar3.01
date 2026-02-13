@@ -12,14 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('issues', function (Blueprint $table) {
-            $table->date('deadline')->nullable();
-        });
+        if (!Schema::hasColumn('issues', 'deadline')) {
+            Schema::table('issues', function (Blueprint $table) {
+                $table->date('deadline')->nullable();
+            });
 
-        // Copy data from due_date to deadline column
-        $issues = Issue::whereNotNull('due_date')->get();
-        foreach ($issues as $issue) {
-            $issue->update(['deadline' => $issue->due_date]);
+            // Copy data from due_date to deadline column
+            $issues = Issue::whereNotNull('due_date')->get();
+            foreach ($issues as $issue) {
+                $issue->update(['deadline' => $issue->due_date]);
+            }
         }
 
         // Optionally, drop the due_date column after copying if desired
@@ -33,8 +35,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('issues', function (Blueprint $table) {
-            $table->dropColumn('deadline');
-        });
+        if (Schema::hasColumn('issues', 'deadline')) {
+            Schema::table('issues', function (Blueprint $table) {
+                $table->dropColumn('deadline');
+            });
+        }
     }
 };

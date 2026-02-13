@@ -10,14 +10,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('employee_project', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
-            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
-            $table->timestamps();
-            
-            $table->unique(['employee_id', 'project_id']);
-        });
+        if (!Schema::hasTable('employee_project')) {
+            Schema::create('employee_project', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
+                $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
+                $table->timestamps();
+                
+                $table->unique(['employee_id', 'project_id']);
+            });
+        }
     }
 
     public function down(): void
