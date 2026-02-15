@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\POS\app\Http\Controllers\POSController;
+use Modules\POS\Http\Controllers\KitchenPrinterStationController;
+use Modules\POS\Http\Controllers\PrintJobController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,5 +93,23 @@ Route::middleware(['auth', 'verified', \Modules\POS\app\Http\Middleware\SafeSear
     // Return Invoice
     Route::get('/api/invoice/{proId}', [POSController::class, 'getInvoice'])->name('api.invoice');
     Route::post('/api/return-invoice', [POSController::class, 'returnInvoice'])->name('api.return-invoice');
+
+    // Kitchen Printer Stations Management
+    Route::resource('kitchen-printers', KitchenPrinterStationController::class)
+        ->except(['show'])
+        ->names([
+            'index' => 'kitchen-printers.index',
+            'create' => 'kitchen-printers.create',
+            'store' => 'kitchen-printers.store',
+            'edit' => 'kitchen-printers.edit',
+            'update' => 'kitchen-printers.update',
+            'destroy' => 'kitchen-printers.destroy',
+        ]);
+
+    // Print Jobs Management
+    Route::prefix('print-jobs')->name('print-jobs.')->group(function () {
+        Route::get('/', [PrintJobController::class, 'index'])->name('index');
+        Route::post('/{printJob}/retry', [PrintJobController::class, 'retry'])->name('retry');
+    });
 
 });

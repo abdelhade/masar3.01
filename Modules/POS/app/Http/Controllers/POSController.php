@@ -606,7 +606,7 @@ class POSController extends Controller
             if ($paidAmount > 0) {
                 if ($paymentMethod === 'mixed' && $cashAmount > 0 && $cardAmount > 0) {
                     // الدفع المختلط - قيدين منفصلين
-                    
+
                     // قيد الدفع النقدي
                     $cashJournalId = $salesJournalId + 1;
                     JournalHead::create([
@@ -696,7 +696,7 @@ class POSController extends Controller
                     // دفع واحد (نقدي أو بطاقة)
                     $paymentAccountId = null;
                     $paymentAmount = 0;
-                    
+
                     if ($paymentMethod === 'cash' || ($paymentMethod === 'mixed' && $cashAmount > 0)) {
                         $paymentAccountId = $cashAccountId ?? $storeId;
                         $paymentAmount = $cashAmount > 0 ? $cashAmount : $paidAmount;
@@ -781,6 +781,9 @@ class POSController extends Controller
             ]);
 
             DB::commit();
+
+            // إطلاق حدث الطباعة للمطبخ
+            event(new \Modules\POS\app\Events\TransactionSaved($cashierTransaction));
 
             return response()->json([
                 'success' => true,
@@ -2179,7 +2182,7 @@ class POSController extends Controller
 
                 if ($returnPaymentMethod === 'mixed' && $returnCashAmount > 0 && $returnCardAmount > 0) {
                     // استرجاع دفع مختلط - قيدين منفصلين
-                    
+
                     // قيد استرجاع الدفع النقدي
                     $returnCashJournalId = $returnSalesJournalId + 1;
                     JournalHead::create([
@@ -2269,7 +2272,7 @@ class POSController extends Controller
                     // استرجاع دفع واحد (نقدي أو بطاقة)
                     $returnPaymentAccountId = null;
                     $returnPaymentAmount = 0;
-                    
+
                     if ($returnPaymentMethod === 'cash' || ($returnPaymentMethod === 'mixed' && $returnCashAmount > 0)) {
                         $returnPaymentAccountId = $cashAccountId ?? $originalInvoice->acc2;
                         $returnPaymentAmount = $returnCashAmount > 0 ? $returnCashAmount : $totalReturnAmount;

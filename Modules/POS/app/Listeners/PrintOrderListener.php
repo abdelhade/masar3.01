@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\POS\Listeners;
 
+use Illuminate\Support\Facades\Log;
 use Modules\POS\Events\TransactionSaved;
 use Modules\POS\Jobs\PrintKitchenOrderJob;
 use Modules\POS\Services\KitchenPrinterService;
-use Illuminate\Support\Facades\Log;
 
 class PrintOrderListener
 {
