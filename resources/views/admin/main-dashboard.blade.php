@@ -342,7 +342,7 @@
                             check-portfolios-incoming',
                             'view basicData-statistics',
                             ])
-                            <a href="{{ route('accounts.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('accounts.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="chart-bar-increasing"></i>
                                 </div>
@@ -362,7 +362,7 @@
                             'view
                             varibalsValues',
                             ])
-                            <a href="{{ route('items.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('items.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="boxes"></i>
                                 </div>
@@ -382,7 +382,7 @@
                             active-sessions',
                             'view activity-logs',
                             ])
-                            <a href="{{ route('users.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('users.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="key"></i>
                                 </div>
@@ -394,7 +394,7 @@
                     {{-- الاعدادات --}}
                     <div class="app-icon-group">
                         @can('view settings')
-                            <a href="{{ route('mysettings.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('mysettings.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="settings"></i>
                                 </div>
@@ -417,7 +417,7 @@
                             'view
                             Expenses-Reports',
                             ])
-                            <a href="{{ route('reports.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('reports.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="file-bar-chart"></i>
                                 </div>
@@ -429,7 +429,7 @@
                     {{-- crm --}}
                     <div class="app-icon-group">
                         @canany(['view CRM', 'view CRM Statistics'])
-                            <a href="{{ route('statistics.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('statistics.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="user-cog"></i>
                                 </div>
@@ -441,7 +441,7 @@
                     {{-- المبيعات --}}
                     <div class="app-icon-group">
                         @can('view Sales Invoice')
-                            <a href="{{ route('invoices.index', ['type' => 10]) }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('invoices.index', ['type' => 10]) }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="trending-up"></i>
                                 </div>
@@ -453,7 +453,7 @@
                     {{-- pos --}}
                     <div class="app-icon-group">
                         @can('view POS System')
-                            <a href="{{ route('pos.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('pos.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="shopping-cart"></i>
                                 </div>
@@ -465,7 +465,7 @@
                     {{-- ادارة المستأجرات --}}
                     <div class="app-icon-group">
                         @can('view Buildings')
-                            <a href="{{ route('rentals.buildings.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('rentals.buildings.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="building"></i>
                                 </div>
@@ -478,7 +478,7 @@
                     <div class="app-icon-group">
                         @can('view journals')
                             <a href="{{ route('journals.index', ['type' => 'basic_journal']) }}"
-                                class="app-icon-large icon-bg-green">
+                                target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="file-text"></i>
                                 </div>
@@ -490,7 +490,7 @@
                     {{-- ادارة المصروفات --}}
                     <div class="app-icon-group">
                         @can('view Expenses-Management')
-                            <a href="{{ route('expenses.dashboard') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('expenses.dashboard') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="credit-card"></i>
                                 </div>
@@ -502,7 +502,7 @@
                     {{-- السندات الماليه --}}
                     <div class="app-icon-group">
                         @canany(['view receipt vouchers', 'view payment vouchers', 'view exp-payment'])
-                            <a href="{{ route('vouchers.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('vouchers.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="receipt"></i>
                                 </div>
@@ -514,7 +514,7 @@
                     {{-- التحويلات النقديه --}}
                     <div class="app-icon-group">
                         @can('view transfers')
-                            <a href="{{ route('transfers.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('transfers.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="arrow-left-right"></i>
                                 </div>
@@ -526,7 +526,7 @@
                     {{-- ادارة الدفعات --}}
                     <div class="app-icon-group">
                         @can('view Installment Plans')
-                            <a href="{{ route('installments.plans.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('installments.plans.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="tag"></i>
                                 </div>
@@ -538,7 +538,7 @@
                     {{-- ادارة الشيكات --}}
                     <div class="app-icon-group">
                         @can('view Checks')
-                            <a href="{{ route('checks.incoming') }}" class="app-icon-large icon-bg-green"
+                            <a href="{{ route('checks.incoming') }}" target="_blank" class="app-icon-large icon-bg-green"
                                 style="position: relative;">
                                 <span
                                     style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">{{ __("New") }}</span>
@@ -560,7 +560,7 @@
                             Addition Order',
                             'view Store-to-Store Transfer',
                             ])
-                            <a href="{{ route('invoices.index', ['type' => 18]) }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('invoices.index', ['type' => 18]) }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="package"></i>
                                 </div>
@@ -572,7 +572,7 @@
                     {{-- التصنيع --}}
                     <div class="app-icon-group">
                         @can('view Manufacturing Invoices')
-                            <a href="{{ route('manufacturing.create') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('manufacturing.create') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="factory"></i>
                                 </div>
@@ -595,7 +595,7 @@
                             'view certificates',
                             'view audits',
                             ])
-                            <a href="{{ route('quality.dashboard') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('quality.dashboard') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="award"></i>
                                 </div>
@@ -607,7 +607,7 @@
                     {{-- المشتريات --}}
                     <div class="app-icon-group">
                         @can('view Purchase Invoice')
-                            <a href="{{ route('invoices.index', ['type' => 11]) }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('invoices.index', ['type' => 11]) }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="shopping-bag"></i>
                                 </div>
@@ -625,7 +625,7 @@
                             'view
                             Maintenance',
                             ])
-                            <a href="{{ route('service.types.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('service.types.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="package"></i>
                                 </div>
@@ -637,7 +637,7 @@
                     {{-- إدارة الأسطول --}}
                     <div class="app-icon-group">
                         @can('view Fleet Dashboard')
-                            <a href="{{ route('fleet.dashboard.index') }}?sidebar=fleet" class="app-icon-large icon-bg-green"
+                            <a href="{{ route('fleet.dashboard.index') }}?sidebar=fleet" target="_blank" class="app-icon-large icon-bg-green"
                                 style="position: relative;">
                                 <span
                                     style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">{{ __("New") }}</span>
@@ -653,7 +653,7 @@
                     <div class="app-icon-group">
                         @can('view Projects')
                             @if (Route::has('progress.projects.index'))
-                                <a href="{{ route('progress.projects.index') }}" class="app-icon-large icon-bg-green">
+                                <a href="{{ route('progress.projects.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                     <div class="icon-wrapper">
                                         <i data-lucide="kanban"></i>
                                     </div>
@@ -681,7 +681,7 @@
                             'view progress-dashboard',
                             ])
                             @if (Route::has('progress.dashboard'))
-                                <a href="{{ route('progress.dashboard') }}" class="app-icon-large icon-bg-green">
+                                <a href="{{ route('progress.dashboard') }}" target="_blank" class="app-icon-large icon-bg-green">
                                     <div class="icon-wrapper">
                                         <i data-lucide="bar-chart-3"></i>
                                     </div>
@@ -693,7 +693,7 @@
 
                     {{-- عمليات الاصول --}}
                     <div class="app-icon-group">
-                        <a href="{{ route('depreciation.index') }}" class="app-icon-large icon-bg-green">
+                        <a href="{{ route('depreciation.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
                                 <i data-lucide="building"></i>
                             </div>
@@ -704,7 +704,7 @@
                     {{-- ادارة الموارد --}}
                     <div class="app-icon-group">
                         @can('view MyResources')
-                            <a href="{{ route('myresources.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('myresources.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="cog"></i>
                                 </div>
@@ -716,7 +716,7 @@
                     {{-- الموارد البشريه --}}
                     <div class="app-icon-group">
                         @can('view Employees')
-                            <a href="{{ route('employees.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('employees.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="users"></i>
                                 </div>
@@ -728,7 +728,7 @@
                     {{-- بصمة الموبايل --}}
                     <div class="app-icon-group">
                         @can('view Mobile-fingerprint')
-                            <a href="{{ route('mobile.employee-login') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('mobile.employee-login') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="fingerprint"></i>
                                 </div>
@@ -740,7 +740,7 @@
                     {{-- أدارة الشحن --}}
                     <div class="app-icon-group">
                         @can('view Orders')
-                            <a href="{{ route('orders.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('orders.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="truck"></i>
                                 </div>
@@ -752,7 +752,7 @@
                     {{-- Inquiries --}}
                     <div class="app-icon-group">
                         @can('view Inquiries')
-                            <a href="{{ route('inquiries.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('inquiries.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="layers"></i>
                                 </div>

@@ -142,10 +142,11 @@ Your goal is to write clean, strict, and scalable code that fits perfectly into 
 -   **Actions:** Use `wire:click` or `wire:submit` only when you need server interaction.
 
 ### 2.3 UI & Styling
--   **Framework:** **Bootstrap 5** is the primary UI framework for existing views (based on analysis of `manage-employee-evaluation.blade.php`).
-    -   *Note:* Tailwind CSS is installed but use Bootstrap classes (`row`, `col-md-6`, `btn-primary`) to match existing UI unless instructed otherwise.
+-   **Framework:** **Bootstrap 5** هو إطار العمل الأساسي للواجهات.
+    -   استخدم Bootstrap classes: `row`, `col-md-6`, `btn btn-primary`, `card`, `form-control`
+    -   راجع Bootstrap 5 documentation: https://getbootstrap.com/docs/5.3/
 -   **Icons:** Use **Line Awesome** (`las la-edit`, `las la-trash`) or FontAwesome.
--   **Modals:** Use **Bootstrap Modal API** (`bootstrap.Modal`) for actual modal control. Use Alpine.js (`x-data`) for state management if needed. This ensures proper animations, backdrop handling, keyboard support (ESC), focus management, and Bootstrap events. Example: `new bootstrap.Modal(element).show()` triggered via Alpine `@click` or Livewire events.
+-   **Modals:** Use **Bootstrap Modal API** (`bootstrap.Modal`) for modal control. Example: `new bootstrap.Modal(element).show()` or use `data-bs-toggle="modal"`.
 
 ## [3.0] CODING STANDARDS (STRICT)
 
@@ -156,33 +157,44 @@ For simple UI interactions that don't need server data:
 
 ```blade
 <div x-data="{ activeTab: 'info' }">
-    <!-- Tabs example -->
-    <ul class="nav nav-tabs">
-        <li @click="activeTab = 'info'" class="nav-item">
-            <a :class="activeTab === 'info' ? 'nav-link active' : 'nav-link'">Info</a>
-        </li>
-    </ul>
-    <div x-show="activeTab === 'info'">Content</div>
+    <!-- Tabs example using Tailwind -->
+    <div class="flex gap-2 border-b border-neutral-200">
+        <button @click="activeTab = 'info'" 
+                :class="activeTab === 'info' ? 'border-b-2 border-primary text-primary' : 'text-neutral-600'"
+                class="px-4 py-2 font-medium transition-base">
+            {{ __('common.info') }}
+        </button>
+        <button @click="activeTab = 'details'" 
+                :class="activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-neutral-600'"
+                class="px-4 py-2 font-medium transition-base">
+            {{ __('common.details') }}
+        </button>
+    </div>
+    <div x-show="activeTab === 'info'" class="mt-4">Info Content</div>
+    <div x-show="activeTab === 'details'" class="mt-4">Details Content</div>
 </div>
 
-<!-- Modal Example: Use Bootstrap Modal API with Alpine for state -->
-<div x-data="{ modalInstance: null }" 
-     x-init="modalInstance = new bootstrap.Modal(document.getElementById('myModal'))">
-    <button @click="modalInstance.show()" class="btn btn-primary">
+<!-- Modal Example: Use Alpine.js with Tailwind -->
+<div x-data="{ isOpen: false }" x-cloak>
+    <button @click="isOpen = true" class="btn btn-primary">
         {{ __('common.open_modal') }}
     </button>
     
-    <!-- Bootstrap Modal -->
-    <div class="modal fade" id="myModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ __('common.modal_title') }}</h5>
-                    <button @click="modalInstance.hide()" type="button" class="btn-close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Content -->
-                </div>
+    <!-- Modal Overlay -->
+    <div x-show="isOpen" 
+         @click.self="isOpen = false"
+         x-transition:enter="transition-base"
+         x-transition:leave="transition-base"
+         class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-section-title">{{ __('common.modal_title') }}</h3>
+                <button @click="isOpen = false" class="btn btn-ghost btn-sm">
+                    <i class="las la-times"></i>
+                </button>
+            </div>
+            <div>
+                <!-- Modal Content -->
             </div>
         </div>
     </div>
