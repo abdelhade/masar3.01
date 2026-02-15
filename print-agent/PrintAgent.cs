@@ -28,7 +28,7 @@ namespace KitchenPrintAgent
             ListAvailablePrinters();
             
             Console.WriteLine("========================================");
-            Console.WriteLine($"الخادم يعمل على: {url}");
+            Console.WriteLine("الخادم يعمل على: {0}", url);
             Console.WriteLine("اضغط Ctrl+C للإيقاف");
             Console.WriteLine("========================================");
             Console.WriteLine();
@@ -42,11 +42,11 @@ namespace KitchenPrintAgent
             Console.WriteLine("الطابعات المتاحة:");
             foreach (string printer in PrinterSettings.InstalledPrinters)
             {
-                Console.WriteLine($"  - {printer}");
+                Console.WriteLine("  - {0}", printer);
             }
             
             PrinterSettings settings = new PrinterSettings();
-            Console.WriteLine($"الطابعة الافتراضية: {settings.PrinterName}");
+            Console.WriteLine("الطابعة الافتراضية: {0}", settings.PrinterName);
             Console.WriteLine();
         }
 
@@ -69,7 +69,7 @@ namespace KitchenPrintAgent
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ خطأ: {ex.Message}");
+                Console.WriteLine("❌ خطأ: {0}", ex.Message);
                 Console.WriteLine();
                 Console.WriteLine("ملاحظة: إذا كان الخطأ متعلق بالصلاحيات، قم بتشغيل البرنامج كمسؤول (Run as Administrator)");
             }
@@ -88,7 +88,7 @@ namespace KitchenPrintAgent
                 string path = request.Url.AbsolutePath;
                 string method = request.HttpMethod;
 
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {method} {path}");
+                Console.WriteLine("[{0}] {1} {2}", DateTime.Now.ToString("HH:mm:ss"), method, path);
 
                 // معالجة المسارات المختلفة
                 if (path == "/" && method == "GET")
@@ -124,12 +124,12 @@ namespace KitchenPrintAgent
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ خطأ: {ex.Message}");
+                Console.WriteLine("❌ خطأ: {0}", ex.Message);
                 statusCode = 500;
                 responseString = jsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"خطأ في الخادم: {ex.Message}"
+                    message = string.Format("خطأ في الخادم: {0}", ex.Message)
                 });
                 response.ContentType = "application/json; charset=utf-8";
             }
@@ -181,14 +181,14 @@ namespace KitchenPrintAgent
                 string printerName = data["printer"].ToString();
                 string content = data["content"].ToString();
 
-                Console.WriteLine($"  📄 طباعة على: {printerName}");
+                Console.WriteLine("  📄 طباعة على: {0}", printerName);
 
                 // تنفيذ الطباعة
                 bool success = PrintToRawPrinter(printerName, content);
 
                 if (success)
                 {
-                    Console.WriteLine($"  ✅ تمت الطباعة بنجاح");
+                    Console.WriteLine("  ✅ تمت الطباعة بنجاح");
                     return jsonSerializer.Serialize(new
                     {
                         success = true,
@@ -199,7 +199,7 @@ namespace KitchenPrintAgent
                 }
                 else
                 {
-                    Console.WriteLine($"  ❌ فشلت الطباعة");
+                    Console.WriteLine("  ❌ فشلت الطباعة");
                     return jsonSerializer.Serialize(new
                     {
                         success = false,
@@ -210,11 +210,11 @@ namespace KitchenPrintAgent
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"  ❌ خطأ: {ex.Message}");
+                Console.WriteLine("  ❌ خطأ: {0}", ex.Message);
                 return jsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"خطأ: {ex.Message}"
+                    message = string.Format("خطأ: {0}", ex.Message)
                 });
             }
         }
@@ -229,19 +229,19 @@ namespace KitchenPrintAgent
 
                 if (!printerExists)
                 {
-                    Console.WriteLine($"  ⚠️  الطابعة '{printerName}' غير موجودة");
+                    Console.WriteLine("  ⚠️  الطابعة '{0}' غير موجودة", printerName);
                     return false;
                 }
 
                 // إنشاء ملف مؤقت
-                string tempFile = Path.Combine(Path.GetTempPath(), $"print_{Guid.NewGuid()}.txt");
+                string tempFile = Path.Combine(Path.GetTempPath(), string.Format("print_{0}.txt", Guid.NewGuid()));
                 File.WriteAllText(tempFile, content, Encoding.UTF8);
 
                 // طباعة الملف باستخدام notepad
                 System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = "notepad.exe",
-                    Arguments = $"/p \"{tempFile}\"",
+                    Arguments = string.Format("/p \"{0}\"", tempFile),
                     CreateNoWindow = true,
                     WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
                     UseShellExecute = false
@@ -270,7 +270,7 @@ namespace KitchenPrintAgent
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"  ❌ خطأ في الطباعة: {ex.Message}");
+                Console.WriteLine("  ❌ خطأ في الطباعة: {0}", ex.Message);
                 return false;
             }
         }
