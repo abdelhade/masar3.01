@@ -8,6 +8,14 @@
 
 @can('view Manufacturing Invoices')
     <li class="nav-item">
+        <a class="nav-link" href="{{ route('manufacturing.templates.index') }}">
+            <i class="ti-control-record"></i>{{ __('Invoice Templates') }}
+        </a>
+    </li>
+@endcan
+
+@can('view Manufacturing Invoices')
+    <li class="nav-item">
         <a class="nav-link" href="{{ route('manufacturing.statistics') }}">
             <i class="ti-control-record"></i>{{ __('Statistics') }}
         </a>

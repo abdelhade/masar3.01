@@ -23,6 +23,46 @@
                 <flux:tooltip :content="__('Search')" position="bottom">
                     <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Search')" />
                 </flux:tooltip>
+                
+                {{-- Theme Selector --}}
+                <flux:dropdown position="bottom" align="end">
+                    <flux:tooltip :content="__('Theme')" position="bottom">
+                        <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="swatch" :label="__('Theme')" />
+                    </flux:tooltip>
+
+                    <flux:menu class="min-w-[200px]">
+                        <flux:menu.item wire:click="$dispatch('set-theme', { theme: 'default' })">
+                            <div class="flex items-center justify-between w-full">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex gap-1">
+                                        <div class="w-3 h-3 rounded-sm bg-blue-500"></div>
+                                        <div class="w-3 h-3 rounded-sm bg-green-500"></div>
+                                    </div>
+                                    <span>{{ __('Default') }}</span>
+                                </div>
+                                @if(session('theme', 'default') === 'default')
+                                    <flux:icon.check class="size-4 text-primary-500" />
+                                @endif
+                            </div>
+                        </flux:menu.item>
+                        
+                        <flux:menu.item wire:click="$dispatch('set-theme', { theme: 'modern' })">
+                            <div class="flex items-center justify-between w-full">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex gap-1">
+                                        <div class="w-3 h-3 rounded-sm" style="background: linear-gradient(135deg, #34d3a3 0%, #2ab88d 100%)"></div>
+                                        <div class="w-3 h-3 rounded-sm" style="background: linear-gradient(135deg, #1ad270 0%, #17b860 100%)"></div>
+                                    </div>
+                                    <span>{{ __('Modern') }}</span>
+                                </div>
+                                @if(session('theme') === 'modern')
+                                    <flux:icon.check class="size-4 text-primary-500" />
+                                @endif
+                            </div>
+                        </flux:menu.item>
+                    </flux:menu>
+                </flux:dropdown>
+                
                 <flux:tooltip :content="__('Repository')" position="bottom">
                     <flux:navbar.item
                         class="h-10 max-lg:hidden [&>div>svg]:size-5"
@@ -107,6 +147,39 @@
             <flux:spacer />
 
             <flux:navlist variant="outline">
+                {{-- Theme Selector for Mobile --}}
+                <flux:navlist.group :heading="__('Theme')">
+                    <flux:navlist.item wire:click="$dispatch('set-theme', { theme: 'default' })">
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex items-center gap-2">
+                                <div class="flex gap-1">
+                                    <div class="w-3 h-3 rounded-sm bg-blue-500"></div>
+                                    <div class="w-3 h-3 rounded-sm bg-green-500"></div>
+                                </div>
+                                <span>{{ __('Default') }}</span>
+                            </div>
+                            @if(session('theme', 'default') === 'default')
+                                <flux:icon.check class="size-4 text-primary-500" />
+                            @endif
+                        </div>
+                    </flux:navlist.item>
+                    
+                    <flux:navlist.item wire:click="$dispatch('set-theme', { theme: 'modern' })">
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex items-center gap-2">
+                                <div class="flex gap-1">
+                                    <div class="w-3 h-3 rounded-sm" style="background: linear-gradient(135deg, #34d3a3 0%, #2ab88d 100%)"></div>
+                                    <div class="w-3 h-3 rounded-sm" style="background: linear-gradient(135deg, #1ad270 0%, #17b860 100%)"></div>
+                                </div>
+                                <span>{{ __('Modern') }}</span>
+                            </div>
+                            @if(session('theme') === 'modern')
+                                <flux:icon.check class="size-4 text-primary-500" />
+                            @endif
+                        </div>
+                    </flux:navlist.item>
+                </flux:navlist.group>
+                
                 <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
                 {{ __('Repository') }}
                 </flux:navlist.item>
@@ -120,5 +193,26 @@
         {{ $slot }}
 
         @fluxScripts
+        
+        <script>
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('set-theme', (event) => {
+                    // Save theme to session via fetch
+                    fetch('/api/set-theme', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
+                        body: JSON.stringify({ theme: event.theme })
+                    }).then(() => {
+                        // Reload page to apply new theme
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 200);
+                    });
+                });
+            });
+        </script>
     </body>
 </html>
