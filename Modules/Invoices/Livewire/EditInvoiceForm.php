@@ -12,6 +12,7 @@ use App\Helpers\ItemViewModel;
 use App\Models\OperationItems;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Modules\Accounts\Models\AccHead;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Invoices\Enums\InvoiceStatus;
@@ -1265,6 +1266,11 @@ class EditInvoiceForm extends Component
                 'unit_id' => 1,
             ]);
         }
+        
+        // ✅ تحديث version الـ cache عشان الصنف الجديد يظهر في البحث
+        $currentVersion = Cache::get('items_cache_version', 1);
+        Cache::put('items_cache_version', $currentVersion + 1, now()->addDays(30));
+        
         $this->updateSelectedItemData($newItem, 1, 0);
         $this->addItemFromSearch($newItem->id);
         $this->searchTerm = '';

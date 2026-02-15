@@ -13,33 +13,63 @@ class ItemsApiController extends Controller
 {
     /**
      * Get lightweight list of items for client-side search.
-     * Caches results for 1 hour based on filters.
+     * Caches results for 30 minutes based on filters.
+     * If no term provided, returns all items (for client-side fuzzy search).
      */
     public function lite(Request $request)
     {
         $term = trim((string)$request->input('term', ''));
-        
-        if (strlen($term) < 1) return response()->json([]);
+        $branchId = $request->input('branch_id');
+        $type = $request->input('type');
 
-        $cacheKey = 'items_lite_v5_' . md5($term);
+        // ✅ Build cache key with version
+        $cacheVersion = Cache::get('items_cache_version', 1);
+        $cacheKey = 'items_lite_v' . $cacheVersion . '_' . md5($term . '_' . $branchId . '_' . $type);
 
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($term) {
-            $query = Item::query()->select(['id', 'name'])->where('isdeleted', 0);
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($term, $branchId, $type) {
+            $query = Item::query()
+                ->select(['id', 'name', 'code'])
+                ->with(['barcodes:id,item_id,barcode'])
+                ->where('isdeleted', 0);
 
-            $query->where(function($q) use ($term) {
-                // Always search in name (substring)
-                $q->where('name', 'LIKE', '%' . $term . '%');
-                
-                // If numeric, also check for exact Code or Barcode match
-                if (is_numeric($term)) {
-                    $q->orWhere('code', $term)
-                      ->orWhereHas('barcodes', function($bq) use ($term) {
-                          $bq->where('barcode', $term);
-                      });
-                }
+            // Filter by branch if provided
+            if ($branchId) {
+                $query->where(function($q) use ($branchId) {
+                    $q->where('branch_id', $branchId)
+                      ->orWhereNull('branch_id');
+                });
+            }
+
+            // If term provided, search for it
+            if (strlen($term) >= 1) {
+                $query->where(function($q) use ($term) {
+                    // Search in name (substring)
+                    $q->where('name', 'LIKE', '%' . $term . '%');
+
+                    // If numeric, also check for exact Code or Barcode match
+                    if (is_numeric($term)) {
+                        $q->orWhere('code', $term)
+                          ->orWhereHas('barcodes', function($bq) use ($term) {
+                              $bq->where('barcode', $term);
+                          });
+                    }
+                });
+
+                $items = $query->limit(20)->get();
+            } else {
+                // No term: return items for client-side fuzzy search (limited to 500)
+                $items = $query->limit(500)->get();
+            }
+
+            // Format items with barcode for client-side search
+            return $items->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'code' => $item->code,
+                    'barcode' => $item->barcodes->first()->barcode ?? null,
+                ];
             });
-
-            return $query->limit(10)->get();
         });
     }
 

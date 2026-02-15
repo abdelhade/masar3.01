@@ -6,11 +6,11 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('الفروع'),
+        'title' => __('Branches'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('الفروع'), 'url' => route('branches.index')],
-            ['label' => __('تعديل')],
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Branches'), 'url' => route('branches.index')],
+            ['label' => __('Edit')],
         ],
     ])
 
@@ -18,7 +18,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h2>تعديل فرع</h2>
+                    <h2>{{ __('Edit Branch') }}</h2>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('branches.update', $branch->id) }}" method="POST" onsubmit="disableButton()">
@@ -27,34 +27,34 @@
 
                         <div class="row">
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="name">الاسم</label>
+                                <label class="form-label" for="name">{{ __('Name') }}</label>
                                 <input type="text" class="form-control" id="name" name="name"
-                                    placeholder="ادخل الاسم" value="{{ old('name', $branch->name) }}">
+                                    placeholder="{{ __('Enter the name') }}" value="{{ old('name', $branch->name) }}">
                                 @error('name')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="code">كود الفرع</label>
+                                <label class="form-label" for="code">{{ __('Branch Code') }}</label>
                                 <input type="text" class="form-control" id="code" name="code"
-                                    placeholder="ادخل كود الفرع" value="{{ old('code', $branch->code) }}">
+                                    placeholder="{{ __('Enter branch code') }}" value="{{ old('code', $branch->code) }}">
                                 @error('code')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="address">العنوان</label>
+                                <label class="form-label" for="address">{{ __('Address') }}</label>
                                 <input type="text" class="form-control" id="address" name="address"
-                                    placeholder="ادخل العنوان" value="{{ old('address', $branch->address) }}">
+                                    placeholder="{{ __('Enter address') }}" value="{{ old('address', $branch->address) }}">
                                 @error('address')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
                             <div class="mb-3 col-lg-4 d-flex align-items-center justify-content-between">
-                                <label class="form-label mb-0" for="is_active">الحالة</label>
+                                <label class="form-label mb-0" for="is_active">{{ __('Status') }}</label>
 
                                 <!-- Hidden input لإرسال القيمة 0 لو checkbox مش متفعل -->
                                 <input type="hidden" name="is_active" value="0">
@@ -64,7 +64,7 @@
                                         value="1" {{ old('is_active', $branch->is_active) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="is_active">
                                         <span
-                                            id="isActiveLabel">{{ old('is_active', $branch->is_active) ? 'مفعل' : 'معطل' }}</span>
+                                            id="isActiveLabel">{{ old('is_active', $branch->is_active) ? __('Active') : __('Inactive') }}</span>
                                     </label>
                                 </div>
 
@@ -77,11 +77,11 @@
 
                         <div class="d-flex justify-content-start mt-4">
                             <button type="submit" class="btn btn-primary me-2" id="submitBtn">
-                                <i class="las la-save"></i> حفظ
+                                <i class="las la-save"></i> {{ __('Save') }}
                             </button>
 
                             <a href="{{ route('branches.index') }}" class="btn btn-danger">
-                                <i class="las la-times"></i> إلغاء
+                                <i class="las la-times"></i> {{ __('Cancel') }}
                             </a>
                         </div>
 
@@ -99,7 +99,7 @@
         const switchLabel = switchInput.nextElementSibling.querySelector('#isActiveLabel');
 
         switchInput.addEventListener('change', function() {
-            switchLabel.textContent = this.checked ? 'مفعل' : 'معطل';
+            switchLabel.textContent = this.checked ? '{{ __('Active') }}' : '{{ __('Inactive') }}';
         });
     </script>
 @endpush

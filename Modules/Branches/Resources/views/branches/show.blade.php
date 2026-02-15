@@ -12,12 +12,12 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h4 class="page-title">{{ __('Branch Details') }}: {{ $branch->name }}</h4>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('branches.edit', $branch) }}" class="btn btn-primary">
+                        <a href="{{ route('branches.edit', $branch) }}" class="btn btn-success">
                             <i class="fas fa-edit"></i> {{ __('Edit') }}
                         </a>
-                        <button onclick="window.print()" class="btn btn-info">
+                        <a onclick="window.print()" class="btn btn-info">
                             <i class="fas fa-print"></i> {{ __('Print') }}
-                        </button>
+                        </a>
                         <a href="{{ route('branches.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-right"></i> {{ __('Back') }}
                         </a>
@@ -38,7 +38,16 @@
                         @foreach($branch->getAttributes() as $key => $value)
                             @if(!in_array($key, ['id', 'created_at', 'updated_at', 'deleted_at']))
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ ucfirst(str_replace('_', ' ', $key)) }}:</label>
+                                <label class="form-label fw-bold">
+                                    @switch($key)
+                                        @case('name') {{ __('Name') }} @break
+                                        @case('code') {{ __('Branch Code') }} @break
+                                        @case('address') {{ __('Address') }} @break
+                                        @case('is_active') {{ __('Status') }} @break
+                                        @default {{ ucfirst(str_replace('_', ' ', $key)) }}
+                                    @endswitch
+                                    :
+                                </label>
                                 <div class="form-control-static">
                                     @if($value)
                                         @if($key == 'is_active')
@@ -47,7 +56,7 @@
                                             {{ is_array($value) ? json_encode($value) : $value }}
                                         @endif
                                     @else
-                                        {{ __('N/A') }}
+                                        {{ __('Not Available') }}
                                     @endif
                                 </div>
                             </div>
