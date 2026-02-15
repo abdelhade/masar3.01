@@ -502,32 +502,42 @@
             // Handle search keydown
             handleSearchKeydown(e) {
                 const dropdown = document.getElementById('search-results-dropdown');
-                if (!dropdown || dropdown.classList.contains('hidden')) return;
+                const isDropdownVisible = dropdown && dropdown.style.display === 'block' && !dropdown.classList
+                    .contains('hidden');
+
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (isDropdownVisible && this.selectedIndex >= 0 && this.searchResults[this.selectedIndex]) {
+                        // Add selected item
+                        this.addItem(this.searchResults[this.selectedIndex]);
+                    } else if (isDropdownVisible && this.searchResults.length > 0) {
+                        // Auto-select first result if none selected
+                        this.addItem(this.searchResults[0]);
+                    } else {
+                        // Create new item if no results
+                        const searchInput = document.getElementById('search-input');
+                        if (searchInput && searchInput.value.trim()) {
+                            this.createNewItem(searchInput.value.trim());
+                        }
+                    }
+                    return;
+                }
+
+                if (!isDropdownVisible) return;
 
                 switch (e.key) {
                     case 'ArrowDown':
                         e.preventDefault();
                         if (this.selectedIndex < this.searchResults.length - 1) {
                             this.selectedIndex++;
-                            this.renderSearchResults();
+                            this.highlightSelectedResult();
                         }
                         break;
                     case 'ArrowUp':
                         e.preventDefault();
                         if (this.selectedIndex > 0) {
                             this.selectedIndex--;
-                            this.renderSearchResults();
-                        }
-                        break;
-                    case 'Enter':
-                        e.preventDefault();
-                        if (this.selectedIndex >= 0 && this.searchResults[this.selectedIndex]) {
-                            this.addItem(this.searchResults[this.selectedIndex]);
-                        } else {
-                            const searchInput = document.getElementById('search-input');
-                            if (searchInput && searchInput.value.trim()) {
-                                this.createNewItem(searchInput.value.trim());
-                            }
+                            this.highlightSelectedResult();
                         }
                         break;
                     case 'Escape':
@@ -536,8 +546,61 @@
                         break;
                 }
             },
+            highlightSelectedResult() {
+                const dropdown = document.getElementById('search-results-dropdown');
+                if (!dropdown) return;
 
-            // Render search results
+                const items = dropdown.querySelectorAll('.search-result-item');
+                items.forEach((item, index) => {
+                    if (index === this.selectedIndex) {
+                        // ✅ نفس اللون الأزرق الواضح
+                        item.style.background = '#5b6ef5 !important';
+                        item.style.borderLeft = '5px solid #4051d4';
+                        item.style.boxShadow = '0 2px 8px rgba(91, 110, 245, 0.4)';
+
+                        // ✅ خلي النصوص كلها بيضا
+                        const allDivs = item.querySelectorAll('div');
+                        allDivs.forEach(el => {
+                            el.style.color = 'white !important';
+                        });
+
+                        // ✅ حتى الـ price badge يبقى أبيض
+                        const priceDiv = item.querySelector('div:last-child');
+                        if (priceDiv) {
+                            priceDiv.style.background = 'rgba(255, 255, 255, 0.2) !important';
+                            priceDiv.style.color = 'white !important';
+                            priceDiv.style.border = '1px solid white';
+                        }
+
+                        item.scrollIntoView({
+                            block: 'nearest',
+                            behavior: 'smooth'
+                        });
+                    } else {
+                        item.style.background = 'white !important';
+                        item.style.borderLeft = 'none';
+                        item.style.boxShadow = 'none';
+
+                        // ✅ رجع الألوان الأصلية
+                        const leftDiv = item.querySelector('div:first-child');
+                        if (leftDiv) {
+                            const nameDiv = leftDiv.querySelector('div:first-child');
+                            const codeDiv = leftDiv.querySelector('div:last-child');
+                            if (nameDiv) nameDiv.style.color = '#000 !important';
+                            if (codeDiv) codeDiv.style.color = '#666 !important';
+                        }
+
+                        // ✅ رجع لون الـ price badge
+                        const priceDiv = item.querySelector('div:last-child');
+                        if (priceDiv) {
+                            priceDiv.style.background = '#667eea !important';
+                            priceDiv.style.color = 'white !important';
+                            priceDiv.style.border = 'none';
+                        }
+                    }
+                });
+            },
+
             // Render search results
             renderSearchResults() {
                 const dropdown = document.getElementById('search-results-dropdown');
@@ -546,7 +609,6 @@
                     return;
                 }
 
-                // Clear dropdown
                 dropdown.innerHTML = '';
 
                 if (this.searchResults.length === 0) {
@@ -554,8 +616,8 @@
                     const searchTerm = searchInput?.value || '';
 
                     if (searchTerm.trim().length > 0) {
-                        // Create new item button
                         const createBtn = document.createElement('div');
+                        createBtn.className = 'create-new-item-btn';
                         createBtn.style.cssText = `
                 display: block !important;
                 padding: 15px !important;
@@ -579,9 +641,9 @@
                         dropdown.appendChild(createBtn);
                     }
                 } else {
-                    // Render search results
                     this.searchResults.forEach((item, index) => {
                         const resultDiv = document.createElement('div');
+                        resultDiv.className = 'search-result-item';
                         resultDiv.style.cssText = `
                 display: flex !important;
                 justify-content: space-between !important;
@@ -593,7 +655,7 @@
                 min-height: 60px !important;
             `;
 
-                        // Left side: Name and Code
+                        // Left side
                         const leftDiv = document.createElement('div');
                         leftDiv.style.cssText = `
                 display: flex !important;
@@ -622,7 +684,7 @@
                         leftDiv.appendChild(nameDiv);
                         leftDiv.appendChild(codeDiv);
 
-                        // Right side: Price badge
+                        // Right side
                         const priceDiv = document.createElement('div');
                         priceDiv.style.cssText = `
                 background: #667eea !important;
@@ -636,19 +698,36 @@
             `;
                         priceDiv.textContent = (parseFloat(item.price) || 0).toFixed(2) + ' ج.م';
 
-                        // Append to result div
                         resultDiv.appendChild(leftDiv);
                         resultDiv.appendChild(priceDiv);
 
+                        // ✅ Highlight selected item
+                        if (index === this.selectedIndex) {
+                            resultDiv.style.background = '#5b6ef5 !important';
+                            resultDiv.style.borderLeft = '5px solid #4051d4';
+                            resultDiv.style.boxShadow = '0 2px 8px rgba(91, 110, 245, 0.4)';
+
+                            // ✅ خلي النصوص بيضا
+                            nameDiv.style.color = 'white !important';
+                            codeDiv.style.color = 'white !important';
+                            priceDiv.style.background = 'rgba(255, 255, 255, 0.2) !important';
+                            priceDiv.style.color = 'white !important';
+                            priceDiv.style.border = '1px solid white';
+                        }
+
                         // Hover effects
                         resultDiv.onmouseenter = function() {
-                            this.style.background = '#f5f5f5 !important';
+                            if (index !== InvoiceApp.selectedIndex) {
+                                this.style.background = '#f5f5f5 !important';
+                            }
                         };
                         resultDiv.onmouseleave = function() {
-                            this.style.background = 'white !important';
+                            if (index !== InvoiceApp.selectedIndex) {
+                                this.style.background = 'white !important';
+                                this.style.borderLeft = 'none';
+                            }
                         };
 
-                        // Click handler
                         resultDiv.onclick = () => this.addItem(item);
 
                         dropdown.appendChild(resultDiv);
@@ -726,8 +805,8 @@
             },
 
             // Add item to invoice
+            // Add item to invoice
             addItem(item) {
-
                 // Ensure we have required fields
                 if (!item.id || !item.name) {
                     console.error('❌ Invalid item data:', item);
@@ -740,7 +819,7 @@
                     item.units[0].id : 1);
 
                 const newItem = {
-                    id: Date.now(), // Temporary ID
+                    id: Date.now(),
                     item_id: item.id,
                     name: item.name,
                     code: item.code || '',
@@ -766,15 +845,16 @@
 
                 this.updateStatus('✓ تم إضافة الصنف', 'success');
 
-                // Focus on quantity
+                // ✅ Focus على أول حقل editable في النموذج
                 setTimeout(() => {
-                    const qtyField = document.getElementById('quantity-' + (this.invoiceItems.length - 1));
-                    if (qtyField) {
-                        qtyField.focus();
-                        qtyField.select();
+                    const itemIndex = this.invoiceItems.length - 1;
+                    const editableColumns = this.getEditableColumns();
+
+                    if (editableColumns.length > 0) {
+                        const firstEditableColumn = editableColumns[0];
+                        this.focusField(firstEditableColumn, itemIndex);
                     }
                 }, 100);
-
             },
 
             // Create new item
@@ -894,10 +974,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                    ${unit.name}
-                                                                                                                                                                </option>
-                                                                                                                                                            `).join('')}
+                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                ${unit.name}
+                                                                                                                                                                                                                                                            </option>
+                                                                                                                                                                                                                                                        `).join('')}
                                 </select>
                             </td>`;
 
@@ -945,7 +1025,7 @@
                         return `
                             <td style="width: 15%;" onclick="event.stopPropagation();">
                                 <input type="number" id="sub-value-${index}" class="form-control text-center"
-                                       value="${item.sub_value}" readonly>
+                                    value="${item.sub_value}" readonly tabindex="-1">
                             </td>`;
 
                     case 'length':
@@ -966,8 +1046,35 @@
 
             // Attach event listeners to item inputs
             attachItemEventListeners() {
+                document.querySelectorAll('[id^="sub-value-"]').forEach(input => {
+                    input.addEventListener('focus', (e) => {
+                        e.preventDefault();
+                        e.target.blur(); // ✅ ارجع الـ focus فوراً
+
+                        // ✅ روح على البحث بدلاً منه
+                        const searchInput = document.getElementById('search-input');
+                        if (searchInput) {
+                            searchInput.focus();
+                            searchInput.select();
+                        }
+                    });
+
+                    // ✅ امنع keyboard navigation على sub_value
+                    input.addEventListener('keydown', (e) => {
+                        e.preventDefault();
+                        if (e.key === 'Enter' || e.key === 'Tab') {
+                            const searchInput = document.getElementById('search-input');
+                            if (searchInput) {
+                                searchInput.focus();
+                                searchInput.select();
+                            }
+                        }
+                    });
+                });
+
                 // Quantity, price, discount inputs
-                document.querySelectorAll('[data-field="quantity"], [data-field="price"], [data-field="discount"]')
+                document.querySelectorAll(
+                        '[data-field="quantity"], [data-field="price"], [data-field="discount"]')
                     .forEach(input => {
                         input.addEventListener('input', (e) => {
                             const index = parseInt(e.target.dataset.index);
@@ -979,6 +1086,26 @@
                         });
 
                         input.addEventListener('focus', (e) => e.target.select());
+
+                        // ✅ Add keyboard navigation - Enter/Tab to next field
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, false);
+                            } else if (e.key === 'Tab' && !e.shiftKey) {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, false);
+                            } else if (e.key === 'Tab' && e.shiftKey) {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, true);
+                            }
+                        });
                     });
 
                 // Unit select
@@ -989,11 +1116,21 @@
                         const uVal = parseFloat(selectedOption.dataset.uVal) || 1;
 
                         this.invoiceItems[index].unit_id = parseInt(e.target.value);
-                        this.invoiceItems[index].price = (this.invoiceItems[index].item_price || 0) *
+                        this.invoiceItems[index].price = (this.invoiceItems[index]
+                                .item_price || 0) *
                             uVal;
 
                         this.calculateItemTotal(index);
                         this.renderItems();
+                    });
+
+                    // ✅ Add keyboard navigation for select
+                    select.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const index = parseInt(e.target.dataset.index);
+                            this.moveToNextField(index, 'unit', false);
+                        }
                     });
                 });
 
@@ -1007,6 +1144,16 @@
                             this.invoiceItems[index].batch_number = e.target.value;
                         } else if (field === 'expiry') {
                             this.invoiceItems[index].expiry_date = e.target.value;
+                        }
+                    });
+
+                    // ✅ Add keyboard navigation
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const index = parseInt(e.target.dataset.index);
+                            const field = e.target.dataset.field;
+                            this.moveToNextField(index, field, false);
                         }
                     });
                 });
@@ -1033,23 +1180,28 @@
             // Calculate totals
             calculateTotals() {
                 // Subtotal
-                this.subtotal = this.invoiceItems.reduce((sum, item) => sum + (parseFloat(item.sub_value) || 0), 0);
+                this.subtotal = this.invoiceItems.reduce((sum, item) => sum + (parseFloat(item.sub_value) ||
+                    0), 0);
                 this.subtotal = parseFloat(this.subtotal.toFixed(2));
 
                 // Discount
                 if (this.discountPercentage > 0) {
-                    this.discountValue = parseFloat(((this.subtotal * this.discountPercentage) / 100).toFixed(2));
+                    this.discountValue = parseFloat(((this.subtotal * this.discountPercentage) / 100)
+                        .toFixed(2));
                 } else if (this.subtotal > 0 && this.discountValue > 0) {
-                    this.discountPercentage = parseFloat(((this.discountValue / this.subtotal) * 100).toFixed(2));
+                    this.discountPercentage = parseFloat(((this.discountValue / this.subtotal) * 100)
+                        .toFixed(2));
                 }
 
                 const afterDiscount = parseFloat((this.subtotal - this.discountValue).toFixed(2));
 
                 // Additional
                 if (this.additionalPercentage > 0) {
-                    this.additionalValue = parseFloat(((afterDiscount * this.additionalPercentage) / 100).toFixed(2));
+                    this.additionalValue = parseFloat(((afterDiscount * this.additionalPercentage) / 100)
+                        .toFixed(2));
                 } else if (afterDiscount > 0 && this.additionalValue > 0) {
-                    this.additionalPercentage = parseFloat(((this.additionalValue / afterDiscount) * 100).toFixed(2));
+                    this.additionalPercentage = parseFloat(((this.additionalValue / afterDiscount) * 100)
+                        .toFixed(2));
                 }
 
                 const afterAdditional = parseFloat((afterDiscount + this.additionalValue).toFixed(2));
@@ -1058,15 +1210,18 @@
                 this.vatValue = parseFloat(((afterAdditional * this.vatPercentage) / 100).toFixed(2));
 
                 // Withholding Tax
-                this.withholdingTaxValue = parseFloat(((afterAdditional * this.withholdingTaxPercentage) / 100).toFixed(
+                this.withholdingTaxValue = parseFloat(((afterAdditional * this.withholdingTaxPercentage) /
+                    100).toFixed(
                     2));
 
                 // Total
-                this.totalAfterAdditional = parseFloat((afterAdditional + this.vatValue - this.withholdingTaxValue)
+                this.totalAfterAdditional = parseFloat((afterAdditional + this.vatValue - this
+                        .withholdingTaxValue)
                     .toFixed(2));
 
                 // Remaining
-                this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(2));
+                this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(
+                    2));
 
                 this.updateTotalsDisplay();
             },
@@ -1129,10 +1284,12 @@
                     '-'; // Store name would come from item data
                 document.getElementById('selected-item-available').textContent =
                     '-'; // Available quantity would come from API
-                document.getElementById('selected-item-total').textContent = '-'; // Total quantity would come from API
+                document.getElementById('selected-item-total').textContent =
+                    '-'; // Total quantity would come from API
                 document.getElementById('selected-item-unit').textContent = item.unit_name || '-';
                 document.getElementById('selected-item-price').textContent = (item.price || 0).toFixed(2);
-                document.getElementById('selected-item-last-price').textContent = '-'; // Would come from API
+                document.getElementById('selected-item-last-price').textContent =
+                    '-'; // Would come from API
                 document.getElementById('selected-item-avg-cost').textContent = '-'; // Would come from API
             },
 
@@ -1284,7 +1441,92 @@
                 } else {
                     console.error('❌ Dropdown not found!');
                 }
-            }
+            },
+            // Move to next/previous field (Tab Order)
+            moveToNextField(currentIndex, currentField, isReverse = false) {
+                const fieldMap = {
+                    'unit': 'unit',
+                    'quantity': 'quantity',
+                    'batch': 'batch_number',
+                    'expiry': 'expiry_date',
+                    'price': 'price',
+                    'discount': 'discount'
+                };
+
+                const currentColumn = fieldMap[currentField] || currentField;
+                const editableColumns = this.getEditableColumns();
+                const currentPos = editableColumns.indexOf(currentColumn);
+
+                if (currentPos === -1) {
+                    this.focusSearchInput();
+                    return;
+                }
+
+                if (isReverse) {
+                    // Shift+Tab: Go backward
+                    if (currentPos > 0) {
+                        const prevColumn = editableColumns[currentPos - 1];
+                        this.focusField(prevColumn, currentIndex);
+                    } else {
+                        // First field → go to search
+                        this.focusSearchInput();
+                    }
+                } else {
+                    // Enter/Tab: Go forward
+                    if (currentPos < editableColumns.length - 1) {
+                        const nextColumn = editableColumns[currentPos + 1];
+                        this.focusField(nextColumn, currentIndex);
+                    } else {
+                        // ✅ Last field → Skip delete button, go back to search
+                        this.focusSearchInput();
+                    }
+                }
+            },
+
+            // Get editable columns (skip item_name, code, sub_value)
+            getEditableColumns() {
+                const nonEditable = ['item_name', 'code', 'sub_value'];
+                return this.visibleColumns.filter(col => !nonEditable.includes(col));
+            },
+
+            // Focus a specific field
+            focusField(columnName, index) {
+                const fieldId = this.getFieldIdFromColumn(columnName, index);
+                if (fieldId) {
+                    const el = document.getElementById(fieldId);
+                    if (el) {
+                        el.focus();
+                        if (el.tagName === 'INPUT' && el.type !== 'date') {
+                            el.select();
+                        }
+                        return;
+                    }
+                }
+                this.focusSearchInput();
+            },
+
+            // Focus search input helper
+            focusSearchInput() {
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            },
+
+            // Get field ID from column name
+            getFieldIdFromColumn(columnName, index) {
+                const columnToFieldMap = {
+                    'unit': 'unit-' + index,
+                    'quantity': 'quantity-' + index,
+                    'batch_number': 'batch-' + index,
+                    'expiry_date': 'expiry-' + index,
+                    'price': 'price-' + index,
+                    'discount': 'discount-' + index
+                };
+
+                return columnToFieldMap[columnName] || null;
+            },
         };
 
         // Initialize when DOM is ready AND jQuery + Select2 are loaded
