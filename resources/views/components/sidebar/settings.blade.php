@@ -37,3 +37,11 @@
         </a>
     </li>
 @endcan
+
+@can('view Kitchen Printer Settings')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('pos.kitchen-printers.index') }}">
+            <i class="ti-control-record"></i>{{ __('pos.kitchen_printers') }}
+        </a>
+    </li>
+@endcan

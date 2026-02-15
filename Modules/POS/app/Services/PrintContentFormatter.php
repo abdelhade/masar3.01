@@ -12,14 +12,14 @@ use Modules\POS\Models\KitchenPrinterStation;
  * Service for formatting print content for thermal printers.
  *
  * This service formats transaction data into a readable format suitable
- * for thermal printers with a maximum line width of 32 characters.
+ * for thermal printers with a configurable maximum line width.
  */
 class PrintContentFormatter
 {
     /**
      * Maximum line width for thermal printers.
      */
-    private const LINE_WIDTH = 32;
+    private int $lineWidth;
 
     /**
      * Constructor with dependency injection.
@@ -28,7 +28,9 @@ class PrintContentFormatter
      */
     public function __construct(
         private KitchenPrinterService $printerService
-    ) {}
+    ) {
+        $this->lineWidth = config('kitchen-printer.line_width', 32);
+    }
 
     /**
      * Format transaction data for printing.
@@ -131,7 +133,7 @@ class PrintContentFormatter
         $qtyWithUnit = "{$qtyStr} {$unit}";
 
         // Truncate name if too long
-        $maxNameLength = self::LINE_WIDTH - mb_strlen($qtyWithUnit) - 3;
+        $maxNameLength = $this->lineWidth - mb_strlen($qtyWithUnit) - 3;
         $name = Str::limit($name, $maxNameLength, '');
 
         return "{$qtyWithUnit} x {$name}";
@@ -145,7 +147,7 @@ class PrintContentFormatter
      */
     private function centerText(string $text): string
     {
-        $padding = max(0, (self::LINE_WIDTH - mb_strlen($text)) / 2);
+        $padding = max(0, ($this->lineWidth - mb_strlen($text)) / 2);
 
         return str_repeat(' ', (int) $padding).$text;
     }
@@ -168,6 +170,6 @@ class PrintContentFormatter
      */
     private function separator(): string
     {
-        return str_repeat('-', self::LINE_WIDTH);
+        return str_repeat('-', $this->lineWidth);
     }
 }
