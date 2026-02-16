@@ -73,6 +73,7 @@ Route::middleware(['auth', 'verified', \Modules\POS\app\Http\Middleware\SafeSear
     Route::get('/api/price-check/{barcode}', [POSController::class, 'getPriceByBarcode'])->name('api.price-check');
     Route::get('/api/item/{id}', [POSController::class, 'getItemDetails'])->name('api.item-details');
     Route::get('/api/category/{categoryId}/items', [POSController::class, 'getCategoryItems'])->name('api.category-items');
+    Route::get('/api/items-details', [POSController::class, 'getAllItemsDetails'])->name('api.all-items-details');
     Route::get('/api/customer/{id}/balance', [POSController::class, 'getCustomerBalance'])->name('api.customer-balance');
     Route::get('/api/recent-transactions', [POSController::class, 'getRecentTransactions'])->name('api.recent-transactions');
     Route::post('/api/store', [POSController::class, 'store'])->name('api.store');
