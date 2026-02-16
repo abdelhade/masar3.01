@@ -87,6 +87,49 @@ class InvoiceFormController extends Controller
             ->select('id', 'aname')
             ->get();
 
+        // Get invoice settings and user permissions
+        $isSales = in_array($type, [10, 12, 14, 16, 19, 22]);
+        $isPurchase = in_array($type, [11, 13, 15, 17, 20, 23, 24, 25]);
+        
+        $defaultAcc1Id = null;
+        if ($isSales) {
+            $defaultAcc1Id = 61; // العميل النقدي
+        } elseif ($isPurchase) {
+            $defaultAcc1Id = 64; // المورد النقدي
+        }
+
+        $defaultAcc2Id = $acc2List->first()?->id;
+
+        $canEditStore = auth()->user()->id == 1 || !auth()->user()->can('prevent_editing_store');
+
+        $userSettings = [
+            'multi_currency_enabled' => setting('multi_currency_enabled', false),
+            'prevent_negative_invoice' => setting('prevent_negative_invoice', true),
+            'allow_zero_price_in_invoice' => setting('allow_zero_price_in_invoice', true),
+            'allow_zero_invoice_total' => setting('allow_zero_invoice_total', true),
+            'allow_edit_invoice_value' => setting('allow_edit_invoice_value', true),
+            'change_quantity_on_value_edit' => setting('change_quantity_on_value_edit', true),
+            'show_unit_with_conversion_factor' => setting('show_unit_with_conversion_factor', true),
+            'show_due_date_in_invoices' => setting('show_due_date_in_invoices', true),
+            'is_vat_enabled' => isVatEnabled(),
+            'vat_level' => getVatLevel(),
+            'is_withholding_tax_enabled' => isWithholdingTaxEnabled(),
+            'withholding_tax_level' => getWithholdingTaxLevel(),
+            'expiry_mode' => [
+                'disabled' => setting('expiry_mode_disabled', false),
+                'nearest_first' => setting('expiry_mode_nearest_first', true),
+                'show_all' => setting('expiry_mode_show_all', false),
+            ],
+            // Permissions
+            'permissions' => [
+                'prevent_transactions_without_stock' => auth()->user()->can('prevent_transactions_without_stock'),
+                'prevent_editing_store' => !$canEditStore,
+                'allow_price_change' => auth()->user()->can('allow_price_change'),
+                'allow_discount_change' => auth()->user()->can('allow_discount_change'),
+                'allow_purchase_with_zero_price' => auth()->user()->can('allow_purchase_with_zero_price'),
+            ]
+        ];
+
         return view('invoices::invoices.create', [
             'type' => $type,
             'hash' => $hash,
@@ -97,7 +140,11 @@ class InvoiceFormController extends Controller
             'acc2List' => $acc2List,
             'employees' => $employees,
             'deliverys' => $deliverys,
-            'cashAccounts' => $cashAccounts
+            'cashAccounts' => $cashAccounts,
+            'userSettings' => $userSettings,
+            'defaultAcc1Id' => $defaultAcc1Id,
+            'defaultAcc2Id' => $defaultAcc2Id,
+            'canEditStore' => $canEditStore
         ]);
     }
 

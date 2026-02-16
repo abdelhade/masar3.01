@@ -99,8 +99,8 @@
 
             {{-- المخزن --}}
             <div class="col-md-1">
-                <label class="form-label mb-1 fw-semibold" style="font-siتze: 0.85rem;">{{ $acc2Role }}</label>
-                <select id="acc2-id" class="form-select form-select-sm">
+                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ $acc2Role }}</label>
+                <select id="acc2-id" class="form-select form-select-sm" {{ !$canEditStore ? 'disabled' : '' }}>
                     <option value="">{{ __('اختر') }} {{ $acc2Role }}</option>
                     @foreach ($acc2List as $acc)
                         <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
@@ -151,7 +151,7 @@
             {{-- التاريخ --}}
             <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('التاريخ') }}</label>
-                <input type="date" id="pro-date" class="form-control form-control-sm" value="{{ date('Y-m-d') }}">
+                <input type="date" id="pro-date" class="form-control form-control-sm" value="{{ date('Y-m-d') }}" {{ !setting('allow_edit_transaction_date', true) ? 'readonly' : '' }}>
             </div>
 
             {{-- رقم الفاتورة --}}

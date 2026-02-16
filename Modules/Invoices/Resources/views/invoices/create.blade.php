@@ -269,6 +269,9 @@
             'vatPercentage' => isVatEnabled() ? setting('vat_percentage', 15) : 0,
             'withholdingTaxPercentage' => setting('withholding_tax_percentage', 0),
             'storeUrl' => route('invoices.store'),
+            'userSettings' => $userSettings ?? [],
+            'defaultAcc1Id' => $defaultAcc1Id ?? null,
+            'defaultAcc2Id' => $defaultAcc2Id ?? null,
             'translations' => [
                 'item_name' => __('Item Name'),
                 'code' => __('Code'),
@@ -298,6 +301,7 @@
         window.InvoiceApp = {
             // Config
             type: CONFIG.type,
+            settings: CONFIG.userSettings || {},
             branchId: CONFIG.branchId,
             vatPercentage: CONFIG.vatPercentage,
             withholdingTaxPercentage: CONFIG.withholdingTaxPercentage,
@@ -348,10 +352,17 @@
                         const columnsJson = defaultOption.getAttribute('data-columns');
                         if (columnsJson) {
                             try {
-                                this.visibleColumns = JSON.parse(columnsJson);
+                                let columns = JSON.parse(columnsJson);
+                                
+                                // ✅ Hide expiry columns if disabled in settings
+                                if (this.settings.expiry_mode && this.settings.expiry_mode.disabled) {
+                                    columns = columns.filter(c => c !== 'batch_number' && c !== 'expiry_date');
+                                }
+                                
+                                this.visibleColumns = columns;
                                 this.updateTableHeaders();
-                            } catch (error) {
-                                console.error('❌ Error parsing default template columns:', error);
+                            } catch (e) {
+                                console.error('❌ Error parsing default template columns:', e);
                             }
                         }
                     }
@@ -370,7 +381,14 @@
                         noResults: () => 'لا توجد نتائج',
                         searching: () => 'جاري البحث...'
                     }
-                }).on('change', (e) => {
+                });
+
+                // ✅ Set default account if exists
+                if (CONFIG.defaultAcc1Id) {
+                    $('#acc1-id').val(CONFIG.defaultAcc1Id).trigger('change');
+                }
+
+                $('#acc1-id').on('change', (e) => {
                     const accountId = e.target.value;
                     if (accountId) {
                         this.updateAccountBalance(accountId);
@@ -388,6 +406,11 @@
                         searching: () => 'جاري البحث...'
                     }
                 });
+
+                // ✅ Set default store if exists
+                if (CONFIG.defaultAcc2Id) {
+                    $('#acc2-id').val(CONFIG.defaultAcc2Id).trigger('change');
+                }
             },
 
             // Set default values from settings
@@ -514,7 +537,14 @@
                     const columnsJson = selectedOption.getAttribute('data-columns');
                     if (columnsJson) {
                         try {
-                            this.visibleColumns = JSON.parse(columnsJson);
+                            let columns = JSON.parse(columnsJson);
+                            
+                            // ✅ Hide expiry columns if disabled in settings
+                            if (this.settings.expiry_mode && this.settings.expiry_mode.disabled) {
+                                columns = columns.filter(c => c !== 'batch_number' && c !== 'expiry_date');
+                            }
+                            
+                            this.visibleColumns = columns;
                             this.updateTableHeaders();
                             this.renderItems();
                         } catch (error) {
@@ -887,6 +917,28 @@
                     return;
                 }
 
+                // ✅ Check for duplicate items based on settings
+                const isSales = [10, 12, 14, 16, 22, 26].includes(this.type);
+                const isPurchases = [11, 13, 15, 17, 24, 25].includes(this.type);
+                
+                const preventDuplicate = (isSales && this.settings.prevent_duplicate_items_in_sales) || 
+                                       (isPurchases && this.settings.prevent_duplicate_items_in_purchases);
+
+                if (preventDuplicate) {
+                    const exists = this.invoiceItems.some(i => i.item_id === item.id);
+                    if (exists) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'تنبيه',
+                            text: 'هذا الصنف مضاف بالفعل في الفاتورة، والإعدادات تمنع التكرار.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        this.updateStatus('⚠️ الصنف مضاف بالفعل', 'warning');
+                        return;
+                    }
+                }
+
                 // Get default unit
                 const defaultUnitId = item.default_unit_id || item.unit_id || (item.units && item.units.length > 0 ?
                     item.units[0].id : 1);
@@ -1079,18 +1131,22 @@
                             </td>`;
 
                     case 'price':
+                        const canEditPrice = this.settings.permissions.allow_price_change;
                         return `
                             <td style="width: 15%;" onclick="event.stopPropagation();">
                                 <input type="number" id="price-${index}" class="form-control text-center"
                                        value="${item.price}" step="0.01"
+                                       ${!canEditPrice ? 'readonly tabindex="-1" style="background-color: #f8f9fa;"' : ''}
                                        data-index="${index}" data-field="price">
                             </td>`;
 
                     case 'discount':
+                        const canEditDiscount = this.settings.permissions.allow_discount_change;
                         return `
                             <td style="width: 15%;" onclick="event.stopPropagation();">
                                 <input type="number" id="discount-${index}" class="form-control text-center"
                                        value="${item.discount}" step="0.01"
+                                       ${!canEditDiscount ? 'readonly tabindex="-1" style="background-color: #f8f9fa;"' : ''}
                                        data-index="${index}" data-field="discount">
                             </td>`;
 
@@ -1421,6 +1477,10 @@
             submitForm() {
                 console.log('🔵 Submitting form...');
 
+                if (!this.validateForm()) {
+                    return;
+                }
+
                 // ✅ Fill hidden inputs with current data
                 document.getElementById('form-type').value = this.type;
                 document.getElementById('form-branch-id').value = this.branchId;
@@ -1488,6 +1548,59 @@
 
                 // ✅ Submit the form
                 document.getElementById('invoice-form').submit();
+            },
+
+            // ✅ Validate form before submission
+            validateForm() {
+                // 1. Check for items
+                if (this.invoiceItems.length === 0) {
+                    Swal.fire('خطأ', 'لا يمكن حفظ فاتورة بدون أصناف.', 'error');
+                    return false;
+                }
+
+                // 2. Check for required headers
+                const acc1Val = $('#acc1-id').val();
+                if (!acc1Val) {
+                    Swal.fire('خطأ', 'يرجى اختيار العميل/المورد.', 'error');
+                    return false;
+                }
+
+                const acc2Val = $('#acc2-id').val();
+                if (!acc2Val) {
+                    Swal.fire('خطأ', 'يرجى اختيار المخزن.', 'error');
+                    return false;
+                }
+
+                // 3. Check items data
+                for (let i = 0; i < this.invoiceItems.length; i++) {
+                    const item = this.invoiceItems[i];
+                    
+                    // Prevent zero/negative quantity
+                    if (item.quantity <= 0) {
+                        Swal.fire('خطأ', `الصنف "${item.name}" لديه كمية غير صالحة.`, 'error');
+                        return false;
+                    }
+
+                    // Prevent zero price if settings don't allow it
+                    if (!this.settings.allow_zero_price_in_invoice && item.price <= 0) {
+                        Swal.fire('خطأ', `الصنف "${item.name}" لديه سعر صفري وهذا غير مسموح به.`, 'error');
+                        return false;
+                    }
+                }
+
+                // 4. Check negative invoice total if settings don't allow it
+                if (this.remaining < 0 && this.settings.prevent_negative_invoice) {
+                    Swal.fire('خطأ', 'قيمة الفاتورة لا يمكن أن تكون سالبة.', 'error');
+                    return false;
+                }
+
+                // 5. Check zero invoice total if settings don't allow it
+                if (this.remaining === 0 && !this.settings.allow_zero_invoice_total) {
+                    Swal.fire('خطأ', 'قيمة الفاتورة لا يمكن أن تكون صفراً.', 'error');
+                    return false;
+                }
+
+                return true;
             },
 
             // Update status message
