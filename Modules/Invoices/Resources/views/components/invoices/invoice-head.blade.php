@@ -55,8 +55,7 @@
                     </small>
 
                     <small class="me-3">
-                        <button type="button" class="btn btn-success btn-sm"
-                            onclick="InvoiceApp.saveInvoice(); return false;">
+                        <button type="button" class="btn btn-success btn-sm" onclick="window.InvoiceApp.submitForm()">
                             <i class="fas fa-save me-2"></i>
                             {{ __('حفظ الفاتورة') }}
                         </button>

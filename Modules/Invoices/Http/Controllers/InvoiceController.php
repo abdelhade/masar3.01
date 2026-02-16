@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Auth;
 use Modules\Accounts\Models\AccHead;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Invoices\Services\RecalculationServiceHelper;
+use Modules\Invoices\Services\SaveInvoiceService;
+use Modules\Invoices\Http\Requests\SaveInvoiceRequest;
 
 class InvoiceController extends Controller
 {
@@ -39,6 +41,10 @@ class InvoiceController extends Controller
         25 => 'Requisition',
         26 => 'Pricing Agreement',
     ];
+
+    public function __construct(
+        private SaveInvoiceService $saveInvoiceService
+    ) {}
 
     public function index(Request $request)
     {
@@ -134,7 +140,40 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function store(Request $request) {}
+    public function store(SaveInvoiceRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $validatedData = $request->validated();
+            
+            $operationId = $this->saveInvoiceService->saveInvoice($validatedData);
+
+            if ($operationId) {
+                DB::commit();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => __('invoices::common.invoice_saved_successfully'),
+                    'redirect' => route('invoices.show', $operationId),
+                ]);
+            }
+
+            throw new \Exception('Failed to save invoice.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger()->error('Error in InvoiceController@store: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
 
     public function show(string $id)
     {
@@ -196,9 +235,40 @@ class InvoiceController extends Controller
         return redirect()->route('invoices.form.edit', ['invoiceId' => $invoice->id]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(SaveInvoiceRequest $request, string $id)
     {
-        abort(404, 'Updates are handled through the Livewire component');
+        try {
+            DB::beginTransaction();
+
+            $validatedData = $request->validated();
+            $validatedData['operationId'] = $id;
+
+            $operationId = $this->saveInvoiceService->saveInvoice($validatedData, true);
+
+            if ($operationId) {
+                DB::commit();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => __('invoices::common.invoice_updated_successfully'),
+                    'redirect' => route('invoices.show', $operationId),
+                ]);
+            }
+
+            throw new \Exception('Failed to update invoice.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger()->error('Error in InvoiceController@update: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
     }
 
     public function destroy(string $id)

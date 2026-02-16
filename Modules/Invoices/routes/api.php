@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Invoices\Http\Controllers\Api\InvoiceApiController;
 use Modules\Invoices\Http\Controllers\Api\InvoiceDataApiController;
 use Modules\Invoices\Http\Controllers\Api\ItemSearchApiController;
+use Modules\Invoices\Http\Controllers\InvoiceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,31 +15,31 @@ use Modules\Invoices\Http\Controllers\Api\ItemSearchApiController;
 */
 
 Route::middleware(['web', 'auth'])->prefix('invoices')->group(function () {
-    
+
     // Initial Data
     Route::get('/initial-data', [InvoiceDataApiController::class, 'getInitialData'])
         ->name('api.invoices.initial-data');
-    
+
     Route::get('/{invoiceId}/edit-data', [InvoiceDataApiController::class, 'getInvoiceForEdit'])
         ->name('api.invoices.edit-data');
-    
+
     // Item Search
     Route::get('/items/search', [ItemSearchApiController::class, 'searchItems'])
         ->name('api.invoices.items.search');
-    
+
     Route::get('/items/{itemId}/details', [ItemSearchApiController::class, 'getItemDetails'])
         ->name('api.invoices.items.details');
-    
+
     Route::get('/customers/{customerId}/recommended-items', [ItemSearchApiController::class, 'getRecommendedItems'])
         ->name('api.invoices.customers.recommended-items');
-    
+
     // Invoice CRUD
-    Route::post('/', [InvoiceApiController::class, 'store'])
-        ->name('api.invoices.store');
-    
+    Route::post('/', [InvoiceController::class, 'store'])
+        ->name('invoices.store');
+
     Route::put('/{invoiceId}', [InvoiceApiController::class, 'update'])
         ->name('api.invoices.update');
-    
+
     Route::delete('/{invoiceId}', [InvoiceApiController::class, 'destroy'])
         ->name('api.invoices.destroy');
 });

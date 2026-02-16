@@ -94,7 +94,7 @@ document.addEventListener('alpine:init', () => {
             vat_value: 0,
             withholding_tax_percentage: 0,
             withholding_tax_value: 0,
-            total: 0,
+            total_after_additional: 0,
             received_from_client: 0,
             remaining: 0,
         },
@@ -286,14 +286,14 @@ document.addEventListener('alpine:init', () => {
             }
             
             // 7. Calculate total
-            this.calculations.total = 
+            this.calculations.total_after_additional = 
                 afterDiscountAndAdditional + 
                 this.calculations.vat_value - 
                 this.calculations.withholding_tax_value;
             
             // 8. Calculate remaining
             this.calculations.remaining = 
-                this.calculations.total - 
+                this.calculations.total_after_additional - 
                 this.calculations.received_from_client;
             
             // 9. Calculate balance after invoice
@@ -307,7 +307,7 @@ document.addEventListener('alpine:init', () => {
             if (!this.ui.showBalance || !this.ui.selectedAccount) return;
             
             const currentBalance = parseFloat(this.ui.selectedAccount.balance) || 0;
-            const invoiceTotal = this.calculations.total;
+            const invoiceTotal = this.calculations.total_after_additional;
             
             // Based on invoice type
             if ([10, 12, 14, 16].includes(this.invoice.type)) {

@@ -9,11 +9,11 @@ use Modules\Invoices\Http\Controllers\InvoiceTemplateController;
 use Modules\Invoices\Http\Controllers\InvoiceWorkflowController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    
+
     // Invoice Form Routes (New - Alpine.js based)
     Route::get('/invoices/form/create', [InvoiceFormController::class, 'create'])->name('invoices.form.create');
     Route::get('/invoices/form/{invoiceId}/edit', [InvoiceFormController::class, 'edit'])->name('invoices.form.edit');
-    
+
     // Invoice Templates
     Route::resource('invoice-templates', InvoiceTemplateController::class)->parameters([
         'invoice-templates' => 'template'
@@ -34,7 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Invoice Print Route
     Route::get('/invoice/print/{operation_id}', [InvoiceController::class, 'print'])->name('invoice.print');
-    
+
     // Invoice View Route
     Route::get('invoice/view/{operationId}', [InvoiceController::class, 'view'])->name('invoice.view');
 

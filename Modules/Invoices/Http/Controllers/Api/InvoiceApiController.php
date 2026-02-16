@@ -7,7 +7,7 @@ namespace Modules\Invoices\Http\Controllers\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Invoices\Http\Requests\CreateInvoiceRequest;
+use Modules\Invoices\Http\Requests\SaveInvoiceRequest;
 use Modules\Invoices\Http\Requests\UpdateInvoiceRequest;
 use Modules\Invoices\Services\InvoiceCreationService;
 use Modules\Invoices\Services\InvoiceUpdateService;
@@ -25,11 +25,14 @@ class InvoiceApiController extends Controller
     /**
      * Create new invoice
      *
-     * @param CreateInvoiceRequest $request
+     * @param SaveInvoiceRequest $request
      * @return JsonResponse
      */
-    public function store(CreateInvoiceRequest $request): JsonResponse
+    public function store(Request $request): JsonResponse
     {
+
+
+
         $result = $this->creationService->createInvoice($request->validated());
 
         $statusCode = $result['success'] ? 201 : 422;

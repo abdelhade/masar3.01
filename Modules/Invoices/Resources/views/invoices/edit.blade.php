@@ -284,7 +284,7 @@
                                     </tr>
                                     <tr class="table-primary">
                                         <th>{{ __('invoices.total') }}:</th>
-                                        <th class="text-end" x-text="formatCurrency(calculations.total)"></th>
+                                        <th class="text-end" x-text="formatCurrency(calculations.total_after_additional)"></th>
                                     </tr>
                                 </table>
                             </div>
@@ -322,7 +322,7 @@
                             <table class="table table-sm table-borderless mb-0">
                                 <tr class="table-primary">
                                     <th class="py-2">{{ __('invoices.total') }}:</th>
-                                    <th class="text-end py-2" style="font-size: 1.2rem;" x-text="formatCurrency(calculations.total)"></th>
+                                    <th class="text-end py-2" style="font-size: 1.2rem;" x-text="formatCurrency(calculations.total_after_additional)"></th>
                                 </tr>
                             </table>
                         </div>

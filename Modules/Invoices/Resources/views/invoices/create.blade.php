@@ -164,8 +164,36 @@
     @endpush
     {{-- Pure HTML - No Alpine --}}
     <div id="invoice-app">
-        <form id="invoice-form">
+        <form id="invoice-form" method="POST" action="{{ route('invoices.store') }}">
             @csrf
+            
+            {{-- Hidden inputs for all invoice data --}}
+            <input type="hidden" name="type" id="form-type">
+            <input type="hidden" name="branch_id" id="form-branch-id">
+            <input type="hidden" name="acc1_id" id="form-acc1-id">
+            <input type="hidden" name="acc2_id" id="form-acc2-id">
+            <input type="hidden" name="pro_date" id="form-pro-date">
+            <input type="hidden" name="emp_id" id="form-emp-id">
+            <input type="hidden" name="delivery_id" id="form-delivery-id">
+            <input type="hidden" name="accural_date" id="form-accural-date">
+            <input type="hidden" name="serial_number" id="form-serial-number">
+            <input type="hidden" name="cash_box_id" id="form-cash-box-id">
+            <input type="hidden" name="notes" id="form-notes">
+            <input type="hidden" name="discount_percentage" id="form-discount-percentage">
+            <input type="hidden" name="discount_value" id="form-discount-value">
+            <input type="hidden" name="additional_percentage" id="form-additional-percentage">
+            <input type="hidden" name="additional_value" id="form-additional-value">
+            <input type="hidden" name="vat_percentage" id="form-vat-percentage">
+            <input type="hidden" name="vat_value" id="form-vat-value">
+            <input type="hidden" name="withholding_tax_percentage" id="form-withholding-tax-percentage">
+            <input type="hidden" name="withholding_tax_value" id="form-withholding-tax-value">
+            <input type="hidden" name="subtotal" id="form-subtotal">
+            <input type="hidden" name="total_after_additional" id="form-total-after-additional">
+            <input type="hidden" name="received_from_client" id="form-received-from-client">
+            <input type="hidden" name="remaining" id="form-remaining">
+            <input type="hidden" name="currency_id" id="form-currency-id" value="1">
+            <input type="hidden" name="exchange_rate" id="form-exchange-rate" value="1">
+            <div id="form-items-container"></div>
 
             {{-- Part 1: Invoice Header --}}
             <div class="invoice-header-card">
@@ -207,33 +235,50 @@
 @endsection
 
 @section('script')
+    @php
+        // ✅ Prepare all config as JSON to avoid Blade syntax issues
+        $invoiceConfig = [
+            'type' => $type,
+            'branchId' => $branchId ?? null,
+            'vatPercentage' => setting('vat_percentage', 15),
+            'withholdingTaxPercentage' => setting('withholding_tax_percentage', 0),
+            'storeUrl' => route('invoices.store'),
+            'translations' => [
+                'item_name' => __('Item Name'),
+                'code' => __('Code'),
+                'unit' => __('Unit'),
+                'quantity' => __('Quantity'),
+                'batch_number' => __('Batch Number'),
+                'expiry_date' => __('Expiry Date'),
+                'price' => __('Price'),
+                'discount' => __('Discount'),
+                'sub_value' => __('Value'),
+                'length' => __('Length'),
+                'width' => __('Width'),
+                'height' => __('Height'),
+                'density' => __('Density'),
+                'action' => __('Action'),
+            ]
+        ];
+    @endphp
+
     {{-- Main Invoice JavaScript --}}
     <script>
+        // ✅ Config from PHP (safe JSON encoding)
+        const CONFIG = @json($invoiceConfig);
+        const INVOICE_STORE_URL = CONFIG.storeUrl;
+        
         // Invoice State (Global)
         window.InvoiceApp = {
             // Config
-            type: {{ $type }},
-            branchId: {{ $branchId ?? 'null' }},
-            vatPercentage: {{ setting('vat_percentage', 15) }},
-            withholdingTaxPercentage: {{ setting('withholding_tax_percentage', 0) }},
+            type: CONFIG.type,
+            branchId: CONFIG.branchId,
+            vatPercentage: CONFIG.vatPercentage,
+            withholdingTaxPercentage: CONFIG.withholdingTaxPercentage,
 
             // Template columns
             visibleColumns: ['item_name', 'code', 'unit', 'quantity', 'price', 'discount', 'sub_value'],
-            allColumns: {
-                'item_name': '{{ __('Item Name') }}',
-                'code': '{{ __('Code') }}',
-                'unit': '{{ __('Unit') }}',
-                'quantity': '{{ __('Quantity') }}',
-                'batch_number': '{{ __('Batch Number') }}',
-                'expiry_date': '{{ __('Expiry Date') }}',
-                'price': '{{ __('Price') }}',
-                'discount': '{{ __('Discount') }}',
-                'sub_value': '{{ __('Value') }}',
-                'length': '{{ __('Length') }}',
-                'width': '{{ __('Width') }}',
-                'height': '{{ __('Height') }}',
-                'density': '{{ __('Density') }}'
-            },
+            allColumns: CONFIG.translations,
 
             // Data
             invoiceItems: [],
@@ -473,7 +518,7 @@
                 const actionTh = document.createElement('th');
                 actionTh.className = 'font-bold fw-bold text-center';
                 actionTh.style.fontSize = '0.8rem';
-                actionTh.textContent = '{{ __('Action') }}';
+                actionTh.textContent = CONFIG.translations.action;
                 thead.appendChild(actionTh);
             },
 
@@ -1344,62 +1389,55 @@
                 }
             },
 
-            // Save invoice
-            saveInvoice() {
+            // Save invoice - NO VALIDATION, just send everything
+            submitForm() {
+                console.log('🔵 Submitting form...');
 
-                if (this.invoiceItems.length === 0) {
-                    alert('يرجى إضافة صنف واحد على الأقل');
-                    return;
-                }
+                // ✅ Fill hidden inputs with current data
+                document.getElementById('form-type').value = this.type;
+                document.getElementById('form-branch-id').value = this.branchId;
+                document.getElementById('form-acc1-id').value = $('#acc1-id').val() || '';
+                document.getElementById('form-acc2-id').value = $('#acc2-id').val() || '';
+                document.getElementById('form-pro-date').value = document.getElementById('pro-date')?.value || '';
+                document.getElementById('form-emp-id').value = document.getElementById('emp-id')?.value || '';
+                document.getElementById('form-delivery-id').value = document.getElementById('delivery-id')?.value || '';
+                document.getElementById('form-accural-date').value = document.getElementById('accural-date')?.value || '';
+                document.getElementById('form-serial-number').value = document.getElementById('serial-number')?.value || '';
+                document.getElementById('form-cash-box-id').value = document.getElementById('cash-box-id')?.value || '';
+                document.getElementById('form-notes').value = document.getElementById('notes')?.value || '';
+                document.getElementById('form-discount-percentage').value = this.discountPercentage;
+                document.getElementById('form-discount-value').value = this.discountValue;
+                document.getElementById('form-additional-percentage').value = this.additionalPercentage;
+                document.getElementById('form-additional-value').value = this.additionalValue;
+                document.getElementById('form-vat-percentage').value = this.vatPercentage;
+                document.getElementById('form-vat-value').value = this.vatValue;
+                document.getElementById('form-withholding-tax-percentage').value = this.withholdingTaxPercentage;
+                document.getElementById('form-withholding-tax-value').value = this.withholdingTaxValue;
+                document.getElementById('form-subtotal').value = this.subtotal;
+                document.getElementById('form-total-after-additional').value = this.totalAfterAdditional;
+                document.getElementById('form-received-from-client').value = this.receivedFromClient;
+                document.getElementById('form-remaining').value = this.remaining;
 
-                const invoiceData = {
-                    type: this.type,
-                    branch_id: this.branchId,
-                    acc1_id: document.getElementById('acc1-id')?.value,
-                    acc2_id: document.getElementById('acc2-id')?.value,
-                    emp_id: document.getElementById('emp-id')?.value,
-                    delivery_id: document.getElementById('delivery-id')?.value,
-                    pro_date: document.getElementById('pro-date')?.value,
-                    accural_date: document.getElementById('accural-date')?.value,
-                    serial_number: document.getElementById('serial-number')?.value,
-                    cash_box_id: document.getElementById('cash-box-id')?.value,
-                    notes: document.getElementById('notes')?.value,
-                    items: this.invoiceItems,
-                    discount_percentage: this.discountPercentage,
-                    discount_value: this.discountValue,
-                    additional_percentage: this.additionalPercentage,
-                    additional_value: this.additionalValue,
-                    vat_percentage: this.vatPercentage,
-                    vat_value: this.vatValue,
-                    withholding_tax_percentage: this.withholdingTaxPercentage,
-                    withholding_tax_value: this.withholdingTaxValue,
-                    received_from_client: this.receivedFromClient,
-                    subtotal: this.subtotal,
-                    total: this.totalAfterAdditional,
-                };
+                // ✅ Add items as hidden inputs
+                const itemsContainer = document.getElementById('form-items-container');
+                itemsContainer.innerHTML = ''; // Clear previous items
 
-                fetch('/api/invoices', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify(invoiceData),
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.data) {
-                            alert('تم حفظ الفاتورة بنجاح');
-                            window.location.href = `/invoices/${result.data.id}`;
-                        } else {
-                            alert('خطأ: ' + (result.message || 'فشل حفظ الفاتورة'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('❌ Error saving invoice:', error);
-                        alert('حدث خطأ أثناء حفظ الفاتورة');
+                this.invoiceItems.forEach((item, index) => {
+                    // Create hidden inputs for each item field
+                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount', 'additional', 'sub_value', 'batch_number', 'expiry_date', 'notes'];
+                    fields.forEach(field => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `items[${index}][${field}]`;
+                        input.value = item[field] || '';
+                        itemsContainer.appendChild(input);
                     });
+                });
+
+                console.log('✅ Form filled, submitting...');
+
+                // ✅ Submit the form
+                document.getElementById('invoice-form').submit();
             },
 
             // Update status message
