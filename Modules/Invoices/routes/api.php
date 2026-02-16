@@ -37,7 +37,7 @@ Route::middleware(['web', 'auth'])->prefix('invoices')->group(function () {
     Route::post('/', [InvoiceController::class, 'store'])
         ->name('invoices.store');
 
-    Route::put('/{invoiceId}', [InvoiceApiController::class, 'update'])
+    Route::put('/{invoiceId}', [InvoiceController::class, 'update'])
         ->name('api.invoices.update');
 
     Route::delete('/{invoiceId}', [InvoiceApiController::class, 'destroy'])

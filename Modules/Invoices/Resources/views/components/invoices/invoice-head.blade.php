@@ -98,7 +98,7 @@
             </div>
 
             {{-- المخزن --}}
-            <div class="col-md-2">
+            <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-siتze: 0.85rem;">{{ $acc2Role }}</label>
                 <select id="acc2-id" class="form-select form-select-sm">
                     <option value="">{{ __('اختر') }} {{ $acc2Role }}</option>
@@ -168,7 +168,7 @@
                 </div>
             @endif
 
-
+            <x-branches::branch-select :branches="$branches" />
 
             {{-- ملاحظات --}}
             <div class="col-md-2">

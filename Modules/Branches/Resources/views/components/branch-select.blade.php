@@ -1,7 +1,7 @@
 @props(['branches', 'selected' => null, 'model' => null])
 
 @if ($branches->count() > 1)
-    <div class="mb-3 col-lg-2">
+    <div class="mb-3 col-lg-1">
         <label for="branch_id">{{ __('Branch') }}</label>
         <select class="form-control" id="branch_id" name="branch_id"
             @if ($model) wire:model="{{ $model }}" @endif>

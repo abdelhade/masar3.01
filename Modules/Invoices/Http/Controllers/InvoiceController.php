@@ -146,32 +146,38 @@ class InvoiceController extends Controller
             DB::beginTransaction();
 
             $validatedData = $request->validated();
-            
+
             $operationId = $this->saveInvoiceService->saveInvoice($validatedData);
 
             if ($operationId) {
                 DB::commit();
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => __('invoices::common.invoice_saved_successfully'),
-                    'redirect' => route('invoices.show', $operationId),
-                ]);
+
+                $message = __('invoices::common.invoice_created_successfullynvoice ');
+
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $message,
+                        'redirect' => back()->with('success', $message)->getTargetUrl(),
+                    ]);
+                }
+
+                return redirect()->back()->with('success', $message);
             }
 
-            throw new \Exception('Failed to save invoice.');
-
+            throw new \Exception('Failed to save invoice result.');
         } catch (\Exception $e) {
-            DB::rollBack();
-            logger()->error('Error in InvoiceController@store: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 422);
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
         }
     }
 
@@ -247,27 +253,34 @@ class InvoiceController extends Controller
 
             if ($operationId) {
                 DB::commit();
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => __('invoices::common.invoice_updated_successfully'),
-                    'redirect' => route('invoices.show', $operationId),
-                ]);
+
+                $message = __('invoices::common.invoice_updated_successfully');
+
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $message,
+                        'redirect' => route('invoices.show', $operationId),
+                    ]);
+                }
+
+                return redirect()->route('invoices.show', $operationId)->with('success', $message);
             }
 
-            throw new \Exception('Failed to update invoice.');
-
+            throw new \Exception('Failed to update invoice result.');
         } catch (\Exception $e) {
-            DB::rollBack();
-            logger()->error('Error in InvoiceController@update: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 422);
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
         }
     }
 

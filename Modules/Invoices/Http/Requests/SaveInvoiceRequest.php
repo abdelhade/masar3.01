@@ -88,4 +88,16 @@ class SaveInvoiceRequest extends FormRequest
         ];
     }
 
+    /**
+     * Handle a failed validation attempt.
+     */
+    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        \Log::error('SaveInvoiceRequest: Validation Failed', [
+            'errors' => $validator->errors()->toArray(),
+            'input' => $this->all()
+        ]);
+
+        parent::failedValidation($validator);
+    }
 }

@@ -166,6 +166,36 @@
     <div id="invoice-app">
         <form id="invoice-form" method="POST" action="{{ route('invoices.store') }}">
             @csrf
+
+            {{-- Success Message --}}
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show shadow-sm mb-3">
+                    <b><i class="las la-check-circle"></i> {{ session('success') }}</b>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __("تم بنجاح") }}',
+                            text: '{{ session("success") }}',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    });
+                </script>
+            @endif
+
+            {{-- Error Display --}}
+            @if ($errors->any())
+                <div class="alert alert-danger shadow-sm mb-3">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             
             {{-- Hidden inputs for all invoice data --}}
             <input type="hidden" name="type" id="form-type">
@@ -192,7 +222,7 @@
             <input type="hidden" name="received_from_client" id="form-received-from-client">
             <input type="hidden" name="remaining" id="form-remaining">
             <input type="hidden" name="currency_id" id="form-currency-id" value="1">
-            <input type="hidden" name="exchange_rate" id="form-exchange-rate" value="1">
+            <input type="hidden" name="currency_rate" id="form-currency-rate" value="1">
             <div id="form-items-container"></div>
 
             {{-- Part 1: Invoice Header --}}
@@ -226,7 +256,7 @@
     <div class="invoice-footer-container">
         @include('invoices::components.invoices.invoice-footer', [
             'type' => $type,
-            'vatPercentage' => setting('vat_percentage', 15),
+            'vatPercentage' => isVatEnabled() ? setting('vat_percentage', 15) : 0,
             'withholdingTaxPercentage' => setting('withholding_tax_percentage', 0),
             'showBalance' => setting('show_balance', '1') === '1',
             'cashAccounts' => $cashAccounts,
@@ -240,7 +270,7 @@
         $invoiceConfig = [
             'type' => $type,
             'branchId' => $branchId ?? null,
-            'vatPercentage' => setting('vat_percentage', 15),
+            'vatPercentage' => isVatEnabled() ? setting('vat_percentage', 15) : 0,
             'withholdingTaxPercentage' => setting('withholding_tax_percentage', 0),
             'storeUrl' => route('invoices.store'),
             'translations' => [
@@ -275,6 +305,8 @@
             branchId: CONFIG.branchId,
             vatPercentage: CONFIG.vatPercentage,
             withholdingTaxPercentage: CONFIG.withholdingTaxPercentage,
+            currencyId: 1, // Default
+            exchangeRate: 1, // Default
 
             // Template columns
             visibleColumns: ['item_name', 'code', 'unit', 'quantity', 'price', 'discount', 'sub_value'],
@@ -1396,8 +1428,26 @@
                 // ✅ Fill hidden inputs with current data
                 document.getElementById('form-type').value = this.type;
                 document.getElementById('form-branch-id').value = this.branchId;
-                document.getElementById('form-acc1-id').value = $('#acc1-id').val() || '';
-                document.getElementById('form-acc2-id').value = $('#acc2-id').val() || '';
+                
+                // For Select2 inputs, use jQuery to get current value
+                const acc1Val = $('#acc1-id').val();
+                const acc2Val = $('#acc2-id').val();
+                
+                document.getElementById('form-acc1-id').value = acc1Val || '';
+                document.getElementById('form-acc2-id').value = acc2Val || '';
+                
+                console.log('📊 Submitting Data:', {
+                    type: this.type,
+                    branch_id: this.branchId,
+                    acc1_id: acc1Val,
+                    acc2_id: acc2Val,
+                    currency_id: this.currencyId,
+                    currency_rate: this.exchangeRate
+                });
+
+                document.getElementById('form-currency-id').value = this.currencyId || 1;
+                document.getElementById('form-currency-rate').value = this.exchangeRate || 1;
+
                 document.getElementById('form-pro-date').value = document.getElementById('pro-date')?.value || '';
                 document.getElementById('form-emp-id').value = document.getElementById('emp-id')?.value || '';
                 document.getElementById('form-delivery-id').value = document.getElementById('delivery-id')?.value || '';
