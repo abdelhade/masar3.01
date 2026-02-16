@@ -347,6 +347,22 @@ class POSIndexedDB {
             request.onerror = () => reject(request.error);
         });
     }
+
+    /**
+     * مسح جميع الأصناف
+     */
+    async clearItems() {
+        if (!this.db) await this.open();
+        
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['items'], 'readwrite');
+            const store = transaction.objectStore('items');
+            const request = store.clear();
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
 }
 
 // Export للاستخدام

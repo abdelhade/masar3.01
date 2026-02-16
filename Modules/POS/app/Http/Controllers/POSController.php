@@ -415,6 +415,58 @@ class POSController extends Controller
     }
 
     /**
+     * جلب كافة الأصناف (AJAX) - لتحديث البيانات محلياً
+     */
+    public function getAllItemsDetails()
+    {
+        $items = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])
+            ->where('is_active', 1)
+            ->get();
+
+        // جلب الباركودات
+        $itemIds = $items->pluck('id');
+        $barcodes = Barcode::whereIn('item_id', $itemIds)
+            ->where('isdeleted', 0)
+            ->select('item_id', 'unit_id', 'barcode')
+            ->get()
+            ->groupBy('item_id');
+
+        $itemsData = $items->map(function ($item) use ($barcodes) {
+            $itemBarcodes = $barcodes->get($item->id, collect());
+
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'code' => $item->code,
+                'is_weight_scale' => $item->is_weight_scale ?? false,
+                'scale_plu_code' => $item->scale_plu_code ?? null,
+                'barcodes' => $itemBarcodes->map(function ($barcode) {
+                    return [
+                        'barcode' => $barcode->barcode,
+                        'unit_id' => $barcode->unit_id,
+                    ];
+                })->toArray(),
+                'units' => $item->units->map(function ($unit) {
+                    return [
+                        'id' => $unit->id,
+                        'name' => $unit->name,
+                        'value' => $unit->pivot->u_val ?? 1,
+                    ];
+                })->toArray(),
+                'prices' => $item->prices->map(function ($price) {
+                    return [
+                        'id' => $price->id,
+                        'name' => $price->name,
+                        'value' => $price->pivot->price ?? 0,
+                    ];
+                })->toArray(),
+            ];
+        })->keyBy('id');
+
+        return response()->json(['items' => $itemsData]);
+    }
+
+    /**
      * جلب أصناف التصنيف (AJAX)
      */
     public function getCategoryItems($categoryId)
