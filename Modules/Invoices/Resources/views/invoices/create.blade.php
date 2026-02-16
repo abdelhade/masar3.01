@@ -169,16 +169,12 @@
 
             {{-- Success Message --}}
             @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show shadow-sm mb-3">
-                    <b><i class="las la-check-circle"></i> {{ session('success') }}</b>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
                         Swal.fire({
                             icon: 'success',
-                            title: '{{ __("تم بنجاح") }}',
-                            text: '{{ session("success") }}',
+                            title: '{{ __('تم بنجاح') }}',
+                            text: '{{ session('success') }}',
                             timer: 2000,
                             showConfirmButton: false
                         });
@@ -196,7 +192,7 @@
                     </ul>
                 </div>
             @endif
-            
+
             {{-- Hidden inputs for all invoice data --}}
             <input type="hidden" name="type" id="form-type">
             <input type="hidden" name="branch_id" id="form-branch-id">
@@ -288,7 +284,7 @@
                 'height' => __('Height'),
                 'density' => __('Density'),
                 'action' => __('Action'),
-            ]
+            ],
         ];
     @endphp
 
@@ -297,7 +293,7 @@
         // ✅ Config from PHP (safe JSON encoding)
         const CONFIG = @json($invoiceConfig);
         const INVOICE_STORE_URL = CONFIG.storeUrl;
-        
+
         // Invoice State (Global)
         window.InvoiceApp = {
             // Config
@@ -1051,10 +1047,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                ${unit.name}
-                                                                                                                                                                                                                                                            </option>
-                                                                                                                                                                                                                                                        `).join('')}
+                                                                                                                                                                                                                                                                <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                    ${unit.name}
+                                                                                                                                                                                                                                                                </option>
+                                                                                                                                                                                                                                                            `).join('')}
                                 </select>
                             </td>`;
 
@@ -1428,14 +1424,14 @@
                 // ✅ Fill hidden inputs with current data
                 document.getElementById('form-type').value = this.type;
                 document.getElementById('form-branch-id').value = this.branchId;
-                
+
                 // For Select2 inputs, use jQuery to get current value
                 const acc1Val = $('#acc1-id').val();
                 const acc2Val = $('#acc2-id').val();
-                
+
                 document.getElementById('form-acc1-id').value = acc1Val || '';
                 document.getElementById('form-acc2-id').value = acc2Val || '';
-                
+
                 console.log('📊 Submitting Data:', {
                     type: this.type,
                     branch_id: this.branchId,
@@ -1451,8 +1447,10 @@
                 document.getElementById('form-pro-date').value = document.getElementById('pro-date')?.value || '';
                 document.getElementById('form-emp-id').value = document.getElementById('emp-id')?.value || '';
                 document.getElementById('form-delivery-id').value = document.getElementById('delivery-id')?.value || '';
-                document.getElementById('form-accural-date').value = document.getElementById('accural-date')?.value || '';
-                document.getElementById('form-serial-number').value = document.getElementById('serial-number')?.value || '';
+                document.getElementById('form-accural-date').value = document.getElementById('accural-date')?.value ||
+                    '';
+                document.getElementById('form-serial-number').value = document.getElementById('serial-number')?.value ||
+                    '';
                 document.getElementById('form-cash-box-id').value = document.getElementById('cash-box-id')?.value || '';
                 document.getElementById('form-notes').value = document.getElementById('notes')?.value || '';
                 document.getElementById('form-discount-percentage').value = this.discountPercentage;
@@ -1474,7 +1472,9 @@
 
                 this.invoiceItems.forEach((item, index) => {
                     // Create hidden inputs for each item field
-                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount', 'additional', 'sub_value', 'batch_number', 'expiry_date', 'notes'];
+                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount', 'additional',
+                        'sub_value', 'batch_number', 'expiry_date', 'notes'
+                    ];
                     fields.forEach(field => {
                         const input = document.createElement('input');
                         input.type = 'hidden';

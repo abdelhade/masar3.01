@@ -152,7 +152,7 @@ class InvoiceController extends Controller
             if ($operationId) {
                 DB::commit();
 
-                $message = __('invoices::common.invoice_created_successfullynvoice ');
+                $message = __('Invoices saved successfully.');
 
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
@@ -254,7 +254,7 @@ class InvoiceController extends Controller
             if ($operationId) {
                 DB::commit();
 
-                $message = __('invoices::common.invoice_updated_successfully');
+                $message = __('Invoices updated successfully.');
 
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
