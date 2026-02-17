@@ -75,10 +75,14 @@ class ItemSearchRepository
         ])->findOrFail($itemId);
 
         $units = $this->getItemUnitsWithPrices($item, $branchId);
-        $lastPrice = $this->getLastPriceForCustomer($itemId, $customerId);
+        $lastSalePrice = $this->getLastSalePriceForCustomer($itemId, $customerId);
+        $lastPurchasePrice = $this->getLastPurchasePrice($itemId);
         $pricingAgreement = $this->getPricingAgreement($itemId, $customerId);
         $totalStock = $this->getStockQuantity($itemId, $branchId);
         $warehouseStock = $warehouseId ? $this->getStockQuantity($itemId, $branchId, $warehouseId) : $totalStock;
+
+        // Get sale price from item_prices or item table
+        $salePrice = $this->getItemSalePrice($itemId);
 
         return [
             'item' => [
@@ -89,7 +93,9 @@ class ItemSearchRepository
                 'average_cost' => (float) ($item->average_cost ?? 0),
             ],
             'units' => $units,
-            'last_price' => $lastPrice,
+            'last_sale_price' => $lastSalePrice,
+            'last_purchase_price' => $lastPurchasePrice,
+            'sale_price' => $salePrice,
             'pricing_agreement' => $pricingAgreement,
             'stock_quantity' => $totalStock,
             'warehouse_stock' => $warehouseStock,
@@ -131,13 +137,13 @@ class ItemSearchRepository
     }
 
     /**
-     * Get last price for customer
+     * Get last sale price for customer
      *
      * @param int $itemId
      * @param int|null $customerId
      * @return float|null
      */
-    private function getLastPriceForCustomer(int $itemId, ?int $customerId = null): float
+    private function getLastSalePriceForCustomer(int $itemId, ?int $customerId = null): float
     {
         if (!$customerId) {
             return 0;
@@ -154,6 +160,66 @@ class ItemSearchRepository
             ->value('oi.item_price');
 
         return (float) ($lastPrice ?? 0);
+    }
+
+    /**
+     * Get last purchase price for item
+     *
+     * @param int $itemId
+     * @return float
+     */
+    private function getLastPurchasePrice(int $itemId): float
+    {
+        $lastPrice = DB::table('operation_items as oi')
+            ->join('operhead as oh', 'oi.pro_id', '=', 'oh.id')
+            ->where('oi.item_id', $itemId)
+            ->whereIn('oh.pro_type', [11, 13, 15, 17, 20, 24, 25]) // Purchase types
+            ->where('oh.isdeleted', 0)
+            ->orderBy('oh.pro_date', 'desc')
+            ->orderBy('oh.id', 'desc')
+            ->value('oi.item_price');
+        return (float) ($lastPrice ?? 0);
+    }
+
+    /**
+     * Get item sale price
+     *
+     * @param int $itemId
+     * @return float
+     */
+    private function getItemSalePrice(int $itemId): float
+    {
+        // Try to get from item_prices table first
+        try {
+            if (Schema::hasTable('item_prices')) {
+                $price = DB::table('item_prices')
+                    ->where('item_id', $itemId)
+                    ->orderBy('id')
+                    ->value('price');
+
+                if ($price && $price > 0) {
+                    return (float) $price;
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('getItemSalePrice from item_prices failed', ['error' => $e->getMessage()]);
+        }
+
+        // Try to get from item_units table
+        try {
+            $price = DB::table('item_units')
+                ->where('item_id', $itemId)
+                ->orderBy('id')
+                ->value('cost');
+
+            if ($price && $price > 0) {
+                return (float) $price;
+            }
+        } catch (\Exception $e) {
+            \Log::warning('getItemSalePrice from item_units failed', ['error' => $e->getMessage()]);
+        }
+
+        return 0;
     }
 
     /**

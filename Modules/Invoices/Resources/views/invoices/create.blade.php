@@ -1114,10 +1114,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                                ${unit.name}
-                                                                                                                                                                                                                                                                            </option>
-                                                                                                                                                                                                                                                                        `).join('')}
+                                                                                                                                                                                                                                                                                <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                    ${unit.name}
+                                                                                                                                                                                                                                                                                </option>
+                                                                                                                                                                                                                                                                            `).join('')}
                                 </select>
                             </td>`;
 
@@ -1470,28 +1470,24 @@
                         if (res.success && res.data) {
                             const data = res.data;
 
-                            // ✅ اقرأ اسم المخزن بشكل صحيح (يدعم Select2)
-                            let storeName = '-';
-                            const storeSelect = $('#acc2-id');
-                            if (storeSelect.length) {
-                                // لو Select2
-                                const selectedOption = storeSelect.find('option:selected');
-                                storeName = selectedOption.text() || '-';
-                                // تجنب "اختر..." أو القيمة الفارغة
-                                if (!storeSelect.val() || storeSelect.val() === '') {
-                                    storeName = '-';
-                                }
-                            }
+                            // Get store name if available
+                            const storeSelect = document.getElementById('acc2-id');
+                            const storeName = storeSelect && storeSelect.selectedIndex >= 0 ?
+                                storeSelect.options[storeSelect.selectedIndex].text : '-';
 
                             document.getElementById('selected-item-store').textContent = storeName;
-                            document.getElementById('selected-item-available').textContent =
-                                (data.warehouse_stock || 0).toLocaleString();
-                            document.getElementById('selected-item-total').textContent =
-                                (data.stock_quantity || 0).toLocaleString();
-                            document.getElementById('selected-item-last-price').textContent =
-                                (data.last_price || 0).toFixed(2);
-                            document.getElementById('selected-item-avg-cost').textContent =
-                                (data.item?.average_cost || 0).toFixed(2);
+                            document.getElementById('selected-item-available').textContent = (data
+                                .warehouse_stock || 0).toLocaleString();
+                            document.getElementById('selected-item-total').textContent = (data.stock_quantity || 0)
+                                .toLocaleString();
+                            document.getElementById('selected-item-last-price').textContent = (data
+                                .last_purchase_price || 0).toFixed(2);
+                            document.getElementById('selected-item-avg-cost').textContent = (data.item
+                                ?.average_cost || 0).toFixed(2);
+
+                            // Update the price field to show sale price
+                            document.getElementById('selected-item-price').textContent = (data.sale_price || 0)
+                                .toFixed(2);
                         }
                     })
                     .catch(error => {
