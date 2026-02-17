@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Invoices\Http\Controllers\Api\InvoiceApiController;
 use Modules\Invoices\Http\Controllers\Api\InvoiceDataApiController;
 use Modules\Invoices\Http\Controllers\Api\ItemSearchApiController;
+use Modules\Invoices\Http\Controllers\Api\AccountBalanceApiController;
 use Modules\Invoices\Http\Controllers\InvoiceController;
 
 /*
@@ -51,3 +52,7 @@ Route::middleware(['web', 'auth'])->get('/items/lite', [ItemSearchApiController:
 // Quick create item endpoint
 Route::middleware(['web', 'auth'])->post('/items/quick-create', [ItemSearchApiController::class, 'quickCreateItem'])
     ->name('api.items.quick-create');
+
+// Account balance endpoint
+Route::middleware(['web', 'auth'])->get('/accounts/{accountId}/balance', [AccountBalanceApiController::class, 'getBalance'])
+    ->name('api.accounts.balance');

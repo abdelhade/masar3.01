@@ -103,23 +103,44 @@ class InvoiceFormController extends Controller
         $canEditStore = auth()->user()->id == 1 || !auth()->user()->can('prevent_editing_store');
 
         $userSettings = [
+            // General Settings
             'multi_currency_enabled' => setting('multi_currency_enabled', false),
+            
+            // Invoice Settings
             'prevent_negative_invoice' => setting('prevent_negative_invoice', true),
+            'new_after_save' => setting('new_after_save', true),
+            'allow_edit_price_payments' => setting('allow_edit_price_payments', true),
             'allow_zero_price_in_invoice' => setting('allow_zero_price_in_invoice', true),
+            'allow_zero_opening_balance' => setting('allow_zero_opening_balance', true),
             'allow_zero_invoice_total' => setting('allow_zero_invoice_total', true),
             'allow_edit_invoice_value' => setting('allow_edit_invoice_value', true),
             'change_quantity_on_value_edit' => setting('change_quantity_on_value_edit', true),
+            'prevent_duplicate_items_in_sales' => setting('prevent_duplicate_items_in_sales', true),
+            'prevent_duplicate_items_in_purchases' => setting('prevent_duplicate_items_in_purchases', true),
+            'print_free_quantity_separately' => setting('print_free_quantity_separately', true),
+            'allow_purchase_price_change' => setting('allow_purchase_price_change', true),
             'show_unit_with_conversion_factor' => setting('show_unit_with_conversion_factor', true),
             'show_due_date_in_invoices' => setting('show_due_date_in_invoices', true),
+            'default_quantity_greater_than_zero' => setting('default_quantity_greater_than_zero', true),
+            'allow_hide_items_by_company' => setting('allow_hide_items_by_company', true),
+            
+            // Display Settings
+            'invoice_show_item_details' => setting('invoice_show_item_details', true),
+            'invoice_show_recommended_items' => setting('invoice_show_recommended_items', false),
+            
+            // Tax Settings
             'is_vat_enabled' => isVatEnabled(),
             'vat_level' => getVatLevel(),
             'is_withholding_tax_enabled' => isWithholdingTaxEnabled(),
             'withholding_tax_level' => getWithholdingTaxLevel(),
+            
+            // Expiry Date Settings
             'expiry_mode' => [
                 'disabled' => setting('expiry_mode_disabled', false),
                 'nearest_first' => setting('expiry_mode_nearest_first', true),
                 'show_all' => setting('expiry_mode_show_all', false),
             ],
+            
             // Permissions
             'permissions' => [
                 'prevent_transactions_without_stock' => auth()->user()->can('prevent_transactions_without_stock'),

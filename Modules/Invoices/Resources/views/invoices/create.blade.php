@@ -329,6 +329,10 @@
             receivedFromClient: 0,
             remaining: 0,
 
+            // Account Balance
+            currentBalance: 0,
+            calculatedBalanceAfter: 0,
+
             // Search
             searchResults: [],
             selectedIndex: -1,
@@ -371,6 +375,11 @@
 
             // Initialize Select2 for searchable dropdowns
             initializeSelect2() {
+                console.log('🔵 initializeSelect2 called');
+
+                // Save reference to this
+                const self = this;
+
                 // Initialize Select2 for acc1 (Customer/Supplier) with search
                 $('#acc1-id').select2({
                     theme: 'bootstrap-5',
@@ -383,17 +392,40 @@
                     }
                 });
 
-                // ✅ Set default account if exists
-                if (CONFIG.defaultAcc1Id) {
-                    $('#acc1-id').val(CONFIG.defaultAcc1Id).trigger('change');
-                }
+                // ✅ Attach event listener BEFORE setting default value
+                $('#acc1-id').on('change', function(e) {
+                    console.log('🔵 acc1-id changed event fired!', {
+                        value: $(this).val(),
+                        event: e
+                    });
 
-                $('#acc1-id').on('change', (e) => {
-                    const accountId = e.target.value;
+                    const accountId = $(this).val();
+                    console.log('� Account ID from jQuery:', accountId);
+
                     if (accountId) {
-                        this.updateAccountBalance(accountId);
+                        console.log('✅ Calling updateAccountBalance with:', accountId);
+                        self.updateAccountBalance(accountId);
+                    } else {
+                        console.log('⚠️ No accountId selected, clearing data');
+                        self.currentBalance = 0;
+                        self.calculatedBalanceAfter = 0;
+
+                        // Clear balance display
+                        const currentBalanceEl = document.getElementById('current-balance-header');
+                        const balanceAfterEl = document.getElementById('balance-after-header');
+                        if (currentBalanceEl) currentBalanceEl.textContent = '0.00';
+                        if (balanceAfterEl) balanceAfterEl.textContent = '0.00';
+
+                        // Clear recommended items
+                        self.clearRecommendedItems();
                     }
                 });
+
+                // ✅ Set default account AFTER attaching event listener
+                if (CONFIG.defaultAcc1Id) {
+                    console.log('🔵 Setting default acc1:', CONFIG.defaultAcc1Id);
+                    $('#acc1-id').val(CONFIG.defaultAcc1Id).trigger('change');
+                }
 
                 // Initialize Select2 for acc2 (Store) with search
                 $('#acc2-id').select2({
@@ -1114,10 +1146,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                                                <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                                    ${unit.name}
-                                                                                                                                                                                                                                                                                </option>
-                                                                                                                                                                                                                                                                            `).join('')}
+                                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                                ${unit.name}
+                                                                                                                                                                                                                                                                                            </option>
+                                                                                                                                                                                                                                                                                        `).join('')}
                                 </select>
                             </td>`;
 
@@ -1368,6 +1400,9 @@
                     2));
 
                 this.updateTotalsDisplay();
+
+                // Update balance after invoice
+                this.calculateBalance();
             },
 
             // Update totals display
@@ -1505,28 +1540,161 @@
              * Update account balance when account changes
              */
             updateAccountBalance(accountId) {
+                console.log('🔵 updateAccountBalance called', {
+                    accountId: accountId,
+                    type: typeof accountId
+                });
+
                 if (!accountId) {
+                    console.log('⚠️ No accountId, resetting balance to 0');
                     this.currentBalance = 0;
                     this.calculateBalance();
+                    this.clearRecommendedItems();
                     return;
                 }
 
+                const url = `/api/accounts/${accountId}/balance`;
+                console.log('🌐 Fetching balance from:', url);
+
                 // Fetch account balance from API
-                fetch(`/api/accounts/${accountId}/balance`)
-                    .then(response => response.json())
+                fetch(url)
+                    .then(response => {
+                        console.log('📡 Response status:', response.status);
+                        return response.json();
+                    })
                     .then(data => {
+                        console.log('📥 API Response:', data);
+
                         this.currentBalance = parseFloat(data.balance) || 0;
+                        console.log('💰 Current Balance set to:', this.currentBalance);
+
                         this.calculateBalance();
 
                         // Update display
                         const balanceDisplay = document.getElementById('current-balance-header');
                         if (balanceDisplay) {
                             balanceDisplay.textContent = this.currentBalance.toFixed(2);
+                            console.log('✅ Updated current-balance-header to:', this.currentBalance.toFixed(2));
+                        } else {
+                            console.error('❌ Element current-balance-header not found!');
                         }
                     })
                     .catch(error => {
-                        console.error('Error fetching account balance:', error);
+                        console.error('❌ Error fetching account balance:', error);
                     });
+
+                // Fetch recommended items
+                this.loadRecommendedItems(accountId);
+            },
+
+            /**
+             * Load recommended items for account
+             */
+            loadRecommendedItems(accountId) {
+                console.log('🔵 loadRecommendedItems called', {
+                    accountId: accountId,
+                    setting: this.settings.invoice_show_recommended_items,
+                    allSettings: this.settings
+                });
+
+                // ✅ ALWAYS load for testing - remove this check temporarily
+                // if (!this.settings.invoice_show_recommended_items) {
+                //     console.log('⚠️ Recommended items disabled in settings');
+                //     return;
+                // }
+
+                const url = `/api/invoices/customers/${accountId}/recommended-items?limit=5`;
+                console.log('🌐 Fetching recommended items from:', url);
+
+                fetch(url)
+                    .then(response => {
+                        console.log('📡 Recommended items response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('📥 Recommended items response:', data);
+                        if (data.success && data.items) {
+                            console.log('✅ Found', data.items.length, 'recommended items');
+                            this.displayRecommendedItems(data.items);
+                        } else {
+                            console.error('❌ No items in response or success=false');
+                            this.clearRecommendedItems();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error fetching recommended items:', error);
+                        this.clearRecommendedItems();
+                    });
+            },
+
+            /**
+             * Display recommended items in the footer
+             */
+            displayRecommendedItems(items) {
+                console.log('🔵 displayRecommendedItems called with', items);
+
+                const container = document.getElementById('recommended-items-list');
+
+                if (!container) {
+                    console.error('❌ Element recommended-items-list not found!');
+                    return;
+                }
+
+                if (!items || items.length === 0) {
+                    container.innerHTML = '<p class="text-muted text-center mb-0 small">لا توجد أصناف موصى بها</p>';
+                    return;
+                }
+
+                console.log('✅ Building HTML for', items.length, 'items');
+                let html = '<div class="list-group list-group-flush">';
+                items.forEach((item, index) => {
+                    console.log(`  Item ${index}:`, item);
+                    html += `
+                        <a href="#" class="list-group-item list-group-item-action p-1 small"
+                           onclick="InvoiceApp.addItemById(${item.id}); return false;"
+                           title="اضغط لإضافة الصنف">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-truncate" style="max-width: 150px;">
+                                    <strong>${item.name}</strong>
+                                    ${item.code ? `<small class="text-muted">(${item.code})</small>` : ''}
+                                </div>
+                                <div class="text-end">
+                                    <small class="badge bg-primary">${item.transaction_count}×</small>
+                                    <small class="text-muted">${parseFloat(item.avg_price).toFixed(2)}</small>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                html += '</div>';
+
+                container.innerHTML = html;
+            },
+
+            /**
+             * Clear recommended items
+             */
+            clearRecommendedItems() {
+                const container = document.getElementById('recommended-items-list');
+                if (container) {
+                    container.innerHTML = '<p class="text-muted text-center mb-0 small">لا توجد أصناف موصى بها</p>';
+                }
+            },
+
+            /**
+             * Add item by ID (from recommended items)
+             */
+            addItemById(itemId) {
+                const item = this.allItems.find(i => i.id === itemId);
+                if (item) {
+                    this.addItem(item, false);
+                } else {
+                    console.error('❌ Item not found:', itemId);
+                    this.updateStatus('الصنف غير موجود', 'danger');
+                }
             },
 
             /**
@@ -1534,13 +1702,16 @@
              */
             calculateBalance() {
                 const invoiceType = parseInt(this.type) || 10;
+                // Make sure we have valid numbers
+                const currentBal = parseFloat(this.currentBalance) || 0;
+                const totalAfter = parseFloat(this.totalAfterAdditional) || 0;
 
                 if ([10, 12, 14, 16].includes(invoiceType)) {
                     // Sales invoices - increase debit balance
-                    this.calculatedBalanceAfter = this.currentBalance + this.totalAfterAdditional;
+                    this.calculatedBalanceAfter = currentBal + totalAfter;
                 } else {
                     // Purchase invoices - decrease debit balance
-                    this.calculatedBalanceAfter = this.currentBalance - this.totalAfterAdditional;
+                    this.calculatedBalanceAfter = currentBal - totalAfter;
                 }
 
                 // Update display
@@ -1549,6 +1720,8 @@
                     balanceAfterDisplay.textContent = this.calculatedBalanceAfter.toFixed(2);
                     balanceAfterDisplay.className = this.calculatedBalanceAfter < 0 ? 'badge bg-danger' :
                         'badge bg-success';
+                } else {
+                    console.error('❌ Element balance-after-header not found!');
                 }
             },
 
@@ -1820,6 +1993,9 @@
                 setTimeout(initWhenReady, 100);
                 return;
             }
+
+            const recommendedContainer = document.getElementById('recommended-items-list');
+
 
             InvoiceApp.init();
         }

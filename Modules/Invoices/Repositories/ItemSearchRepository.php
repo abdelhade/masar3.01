@@ -322,31 +322,32 @@ class ItemSearchRepository
     }
 
     /**
-     * Get recommended items for customer
+     * Get recommended items for customer/supplier
      *
-     * @param int $customerId
+     * @param int $accountId
      * @param int $limit
      * @return array
      */
-    public function getRecommendedItems(int $customerId, int $limit = 10): array
+    public function getRecommendedItems(int $accountId, int $limit = 5): array
     {
         $items = DB::table('operation_items as oi')
-            ->join('oper_head as oh', 'oi.oper_id', '=', 'oh.id')
+            ->join('operhead as oh', 'oi.pro_id', '=', 'oh.id')
             ->join('items as i', 'oi.item_id', '=', 'i.id')
-            ->where('oh.acc1_id', $customerId)
-            ->whereIn('oh.type', [10, 12, 14, 16])
-            ->where('i.active', 1)
+            ->where('oh.acc1', $accountId)
+            ->where('oh.isdeleted', 0)
+            ->where('i.isdeleted', 0)
             ->select(
                 'i.id',
                 'i.name',
                 'i.code',
-                DB::raw('COUNT(*) as purchase_count'),
-                DB::raw('MAX(oh.pro_date) as last_purchase_date'),
-                DB::raw('AVG(oi.price) as avg_price')
+                DB::raw('COUNT(*) as transaction_count'),
+                DB::raw('MAX(oh.pro_date) as last_transaction_date'),
+                DB::raw('SUM(oi.qty_in + oi.qty_out) as total_quantity'),
+                DB::raw('AVG(oi.item_price) as avg_price')
             )
             ->groupBy('i.id', 'i.name', 'i.code')
-            ->orderBy('purchase_count', 'desc')
-            ->orderBy('last_purchase_date', 'desc')
+            ->orderBy('transaction_count', 'desc')
+            ->orderBy('last_transaction_date', 'desc')
             ->limit($limit)
             ->get();
 
@@ -354,9 +355,10 @@ class ItemSearchRepository
             return [
                 'id' => $item->id,
                 'name' => $item->name,
-                'code' => $item->code,
-                'purchase_count' => $item->purchase_count,
-                'last_purchase_date' => $item->last_purchase_date,
+                'code' => $item->code ?? '',
+                'transaction_count' => (int) $item->transaction_count,
+                'last_transaction_date' => $item->last_transaction_date,
+                'total_quantity' => (float) $item->total_quantity,
                 'avg_price' => (float) $item->avg_price,
             ];
         })->toArray();

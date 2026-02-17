@@ -68,23 +68,20 @@
             </div>
         @endif
 
-        @if (setting('invoice_show_recommended_items'))
-            @if ($type == 10)
-                <div class="col-2">
-                    <div class="card" style="font-size: 0.75rem;">
-                        <div class="card-header text-white py-1">
-                            <h6 class="mb-0" style="font-size: 0.8rem;">
-                                <i class="fas fa-star"></i> {{ __('Recommendations (Top 5 Purchased Items)') }}
-                            </h6>
-                        </div>
-                        <div class="card-body p-2" id="recommended-items-list">
-                            <p class="text-muted text-center mb-0">{{ __('No recommendations available') }}</p>
-                        </div>
+        {{-- Recommended Items - Always show when setting is enabled --}}
+        @if (setting('invoice_show_recommended_items', false))
+            <div class="col-2">
+                <div class="card" style="font-size: 0.75rem; border: 2px solid #28a745;">
+                    <div class="card-header bg-success text-white py-1">
+                        <h6 class="mb-0" style="font-size: 0.8rem;">
+                            <i class="fas fa-star"></i> {{ __('Recommended Items') }}
+                        </h6>
+                    </div>
+                    <div class="card-body p-2" id="recommended-items-list" style="min-height: 100px; max-height: 200px; overflow-y: auto;">
+                        <p class="text-muted text-center mb-0 small">{{ __('Select customer/supplier to see recommendations') }}</p>
                     </div>
                 </div>
-            @else
-                <div class="col-2"></div>
-            @endif
+            </div>
         @endif
 
         @if ($type != 21)
