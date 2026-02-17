@@ -6,6 +6,7 @@ namespace Modules\Invoices\Repositories;
 
 use App\Models\Item;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Repository for optimized item search operations
@@ -25,7 +26,7 @@ class ItemSearchRepository
         $query = Item::query()
             ->with([
                 'units' => function ($query) {
-                    $query->select('units.id', 'units.name', 'units.symbol');
+                    $query->select('units.id', 'units.name');
                 },
                 'barcodes' => function ($query) {
                     $query->select('barcodes.id', 'barcodes.item_id', 'barcodes.barcode', 'barcodes.unit_id');
@@ -64,11 +65,11 @@ class ItemSearchRepository
      * @param int|null $branchId
      * @return array
      */
-    public function getItemDetails(int $itemId, ?int $customerId = null, ?int $branchId = null): array
+    public function getItemDetails(int $itemId, ?int $customerId = null, ?int $branchId = null, ?int $warehouseId = null): array
     {
         $item = Item::with([
             'units' => function ($query) {
-                $query->select('units.id', 'units.name', 'units.symbol');
+                $query->select('units.id', 'units.name');
             },
             'barcodes'
         ])->findOrFail($itemId);
@@ -76,7 +77,8 @@ class ItemSearchRepository
         $units = $this->getItemUnitsWithPrices($item, $branchId);
         $lastPrice = $this->getLastPriceForCustomer($itemId, $customerId);
         $pricingAgreement = $this->getPricingAgreement($itemId, $customerId);
-        $stockQuantity = $this->getStockQuantity($itemId, $branchId);
+        $totalStock = $this->getStockQuantity($itemId, $branchId);
+        $warehouseStock = $warehouseId ? $this->getStockQuantity($itemId, $branchId, $warehouseId) : $totalStock;
 
         return [
             'item' => [
@@ -84,11 +86,13 @@ class ItemSearchRepository
                 'name' => $item->name,
                 'code' => $item->code,
                 'default_unit_id' => $item->default_unit_id,
+                'average_cost' => (float) ($item->average_cost ?? 0),
             ],
             'units' => $units,
             'last_price' => $lastPrice,
             'pricing_agreement' => $pricingAgreement,
-            'stock_quantity' => $stockQuantity,
+            'stock_quantity' => $totalStock,
+            'warehouse_stock' => $warehouseStock,
             'barcodes' => $item->barcodes->pluck('barcode')->toArray(),
         ];
     }
@@ -108,14 +112,8 @@ class ItemSearchRepository
             ->select(
                 'u.id',
                 'u.name',
-                'u.symbol',
-                'iu.conversion_factor',
-                'iu.price1',
-                'iu.price2',
-                'iu.price3',
-                'iu.price4',
-                'iu.price5',
-                'iu.barcode'
+                'iu.u_val as conversion_factor',
+                'iu.cost'
             )
             ->get();
 
@@ -125,14 +123,8 @@ class ItemSearchRepository
             return [
                 'id' => $unit->id,
                 'name' => $unit->name,
-                'symbol' => $unit->symbol,
-                'conversion_factor' => (float) $unit->conversion_factor,
-                'price1' => (float) $unit->price1,
-                'price2' => (float) $unit->price2,
-                'price3' => (float) $unit->price3,
-                'price4' => (float) $unit->price4,
-                'price5' => (float) $unit->price5,
-                'barcode' => $unit->barcode,
+                'conversion_factor' => (float) ($unit->conversion_factor ?? 1),
+                'cost' => (float) ($unit->cost ?? 0),
                 'stock_quantity' => $stockQty,
             ];
         })->toArray();
@@ -145,22 +137,23 @@ class ItemSearchRepository
      * @param int|null $customerId
      * @return float|null
      */
-    private function getLastPriceForCustomer(int $itemId, ?int $customerId = null): ?float
+    private function getLastPriceForCustomer(int $itemId, ?int $customerId = null): float
     {
         if (!$customerId) {
-            return null;
+            return 0;
         }
 
         $lastPrice = DB::table('operation_items as oi')
-            ->join('oper_head as oh', 'oi.oper_id', '=', 'oh.id')
-            ->where('oh.acc1_id', $customerId)
+            ->join('operhead as oh', 'oi.pro_id', '=', 'oh.id')
+            ->where('oh.acc1', $customerId)
             ->where('oi.item_id', $itemId)
-            ->whereIn('oh.type', [10, 12, 14, 16]) // Sales invoice types
+            ->whereIn('oh.pro_type', [10, 12, 14, 16]) // Sales types
+            ->where('oh.isdeleted', 0)
             ->orderBy('oh.pro_date', 'desc')
             ->orderBy('oh.id', 'desc')
-            ->value('oi.price');
+            ->value('oi.item_price');
 
-        return $lastPrice ? (float) $lastPrice : null;
+        return (float) ($lastPrice ?? 0);
     }
 
     /**
@@ -176,26 +169,37 @@ class ItemSearchRepository
             return null;
         }
 
-        $agreement = DB::table('pricing_agreements')
-            ->where('customer_id', $customerId)
-            ->where('item_id', $itemId)
-            ->where('active', 1)
-            ->where(function ($q) {
-                $q->whereNull('valid_until')
-                    ->orWhere('valid_until', '>=', now());
-            })
-            ->first();
+        try {
+            // Check if table exists first
+            if (!Schema::hasTable('pricing_agreements')) {
+                return null;
+            }
 
-        if (!$agreement) {
+            $agreement = DB::table('pricing_agreements')
+                ->where('customer_id', $customerId)
+                ->where('item_id', $itemId)
+                ->where('active', 1)
+                ->where(function ($q) {
+                    $q->whereNull('valid_until')
+                        ->orWhere('valid_until', '>=', now());
+                })
+                ->first();
+
+            if (!$agreement) {
+                return null;
+            }
+
+            return [
+                'id' => $agreement->id,
+                'price' => (float) $agreement->price,
+                'discount_percentage' => (float) ($agreement->discount_percentage ?? 0),
+                'valid_until' => $agreement->valid_until,
+            ];
+        } catch (\Exception $e) {
+            // If table doesn't exist or any other error, just return null
+            \Log::warning('getPricingAgreement failed', ['error' => $e->getMessage()]);
             return null;
         }
-
-        return [
-            'id' => $agreement->id,
-            'price' => (float) $agreement->price,
-            'discount_percentage' => (float) ($agreement->discount_percentage ?? 0),
-            'valid_until' => $agreement->valid_until,
-        ];
     }
 
     /**
@@ -203,25 +207,25 @@ class ItemSearchRepository
      *
      * @param int $itemId
      * @param int|null $branchId
+     * @param int|null $warehouseId
      * @return float
      */
-    private function getStockQuantity(int $itemId, ?int $branchId = null): float
+    private function getStockQuantity(int $itemId, ?int $branchId = null, ?int $warehouseId = null): float
     {
         $query = DB::table('operation_items as oi')
-            ->join('oper_head as oh', 'oi.oper_id', '=', 'oh.id')
-            ->where('oi.item_id', $itemId);
+            ->join('operhead as oh', 'oi.pro_id', '=', 'oh.id')
+            ->where('oi.item_id', $itemId)
+            ->where('oh.isdeleted', 0);
 
         if ($branchId) {
             $query->where('oh.branch_id', $branchId);
         }
 
-        $result = $query->selectRaw('
-            SUM(CASE
-                WHEN oh.type IN (11, 13, 15, 17, 20, 23, 30, 32) THEN oi.quantity
-                WHEN oh.type IN (10, 12, 14, 16, 19, 22, 31, 33) THEN -oi.quantity
-                ELSE 0
-            END) as stock_quantity
-        ')->first();
+        if ($warehouseId) {
+            $query->where('oh.acc2', $warehouseId);
+        }
+
+        $result = $query->selectRaw('SUM(oi.qty_in - oi.qty_out) as stock_quantity')->first();
 
         return (float) ($result->stock_quantity ?? 0);
     }
@@ -237,21 +241,16 @@ class ItemSearchRepository
     private function getStockQuantityForUnit(int $itemId, int $unitId, ?int $branchId = null): float
     {
         $query = DB::table('operation_items as oi')
-            ->join('oper_head as oh', 'oi.oper_id', '=', 'oh.id')
+            ->join('operhead as oh', 'oi.pro_id', '=', 'oh.id')
             ->where('oi.item_id', $itemId)
-            ->where('oi.unit_id', $unitId);
+            ->where('oi.unit_id', $unitId)
+            ->where('oh.isdeleted', 0);
 
         if ($branchId) {
             $query->where('oh.branch_id', $branchId);
         }
 
-        $result = $query->selectRaw('
-            SUM(CASE
-                WHEN oh.type IN (11, 13, 15, 17, 20, 23, 30, 32) THEN oi.quantity
-                WHEN oh.type IN (10, 12, 14, 16, 19, 22, 31, 33) THEN -oi.quantity
-                ELSE 0
-            END) as stock_quantity
-        ')->first();
+        $result = $query->selectRaw('SUM(oi.qty_in - oi.qty_out) as stock_quantity')->first();
 
         return (float) ($result->stock_quantity ?? 0);
     }
@@ -419,7 +418,7 @@ class ItemSearchRepository
         if (isset($data['price']) && $data['price'] > 0) {
             // Get first price type (usually "سعر البيع")
             $priceTypeId = DB::table('prices')->orderBy('id')->value('id') ?? 1;
-            
+
             DB::table('item_prices')->insert([
                 'item_id' => $itemId,
                 'price_id' => $priceTypeId,

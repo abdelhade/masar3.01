@@ -44,16 +44,29 @@ class ItemSearchApiController extends Controller
      */
     public function getItemDetails(Request $request, int $itemId): JsonResponse
     {
-        $customerId = $request->query('customer_id') ? (int) $request->query('customer_id') : null;
-        $branchId = $request->query('branch_id') ? (int) $request->query('branch_id') : null;
+        try {
+            $customerId = $request->query('customer_id') ? (int) $request->query('customer_id') : null;
+            $branchId = $request->query('branch_id') ? (int) $request->query('branch_id') : null;
+            $warehouseId = $request->query('warehouse_id') ? (int) $request->query('warehouse_id') : null;
 
-        $result = $this->itemSearchService->getItemDetails($itemId, $customerId, $branchId);
+            $result = $this->itemSearchService->getItemDetails($itemId, $customerId, $branchId, $warehouseId);
 
-        if (!$result['success']) {
-            return response()->json($result, 404);
+            if (!$result['success']) {
+                return response()->json($result, 404);
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            \Log::error('❌ getItemDetails exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب تفاصيل الصنف: ' . $e->getMessage()
+            ], 500);
         }
-
-        return response()->json($result);
     }
 
     /**

@@ -50,16 +50,20 @@ class ItemSearchService
      * @param int|null $branchId
      * @return array
      */
-    public function getItemDetails(int $itemId, ?int $customerId = null, ?int $branchId = null): array
+    public function getItemDetails(int $itemId, ?int $customerId = null, ?int $branchId = null, ?int $warehouseId = null): array
     {
         try {
-            $details = $this->itemSearchRepository->getItemDetails($itemId, $customerId, $branchId);
+            $details = $this->itemSearchRepository->getItemDetails($itemId, $customerId, $branchId, $warehouseId);
 
             return [
                 'success' => true,
                 'data' => $details,
             ];
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Item Details Error: ' . $e->getMessage(), [
+                'item_id' => $itemId,
+                'exception' => $e
+            ]);
             return [
                 'success' => false,
                 'message' => __('invoices.item_not_found'),

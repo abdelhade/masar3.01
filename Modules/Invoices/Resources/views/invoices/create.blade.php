@@ -353,12 +353,12 @@
                         if (columnsJson) {
                             try {
                                 let columns = JSON.parse(columnsJson);
-                                
+
                                 // ✅ Hide expiry columns if disabled in settings
                                 if (this.settings.expiry_mode && this.settings.expiry_mode.disabled) {
                                     columns = columns.filter(c => c !== 'batch_number' && c !== 'expiry_date');
                                 }
-                                
+
                                 this.visibleColumns = columns;
                                 this.updateTableHeaders();
                             } catch (e) {
@@ -538,18 +538,32 @@
                     if (columnsJson) {
                         try {
                             let columns = JSON.parse(columnsJson);
-                            
+
                             // ✅ Hide expiry columns if disabled in settings
                             if (this.settings.expiry_mode && this.settings.expiry_mode.disabled) {
                                 columns = columns.filter(c => c !== 'batch_number' && c !== 'expiry_date');
                             }
-                            
+
                             this.visibleColumns = columns;
                             this.updateTableHeaders();
                             this.renderItems();
                         } catch (error) {
                             console.error('❌ Error parsing columns:', error);
                         }
+                    }
+                });
+
+                // ✅ Update item details when warehouse changes
+                $('#acc2-id').on('change', () => {
+                    if (this.lastSelectedIndex !== undefined) {
+                        this.showItemDetails(this.lastSelectedIndex);
+                    }
+                });
+
+                // ✅ Update item details when customer/supplier changes
+                $('#acc1-id').on('change', () => {
+                    if (this.lastSelectedIndex !== undefined) {
+                        this.showItemDetails(this.lastSelectedIndex);
                     }
                 });
 
@@ -920,9 +934,9 @@
                 // ✅ Check for duplicate items based on settings
                 const isSales = [10, 12, 14, 16, 22, 26].includes(this.type);
                 const isPurchases = [11, 13, 15, 17, 24, 25].includes(this.type);
-                
-                const preventDuplicate = (isSales && this.settings.prevent_duplicate_items_in_sales) || 
-                                       (isPurchases && this.settings.prevent_duplicate_items_in_purchases);
+
+                const preventDuplicate = (isSales && this.settings.prevent_duplicate_items_in_sales) ||
+                    (isPurchases && this.settings.prevent_duplicate_items_in_purchases);
 
                 if (preventDuplicate) {
                     const exists = this.invoiceItems.some(i => i.item_id === item.id);
@@ -962,6 +976,7 @@
                 this.invoiceItems.push(newItem);
                 this.renderItems();
                 this.calculateTotals();
+                this.showItemDetails(this.invoiceItems.length - 1);
 
                 // Clear search
                 const searchInput = document.getElementById('search-input');
@@ -1099,10 +1114,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                                <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                    ${unit.name}
-                                                                                                                                                                                                                                                                </option>
-                                                                                                                                                                                                                                                            `).join('')}
+                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                ${unit.name}
+                                                                                                                                                                                                                                                                            </option>
+                                                                                                                                                                                                                                                                        `).join('')}
                                 </select>
                             </td>`;
 
@@ -1402,24 +1417,92 @@
                 }
             },
 
-            // Show item details in footer (Client-Side)
+            // Show item details in footer (Fetch from API)
             showItemDetails(index) {
                 const item = this.invoiceItems[index];
-                if (!item) return;
+                if (!item) {
+                    console.error('❌ Item not found at index:', index);
+                    return;
+                }
 
-                // Update footer with item details
+                console.log('📦 showItemDetails called:', {
+                    index: index,
+                    item_id: item.item_id,
+                    item_name: item.name,
+                    full_item: item
+                });
+
+                // ✅ Track last selected index for refreshing when warehouse/customer changes
+                this.lastSelectedIndex = index;
+
+                // Set basic details first (fast)
                 document.getElementById('selected-item-name').textContent = item.name || '-';
-                document.getElementById('selected-item-store').textContent =
-                    '-'; // Store name would come from item data
-                document.getElementById('selected-item-available').textContent =
-                    '-'; // Available quantity would come from API
-                document.getElementById('selected-item-total').textContent =
-                    '-'; // Total quantity would come from API
-                document.getElementById('selected-item-unit').textContent = item.unit_name || '-';
+                // Find unit name
+                const unitSelect = document.getElementById(`unit-${index}`);
+                const unitName = unitSelect ? unitSelect.options[unitSelect.selectedIndex].text : (item.unit_name ||
+                    '-');
+                document.getElementById('selected-item-unit').textContent = unitName;
                 document.getElementById('selected-item-price').textContent = (item.price || 0).toFixed(2);
-                document.getElementById('selected-item-last-price').textContent =
-                    '-'; // Would come from API
-                document.getElementById('selected-item-avg-cost').textContent = '-'; // Would come from API
+
+                // Show loading state for API data
+                document.getElementById('selected-item-store').textContent = '...';
+                document.getElementById('selected-item-available').textContent = '...';
+                document.getElementById('selected-item-total').textContent = '...';
+                document.getElementById('selected-item-last-price').textContent = '...';
+                document.getElementById('selected-item-avg-cost').textContent = '...';
+
+                // Fetch real-time details from API
+                const customerId = $('#acc1-id').val();
+                const warehouseId = $('#acc2-id').val();
+                const branchId = this.branchId;
+
+                let url = `/api/invoices/items/${item.item_id}/details?branch_id=${branchId}`;
+                if (customerId) url += `&customer_id=${customerId}`;
+                if (warehouseId) url += `&warehouse_id=${warehouseId}`;
+
+                fetch(url)
+                    .then(response => {
+                        console.log('📡 Response status:', response.status);
+                        return response.json();
+                    })
+
+                    .then(res => {
+                        if (res.success && res.data) {
+                            const data = res.data;
+
+                            // ✅ اقرأ اسم المخزن بشكل صحيح (يدعم Select2)
+                            let storeName = '-';
+                            const storeSelect = $('#acc2-id');
+                            if (storeSelect.length) {
+                                // لو Select2
+                                const selectedOption = storeSelect.find('option:selected');
+                                storeName = selectedOption.text() || '-';
+                                // تجنب "اختر..." أو القيمة الفارغة
+                                if (!storeSelect.val() || storeSelect.val() === '') {
+                                    storeName = '-';
+                                }
+                            }
+
+                            document.getElementById('selected-item-store').textContent = storeName;
+                            document.getElementById('selected-item-available').textContent =
+                                (data.warehouse_stock || 0).toLocaleString();
+                            document.getElementById('selected-item-total').textContent =
+                                (data.stock_quantity || 0).toLocaleString();
+                            document.getElementById('selected-item-last-price').textContent =
+                                (data.last_price || 0).toFixed(2);
+                            document.getElementById('selected-item-avg-cost').textContent =
+                                (data.item?.average_cost || 0).toFixed(2);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error fetching item details:', error);
+                        // Reset on error
+                        document.getElementById('selected-item-available').textContent = '-';
+                        document.getElementById('selected-item-total').textContent = '-';
+                        document.getElementById('selected-item-store').textContent = '-';
+                        document.getElementById('selected-item-last-price').textContent = '-';
+                        document.getElementById('selected-item-avg-cost').textContent = '-';
+                    });
             },
 
             /**
@@ -1574,7 +1657,7 @@
                 // 3. Check items data
                 for (let i = 0; i < this.invoiceItems.length; i++) {
                     const item = this.invoiceItems[i];
-                    
+
                     // Prevent zero/negative quantity
                     if (item.quantity <= 0) {
                         Swal.fire('خطأ', `الصنف "${item.name}" لديه كمية غير صالحة.`, 'error');
