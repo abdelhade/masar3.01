@@ -62,11 +62,7 @@
    ============================================ */
 
 /* Primary Button */
-<<<<<<< HEAD
-.btn-primary {
-=======
 .btn-primary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm) {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-primary) !important;
     border: none !important;
     color: #ffffff !important;
@@ -76,11 +72,7 @@
     overflow: hidden;
 }
 
-<<<<<<< HEAD
-.btn-primary::before {
-=======
 .btn-primary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm)::before {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     content: '';
     position: absolute;
     top: 0;
@@ -91,41 +83,24 @@
     transition: left 0.5s;
 }
 
-<<<<<<< HEAD
-.btn-primary:hover,
-.btn-primary:focus {
-=======
 .btn-primary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):hover,
 .btn-primary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):focus {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-primary-hover) !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(52, 211, 163, 0.5);
 }
 
-<<<<<<< HEAD
-.btn-primary:hover::before {
-    left: 100%;
-}
-
-.btn-primary:active {
-=======
 .btn-primary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):hover::before {
     left: 100%;
 }
 
 .btn-primary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):active {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(52, 211, 163, 0.4);
 }
 
 /* Secondary Button */
-<<<<<<< HEAD
-.btn-secondary {
-=======
 .btn-secondary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm) {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-secondary) !important;
     border: none !important;
     color: #ffffff !important;
@@ -133,32 +108,19 @@
     transition: all 0.3s ease;
 }
 
-<<<<<<< HEAD
-.btn-secondary:hover,
-.btn-secondary:focus {
-=======
 .btn-secondary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):hover,
 .btn-secondary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):focus {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-secondary-hover) !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(26, 161, 196, 0.5);
 }
 
-<<<<<<< HEAD
-.btn-secondary:active {
-=======
 .btn-secondary:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):active {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     transform: translateY(0);
 }
 
 /* Success Button */
-<<<<<<< HEAD
-.btn-success {
-=======
 .btn-success:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm) {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-success) !important;
     border: none !important;
     color: #ffffff !important;
@@ -166,24 +128,15 @@
     transition: all 0.3s ease;
 }
 
-<<<<<<< HEAD
-.btn-success:hover,
-.btn-success:focus {
-=======
 .btn-success:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):hover,
 .btn-success:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):focus {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-success-hover) !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(26, 210, 112, 0.5);
 }
 
 /* Danger Button */
-<<<<<<< HEAD
-.btn-danger {
-=======
 .btn-danger:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm) {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-danger) !important;
     border: none !important;
     color: #ffffff !important;
@@ -191,24 +144,15 @@
     transition: all 0.3s ease;
 }
 
-<<<<<<< HEAD
-.btn-danger:hover,
-.btn-danger:focus {
-=======
 .btn-danger:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):hover,
 .btn-danger:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):focus {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-danger-hover) !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(230, 23, 23, 0.5);
 }
 
 /* Warning Button */
-<<<<<<< HEAD
-.btn-warning {
-=======
 .btn-warning:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm) {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-warning) !important;
     border: none !important;
     color: #000000 !important;
@@ -216,24 +160,15 @@
     transition: all 0.3s ease;
 }
 
-<<<<<<< HEAD
-.btn-warning:hover,
-.btn-warning:focus {
-=======
 .btn-warning:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):hover,
 .btn-warning:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):focus {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-warning-hover) !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(230, 168, 23, 0.5);
 }
 
 /* Info Button */
-<<<<<<< HEAD
-.btn-info {
-=======
 .btn-info:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm) {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-info) !important;
     border: none !important;
     color: #ffffff !important;
@@ -241,24 +176,15 @@
     transition: all 0.3s ease;
 }
 
-<<<<<<< HEAD
-.btn-info:hover,
-.btn-info:focus {
-=======
 .btn-info:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):hover,
 .btn-info:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):focus {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-info-hover) !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(26, 142, 255, 0.5);
 }
 
 /* Light Button */
-<<<<<<< HEAD
-.btn-light {
-=======
 .btn-light:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm) {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-light) !important;
     border: 1px solid #e5e5e5 !important;
     color: #404040 !important;
@@ -266,24 +192,15 @@
     transition: all 0.3s ease;
 }
 
-<<<<<<< HEAD
-.btn-light:hover,
-.btn-light:focus {
-=======
 .btn-light:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):hover,
 .btn-light:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):focus {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: linear-gradient(135deg, #f5f5f5 0%, #e5e5e5 100%) !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Dark Button */
-<<<<<<< HEAD
-.btn-dark {
-=======
 .btn-dark:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm) {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: var(--gradient-dark) !important;
     border: none !important;
     color: #ffffff !important;
@@ -291,20 +208,13 @@
     transition: all 0.3s ease;
 }
 
-<<<<<<< HEAD
-.btn-dark:hover,
-.btn-dark:focus {
-=======
 .btn-dark:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):hover,
 .btn-dark:not(.btn-sm):not(.btn-lg):not(.btn-icon-square-sm):focus {
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
     background: linear-gradient(135deg, #262626 0%, #171717 100%) !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
-<<<<<<< HEAD
-=======
 /* Keep small buttons (btn-sm) with solid colors for better readability in tables */
 .btn-sm.btn-primary,
 .btn-sm.btn-success,
@@ -326,8 +236,6 @@
 .btn-icon-square-sm:hover {
     transform: none !important;
 }
-
->>>>>>> 91245a54c1948306a1bf54f903f9cec32a3a2f0e
 /* ============================================
    3. BOOTSTRAP BADGE OVERRIDES
    ============================================ */
