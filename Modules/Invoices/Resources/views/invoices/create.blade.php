@@ -317,7 +317,7 @@
             invoiceItems: [],
             allItems: [],
             fuse: null,
-            itemDiscountType: 'percentage', // 'percentage' or 'value' - default is percentage
+            itemDiscountType: localStorage.getItem('itemDiscountType') || 'percentage', // Load from localStorage or default to 'percentage'
 
             // Totals
             subtotal: 0,
@@ -341,6 +341,7 @@
 
             // Initialize
             init() {
+                console.log(`🔵 Loaded discount type from localStorage: ${this.itemDiscountType}`);
                 this.initializeSelect2();
                 this.loadDefaultTemplate();
                 this.setDefaultValues();
@@ -1505,6 +1506,9 @@
                 // Toggle between 'percentage' and 'value'
                 this.itemDiscountType = this.itemDiscountType === 'percentage' ? 'value' : 'percentage';
                 
+                // Save to localStorage to persist across page refreshes
+                localStorage.setItem('itemDiscountType', this.itemDiscountType);
+                
                 // Update table header to show new type
                 this.updateTableHeaders();
                 
@@ -1513,7 +1517,7 @@
                     this.calculateItemTotal(index);
                 });
                 
-                console.log(`✅ Discount type changed to: ${this.itemDiscountType}`);
+                console.log(`✅ Discount type changed to: ${this.itemDiscountType} (saved to localStorage)`);
             },
 
             // Remove item
