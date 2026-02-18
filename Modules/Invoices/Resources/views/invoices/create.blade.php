@@ -620,6 +620,22 @@
                             this.visibleColumns = columns;
                             this.updateTableHeaders();
                             this.renderItems();
+
+                            // ✅ Focus على أول حقل editable في أول صنف (لو موجود)
+                            if (this.invoiceItems.length > 0) {
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        const editableColumns = this.getEditableColumns();
+                                        if (editableColumns.length > 0) {
+                                            const firstEditableColumn = editableColumns[0];
+                                            console.log(
+                                                '🔵 Template changed - focusing first field:',
+                                                firstEditableColumn);
+                                            this.focusField(firstEditableColumn, 0);
+                                        }
+                                    });
+                                });
+                            }
                         } catch (error) {
                             console.error('❌ Error parsing columns:', error);
                         }
@@ -1089,25 +1105,30 @@
                 this.invoiceItems.push(newItem);
                 this.renderItems();
                 this.calculateTotals();
-                this.showItemDetails(this.invoiceItems.length - 1);
 
-                // Clear search
+                // Clear search first
                 const searchInput = document.getElementById('search-input');
                 if (searchInput) searchInput.value = '';
                 this.hideSearchResults();
 
                 this.updateStatus('✓ تم إضافة الصنف', 'success');
 
-                // ✅ Focus على أول حقل editable في النموذج
-                setTimeout(() => {
-                    const itemIndex = this.invoiceItems.length - 1;
-                    const editableColumns = this.getEditableColumns();
+                // ✅ Focus على أول حقل editable - بعد الـ rendering مباشرة
+                const itemIndex = this.invoiceItems.length - 1;
 
-                    if (editableColumns.length > 0) {
-                        const firstEditableColumn = editableColumns[0];
-                        this.focusField(firstEditableColumn, itemIndex);
-                    }
-                }, 100);
+                // Use multiple requestAnimationFrame to ensure DOM is fully rendered
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        const editableColumns = this.getEditableColumns();
+
+                        if (editableColumns.length > 0) {
+                            const firstEditableColumn = editableColumns[0];
+                            this.focusField(firstEditableColumn, itemIndex);
+                        }
+                        // Show item details AFTER focus attempt
+                        this.showItemDetails(itemIndex);
+                    });
+                });
             },
 
             // Create new item
@@ -1131,21 +1152,33 @@
                             unit_id: 1
                         })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.item) {
                             this.allItems.push(data.item);
-                            this.updateStatus('تم تحميل ' + this.allItems.length + ' صنف - البحث جاهز ✓',
-                                'success');
+                            this.updateStatus('✓ تم إنشاء الصنف بنجاح', 'success');
+
+                            // Hide search results
+                            this.hideSearchResults();
+
+                            // Add item to invoice
                             this.addItem(data.item);
+                        } else {
+                            console.error('❌ No item in response:', data);
+                            this.updateStatus('خطأ: لم يتم إرجاع بيانات الصنف', 'danger');
+                            this.hideSearchResults();
                         }
                     })
                     .catch(error => {
                         console.error('❌ Error creating item:', error);
-                        this.updateStatus('خطأ في إنشاء الصنف', 'danger');
+                        this.updateStatus('خطأ في إنشاء الصنف: ' + error.message, 'danger');
+                        this.hideSearchResults();
                     });
-
-                this.hideSearchResults();
             },
 
             // Render items table
@@ -1181,6 +1214,8 @@
 
                 // Attach event listeners to inputs
                 this.attachItemEventListeners();
+
+                console.log('✅ renderItems completed - DOM updated');
             },
 
             // Render single item row
@@ -1227,10 +1262,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                                                                        <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                                                            ${unit.name}
-                                                                                                                                                                                                                                                                                                        </option>
-                                                                                                                                                                                                                                                                                                    `).join('')}
+                                                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                                                ${unit.name}
+                                                                                                                                                                                                                                                                                                            </option>
+                                                                                                                                                                                                                                                                                                        `).join('')}
                                 </select>
                             </td>`;
 
@@ -1414,6 +1449,42 @@
                         }
                     });
                 });
+
+                // ✅ Length, Width, Height, Density fields
+                document.querySelectorAll(
+                        '[data-field="length"], [data-field="width"], [data-field="height"], [data-field="density"]')
+                    .forEach(input => {
+                        input.addEventListener('input', (e) => {
+                            const index = parseInt(e.target.dataset.index);
+                            const field = e.target.dataset.field;
+                            const value = parseFloat(e.target.value) || 0;
+
+                            this.invoiceItems[index][field] = value;
+                            // You might want to recalculate totals here if needed
+                        });
+
+                        input.addEventListener('focus', (e) => e.target.select());
+
+                        // ✅ Add keyboard navigation
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, false);
+                            } else if (e.key === 'Tab' && !e.shiftKey) {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, false);
+                            } else if (e.key === 'Tab' && e.shiftKey) {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, true);
+                            }
+                        });
+                    });
             },
 
             // Calculate item total
@@ -1585,21 +1656,38 @@
                 // ✅ Track last selected index for refreshing when warehouse/customer changes
                 this.lastSelectedIndex = index;
 
+                // Check if item details card exists (might be hidden by settings)
+                const itemDetailsCard = document.getElementById('item-details-card');
+                if (!itemDetailsCard) {
+                    return;
+                }
+
+                // Helper function to safely update element
+                const safeUpdate = (id, value) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                    } else {
+                        console.warn(`⚠️ Element not found: ${id}`);
+                    }
+                };
+
                 // Set basic details first (fast)
-                document.getElementById('selected-item-name').textContent = item.name || '-';
+                safeUpdate('selected-item-name', item.name || '-');
+
                 // Find unit name
                 const unitSelect = document.getElementById(`unit-${index}`);
                 const unitName = unitSelect ? unitSelect.options[unitSelect.selectedIndex].text : (item.unit_name ||
                     '-');
-                document.getElementById('selected-item-unit').textContent = unitName;
-                document.getElementById('selected-item-price').textContent = (item.price || 0).toFixed(2);
+                safeUpdate('selected-item-unit', unitName);
+                safeUpdate('selected-item-price', (item.price || 0).toFixed(2));
 
                 // Show loading state for API data
-                document.getElementById('selected-item-store').textContent = '...';
-                document.getElementById('selected-item-available').textContent = '...';
-                document.getElementById('selected-item-total').textContent = '...';
-                document.getElementById('selected-item-last-price').textContent = '...';
-                document.getElementById('selected-item-avg-cost').textContent = '...';
+                safeUpdate('selected-item-store', '...');
+                safeUpdate('selected-item-available', '...');
+                safeUpdate('selected-item-total', '...');
+                safeUpdate('selected-item-last-price', '...');
+                safeUpdate('selected-item-avg-cost', '...');
 
                 // Fetch real-time details from API
                 const customerId = $('#acc1-id').val();
@@ -1615,7 +1703,6 @@
                         console.log('📡 Response status:', response.status);
                         return response.json();
                     })
-
                     .then(res => {
                         if (res.success && res.data) {
                             const data = res.data;
@@ -1625,29 +1712,22 @@
                             const storeName = storeSelect && storeSelect.selectedIndex >= 0 ?
                                 storeSelect.options[storeSelect.selectedIndex].text : '-';
 
-                            document.getElementById('selected-item-store').textContent = storeName;
-                            document.getElementById('selected-item-available').textContent = (data
-                                .warehouse_stock || 0).toLocaleString();
-                            document.getElementById('selected-item-total').textContent = (data.stock_quantity || 0)
-                                .toLocaleString();
-                            document.getElementById('selected-item-last-price').textContent = (data
-                                .last_purchase_price || 0).toFixed(2);
-                            document.getElementById('selected-item-avg-cost').textContent = (data.item
-                                ?.average_cost || 0).toFixed(2);
-
-                            // Update the price field to show sale price
-                            document.getElementById('selected-item-price').textContent = (data.sale_price || 0)
-                                .toFixed(2);
+                            safeUpdate('selected-item-store', storeName);
+                            safeUpdate('selected-item-available', (data.warehouse_stock || 0).toLocaleString());
+                            safeUpdate('selected-item-total', (data.stock_quantity || 0).toLocaleString());
+                            safeUpdate('selected-item-last-price', (data.last_purchase_price || 0).toFixed(2));
+                            safeUpdate('selected-item-avg-cost', (data.item?.average_cost || 0).toFixed(2));
+                            safeUpdate('selected-item-price', (data.sale_price || 0).toFixed(2));
                         }
                     })
                     .catch(error => {
                         console.error('❌ Error fetching item details:', error);
-                        // Reset on error
-                        document.getElementById('selected-item-available').textContent = '-';
-                        document.getElementById('selected-item-total').textContent = '-';
-                        document.getElementById('selected-item-store').textContent = '-';
-                        document.getElementById('selected-item-last-price').textContent = '-';
-                        document.getElementById('selected-item-avg-cost').textContent = '-';
+                        // Reset on error with safe updates
+                        safeUpdate('selected-item-available', '-');
+                        safeUpdate('selected-item-total', '-');
+                        safeUpdate('selected-item-store', '-');
+                        safeUpdate('selected-item-last-price', '-');
+                        safeUpdate('selected-item-avg-cost', '-');
                     });
             },
 
@@ -2230,7 +2310,11 @@
                     'batch': 'batch_number',
                     'expiry': 'expiry_date',
                     'price': 'price',
-                    'discount': 'discount'
+                    'discount': 'discount',
+                    'length': 'length',
+                    'width': 'width',
+                    'height': 'height',
+                    'density': 'density'
                 };
 
                 const currentColumn = fieldMap[currentField] || currentField;
@@ -2263,26 +2347,48 @@
                 }
             },
 
-            // Get editable columns (skip item_name, code, sub_value)
+            // Get editable columns (skip item_name, code, sub_value) - IN ORDER
             getEditableColumns() {
                 const nonEditable = ['item_name', 'code', 'sub_value'];
+                // Return columns in the same order as visibleColumns
                 return this.visibleColumns.filter(col => !nonEditable.includes(col));
             },
 
             // Focus a specific field
             focusField(columnName, index) {
                 const fieldId = this.getFieldIdFromColumn(columnName, index);
-                if (fieldId) {
-                    const el = document.getElementById(fieldId);
-                    if (el) {
-                        el.focus();
-                        if (el.tagName === 'INPUT' && el.type !== 'date') {
-                            el.select();
-                        }
-                        return;
-                    }
+                console.log('🔵 focusField called:', {
+                    columnName,
+                    index,
+                    fieldId
+                });
+
+                if (!fieldId) {
+                    console.warn('⚠️ No fieldId generated for:', {
+                        columnName,
+                        index
+                    });
+                    console.warn('⚠️ NOT falling back to search - staying on current field');
+                    return; // Don't fallback to search
                 }
-                this.focusSearchInput();
+
+                const el = document.getElementById(fieldId);
+                if (el) {
+                    el.focus();
+                    if (el.tagName === 'INPUT' && el.type !== 'date') {
+                        el.select();
+                    }
+                    return;
+                } else {
+                    console.error('❌ Element not found in DOM:', fieldId);
+                    console.error('❌ Available elements with similar IDs:');
+                    // List all elements with IDs starting with the column name
+                    const columnPrefix = columnName.replace('_', '-');
+                    const similarElements = document.querySelectorAll(`[id^="${columnPrefix}"]`);
+                    similarElements.forEach(elem => {
+                        console.log('  - Found:', elem.id, elem.tagName);
+                    });
+                }
             },
 
             // Focus search input helper
@@ -2302,7 +2408,11 @@
                     'batch_number': 'batch-' + index,
                     'expiry_date': 'expiry-' + index,
                     'price': 'price-' + index,
-                    'discount': 'discount-' + index
+                    'discount': 'discount-' + index,
+                    'length': 'length-' + index,
+                    'width': 'width-' + index,
+                    'height': 'height-' + index,
+                    'density': 'density-' + index
                 };
 
                 return columnToFieldMap[columnName] || null;
