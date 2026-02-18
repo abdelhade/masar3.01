@@ -87,6 +87,15 @@ class InvoiceFormController extends Controller
             ->select('id', 'aname')
             ->get();
 
+        // Get price lists (for sales invoices only)
+        $priceLists = [];
+        if (in_array($type, [10, 12, 14, 16, 19, 22])) {
+            $priceLists = \DB::table('prices')
+                ->where('is_deleted', 0)
+                ->select('id', 'name')
+                ->get();
+        }
+
         // Get invoice settings and user permissions
         $isSales = in_array($type, [10, 12, 14, 16, 19, 22]);
         $isPurchase = in_array($type, [11, 13, 15, 17, 20, 23, 24, 25]);
@@ -105,11 +114,14 @@ class InvoiceFormController extends Controller
         $userSettings = [
             // General Settings
             'multi_currency_enabled' => setting('multi_currency_enabled', false),
+            'allow_edit_transaction_date' => setting('allow_edit_transaction_date', true),
+            'use_system_date_for_transactions' => setting('use_system_date_for_transactions', true),
             
             // Invoice Settings
             'prevent_negative_invoice' => setting('prevent_negative_invoice', true),
             'new_after_save' => setting('new_after_save', true),
             'allow_edit_price_payments' => setting('allow_edit_price_payments', true),
+            'scrap_by_barcode_only' => setting('scrap_by_barcode_only', true),
             'allow_zero_price_in_invoice' => setting('allow_zero_price_in_invoice', true),
             'allow_zero_opening_balance' => setting('allow_zero_opening_balance', true),
             'allow_zero_invoice_total' => setting('allow_zero_invoice_total', true),
@@ -127,6 +139,13 @@ class InvoiceFormController extends Controller
             // Display Settings
             'invoice_show_item_details' => setting('invoice_show_item_details', true),
             'invoice_show_recommended_items' => setting('invoice_show_recommended_items', false),
+            'show_print_mode_switch' => setting('show_print_mode_switch', true),
+            
+            // Account Settings (for invoice logic)
+            'allowed_discount_account' => setting('allowed_discount_account', null),
+            'employee_adding_account' => setting('employee_adding_account', null),
+            'employee_salary_account' => setting('employee_salary_account', null),
+            'employee_discount_account' => setting('employee_discount_account', null),
             
             // Tax Settings
             'is_vat_enabled' => isVatEnabled(),
@@ -162,6 +181,7 @@ class InvoiceFormController extends Controller
             'employees' => $employees,
             'deliverys' => $deliverys,
             'cashAccounts' => $cashAccounts,
+            'priceLists' => $priceLists,
             'userSettings' => $userSettings,
             'defaultAcc1Id' => $defaultAcc1Id,
             'defaultAcc2Id' => $defaultAcc2Id,

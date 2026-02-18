@@ -307,6 +307,7 @@
             withholdingTaxPercentage: CONFIG.withholdingTaxPercentage,
             currencyId: 1, // Default
             exchangeRate: 1, // Default
+            selectedPriceListId: null, // Selected price list for sales invoices
 
             // Template columns
             visibleColumns: ['item_name', 'code', 'unit', 'quantity', 'price', 'discount', 'sub_value'],
@@ -345,6 +346,7 @@
                 this.loadItems();
                 this.attachEventListeners();
                 this.renderItems();
+                this.initializePriceListSelector();
             },
 
             // Load default template
@@ -1723,6 +1725,87 @@
                 } else {
                     console.error('❌ Element balance-after-header not found!');
                 }
+            },
+
+            /**
+             * Initialize price list selector (for sales invoices only)
+             */
+            initializePriceListSelector() {
+                const priceListSelect = document.getElementById('price-list-id');
+                if (!priceListSelect) {
+                    console.log('⚠️ Price list selector not found (not a sales invoice)');
+                    return;
+                }
+
+                // Set default price list (first option)
+                this.selectedPriceListId = priceListSelect.value || null;
+                console.log('🔵 Default price list ID:', this.selectedPriceListId);
+
+                // Save reference to this
+                const self = this;
+
+                // Listen for price list changes
+                priceListSelect.addEventListener('change', function(e) {
+                    const newPriceListId = e.target.value;
+                    console.log('🔵 Price list changed to:', newPriceListId);
+                    
+                    self.selectedPriceListId = newPriceListId;
+                    
+                    // Update prices for all items in the invoice
+                    self.updateAllItemPrices();
+                });
+            },
+
+            /**
+             * Update prices for all items in the invoice based on selected price list
+             */
+            updateAllItemPrices() {
+                if (!this.selectedPriceListId) {
+                    console.log('⚠️ No price list selected');
+                    return;
+                }
+
+                console.log('🔄 Updating prices for all items...');
+                
+                // Update each item's price
+                this.invoiceItems.forEach((item, index) => {
+                    this.updateItemPrice(item, index);
+                });
+
+                // Re-render and recalculate
+                this.renderItems();
+                this.calculateTotals();
+            },
+
+            /**
+             * Update single item price based on selected price list
+             */
+            updateItemPrice(item, index) {
+                if (!this.selectedPriceListId || !item.item_id || !item.unit_id) {
+                    return;
+                }
+
+                // Fetch price from API
+                const url = `/api/invoices/items/${item.item_id}/price?price_list_id=${this.selectedPriceListId}&unit_id=${item.unit_id}`;
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.price !== null) {
+                            console.log(`✅ Updated price for item ${item.item_id}: ${data.price}`);
+                            item.price = parseFloat(data.price);
+                            item.sub_value = item.quantity * item.price * (1 - item.discount / 100);
+                            
+                            // Update display
+                            this.renderItems();
+                            this.calculateTotals();
+                        } else {
+                            console.log(`⚠️ No price found for item ${item.item_id} in price list ${this.selectedPriceListId}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error fetching item price:', error);
+                    });
             },
 
             // Save invoice - NO VALIDATION, just send everything

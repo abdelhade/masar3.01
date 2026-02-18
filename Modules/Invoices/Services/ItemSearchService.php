@@ -112,4 +112,22 @@ class ItemSearchService
     {
         return $this->itemSearchRepository->quickCreateItem($data);
     }
+
+    /**
+     * Get item price for specific price list and unit
+     *
+     * @param int $itemId
+     * @param int $priceListId
+     * @param int $unitId
+     * @return array
+     */
+    public function getItemPriceForPriceList(int $itemId, int $priceListId, int $unitId): array
+    {
+        $price = $this->itemSearchRepository->getItemPriceForPriceList($itemId, $priceListId, $unitId);
+
+        return [
+            'success' => true,
+            'price' => $price,
+        ];
+    }
 }

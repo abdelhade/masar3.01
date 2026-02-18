@@ -31,6 +31,9 @@ Route::middleware(['web', 'auth'])->prefix('invoices')->group(function () {
     Route::get('/items/{itemId}/details', [ItemSearchApiController::class, 'getItemDetails'])
         ->name('api.invoices.items.details');
 
+    Route::get('/items/{itemId}/price', [ItemSearchApiController::class, 'getItemPrice'])
+        ->name('api.invoices.items.price');
+
     Route::get('/customers/{customerId}/recommended-items', [ItemSearchApiController::class, 'getRecommendedItems'])
         ->name('api.invoices.customers.recommended-items');
 

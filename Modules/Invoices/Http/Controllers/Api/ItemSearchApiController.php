@@ -131,4 +131,43 @@ class ItemSearchApiController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get item price for specific price list and unit
+     *
+     * @param Request $request
+     * @param int $itemId
+     * @return JsonResponse
+     */
+    public function getItemPrice(Request $request, int $itemId): JsonResponse
+    {
+        $priceListId = $request->query('price_list_id') ? (int) $request->query('price_list_id') : null;
+        $unitId = $request->query('unit_id') ? (int) $request->query('unit_id') : null;
+
+        if (!$priceListId || !$unitId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'price_list_id and unit_id are required',
+                'price' => null
+            ], 400);
+        }
+
+        try {
+            $result = $this->itemSearchService->getItemPriceForPriceList($itemId, $priceListId, $unitId);
+            return response()->json($result);
+        } catch (\Exception $e) {
+            \Log::error('❌ getItemPrice exception', [
+                'error' => $e->getMessage(),
+                'item_id' => $itemId,
+                'price_list_id' => $priceListId,
+                'unit_id' => $unitId
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب السعر: ' . $e->getMessage(),
+                'price' => null
+            ], 500);
+        }
+    }
 }

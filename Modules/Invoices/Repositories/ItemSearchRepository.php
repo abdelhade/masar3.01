@@ -519,4 +519,51 @@ class ItemSearchRepository
             ],
         ];
     }
+
+    /**
+     * Get item price for specific price list and unit
+     *
+     * @param int $itemId
+     * @param int $priceListId
+     * @param int $unitId
+     * @return float|null
+     */
+    public function getItemPriceForPriceList(int $itemId, int $priceListId, int $unitId): ?float
+    {
+        // Try to get price from item_prices table
+        $itemPrice = DB::table('item_prices')
+            ->where('item_id', $itemId)
+            ->where('price_id', $priceListId)
+            ->where('unit_id', $unitId)
+            ->first();
+
+        if ($itemPrice) {
+            return (float) $itemPrice->price;
+        }
+
+        // Fallback: Get price from item_units table
+        $itemUnit = DB::table('item_units')
+            ->where('item_id', $itemId)
+            ->where('unit_id', $unitId)
+            ->first();
+
+        if ($itemUnit) {
+            // Get price based on price list ID (price1, price2, etc.)
+            $priceColumn = 'price' . $priceListId;
+            if (isset($itemUnit->$priceColumn)) {
+                return (float) $itemUnit->$priceColumn;
+            }
+        }
+
+        // Last fallback: Get default price from items table
+        $item = DB::table('items')->where('id', $itemId)->first();
+        if ($item) {
+            $priceColumn = 'price' . $priceListId;
+            if (isset($item->$priceColumn)) {
+                return (float) $item->$priceColumn;
+            }
+        }
+
+        return null;
+    }
 }

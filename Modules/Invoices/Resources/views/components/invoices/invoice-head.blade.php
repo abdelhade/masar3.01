@@ -45,15 +45,12 @@
 
                     <small class="me-3">
                         @if (setting('enable_installment_from_invoice') && $type == 10)
-                            <div class="col-3 text-left">
-                                <button type="button" class="btn btn-md btn-info"
-                                    style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
-                                    <i class="las la-calendar-check"></i> {{ __('Installment') }}
-                                </button>
-                            </div>
+                            <button type="button" class="btn btn-md btn-info"
+                                style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                <i class="las la-calendar-check"></i> {{ __('Installment') }}
+                            </button>
                         @endif
                     </small>
-
                     <small class="me-3">
                         <button type="button" class="btn btn-success btn-sm" onclick="window.InvoiceApp.submitForm()">
                             <i class="fas fa-save me-2"></i>
@@ -84,7 +81,7 @@
             <input type="hidden" name="type" value="{{ $type }}">
 
             {{-- العميل/المورد - With Select2 Search --}}
-            <div class="col-md-2">
+            <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">
                     {{ $acc1Role }}
                     <span class="text-danger">*</span>
@@ -148,10 +145,29 @@
                     @endforeach
                 </select>
             </div>
+
+            {{-- الفئة السعرية (للمبيعات فقط) --}}
+            @if (in_array($type, [10, 12, 14, 16, 19, 22]))
+                <div class="col-md-1">
+                    <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">
+                        {{ __('Price List') }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    <select id="price-list-id" class="form-select form-select-sm">
+                        <option value="">{{ __('اختر الفئة السعرية') }}</option>
+                        @foreach ($priceLists ?? [] as $priceList)
+                            <option value="{{ $priceList->id }}" {{ $loop->first ? 'selected' : '' }}>
+                                {{ $priceList->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
             {{-- التاريخ --}}
             <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('التاريخ') }}</label>
-                <input type="date" id="pro-date" class="form-control form-control-sm" value="{{ date('Y-m-d') }}" {{ !setting('allow_edit_transaction_date', true) ? 'readonly' : '' }}>
+                <input type="date" id="pro-date" class="form-control form-control-sm" value="{{ date('Y-m-d') }}"
+                    {{ !setting('allow_edit_transaction_date', true) ? 'readonly' : '' }}>
             </div>
 
             {{-- رقم الفاتورة --}}
