@@ -317,6 +317,7 @@
             invoiceItems: [],
             allItems: [],
             fuse: null,
+            itemDiscountType: 'percentage', // 'percentage' or 'value' - default is percentage
 
             // Totals
             subtotal: 0,
@@ -539,24 +540,46 @@
                         this.hideSearchResults();
                     }
                 });
-                // Discount/Additional inputs
+                // Discount/Additional inputs with auto-sync between percentage and value
                 document.getElementById('discount-percentage')?.addEventListener('input', (e) => {
                     this.discountPercentage = parseFloat(e.target.value) || 0;
+                    // Auto-calculate discount value from percentage
+                    if (this.subtotal > 0) {
+                        this.discountValue = (this.subtotal * this.discountPercentage) / 100;
+                        document.getElementById('discount-value').value = this.discountValue.toFixed(2);
+                    }
                     this.calculateTotals();
                 });
 
                 document.getElementById('discount-value')?.addEventListener('input', (e) => {
                     this.discountValue = parseFloat(e.target.value) || 0;
+                    // Auto-calculate discount percentage from value
+                    if (this.subtotal > 0) {
+                        this.discountPercentage = (this.discountValue / this.subtotal) * 100;
+                        document.getElementById('discount-percentage').value = this.discountPercentage.toFixed(2);
+                    }
                     this.calculateTotals();
                 });
 
                 document.getElementById('additional-percentage')?.addEventListener('input', (e) => {
                     this.additionalPercentage = parseFloat(e.target.value) || 0;
+                    // Auto-calculate additional value from percentage
+                    const afterDiscount = this.subtotal - this.discountValue;
+                    if (afterDiscount > 0) {
+                        this.additionalValue = (afterDiscount * this.additionalPercentage) / 100;
+                        document.getElementById('additional-value').value = this.additionalValue.toFixed(2);
+                    }
                     this.calculateTotals();
                 });
 
                 document.getElementById('additional-value')?.addEventListener('input', (e) => {
                     this.additionalValue = parseFloat(e.target.value) || 0;
+                    // Auto-calculate additional percentage from value
+                    const afterDiscount = this.subtotal - this.discountValue;
+                    if (afterDiscount > 0) {
+                        this.additionalPercentage = (this.additionalValue / afterDiscount) * 100;
+                        document.getElementById('additional-percentage').value = this.additionalPercentage.toFixed(2);
+                    }
                     this.calculateTotals();
                 });
 
@@ -616,7 +639,25 @@
                     const th = document.createElement('th');
                     th.className = 'font-bold fw-bold text-center';
                     th.style.fontSize = '0.8rem';
-                    th.textContent = this.allColumns[col] || col;
+                    
+                    // Special handling for discount column - add toggle button
+                    if (col === 'discount') {
+                        const discountLabel = this.allColumns[col] || col;
+                        const typeLabel = this.itemDiscountType === 'percentage' ? '%' : '{{ __("Value") }}';
+                        th.innerHTML = `
+                            ${discountLabel}
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-primary ms-1" 
+                                    style="font-size: 0.65rem; padding: 1px 6px;"
+                                    onclick="window.InvoiceApp.toggleDiscountType()"
+                                    title="{{ __('Toggle between percentage and value') }}">
+                                ${typeLabel}
+                            </button>
+                        `;
+                    } else {
+                        th.textContent = this.allColumns[col] || col;
+                    }
+                    
                     thead.appendChild(th);
                 });
 
@@ -1002,6 +1043,7 @@
                     price: parseFloat(item.price) || 0,
                     item_price: parseFloat(item.price) || 0,
                     discount: 0,
+                    discount_type: this.itemDiscountType, // Save current discount type with item
                     sub_value: parseFloat(item.price) || 0,
                     batch_number: '',
                     expiry_date: null,
@@ -1345,9 +1387,18 @@
                 const price = parseFloat(item.price) || 0;
                 const discount = parseFloat(item.discount) || 0;
 
-                // Calculate sub_value: (quantity * price) - (quantity * price * discount / 100)
+                // Calculate sub_value based on discount type
                 const subtotal = quantity * price;
-                const discountAmount = (subtotal * discount) / 100;
+                let discountAmount = 0;
+                
+                if (this.itemDiscountType === 'percentage') {
+                    // Discount is percentage
+                    discountAmount = (subtotal * discount) / 100;
+                } else {
+                    // Discount is fixed value
+                    discountAmount = discount;
+                }
+                
                 item.sub_value = parseFloat((subtotal - discountAmount).toFixed(2));
 
                 // Update display
@@ -1447,6 +1498,22 @@
                         remainingEl.classList.add('text-success');
                     }
                 }
+            },
+
+            // Toggle discount type between percentage and value
+            toggleDiscountType() {
+                // Toggle between 'percentage' and 'value'
+                this.itemDiscountType = this.itemDiscountType === 'percentage' ? 'value' : 'percentage';
+                
+                // Update table header to show new type
+                this.updateTableHeaders();
+                
+                // Recalculate all items with new discount type
+                this.invoiceItems.forEach((item, index) => {
+                    this.calculateItemTotal(index);
+                });
+                
+                console.log(`✅ Discount type changed to: ${this.itemDiscountType}`);
             },
 
             // Remove item
@@ -1798,7 +1865,18 @@
                         if (data.success && data.price !== null) {
                             console.log(`✅ Updated price for item ${item.item_id}: ${data.price}`);
                             item.price = parseFloat(data.price);
-                            item.sub_value = item.quantity * item.price * (1 - item.discount / 100);
+                            
+                            // Calculate sub_value using the same logic as calculateItemTotal
+                            const subtotal = item.quantity * item.price;
+                            let discountAmount = 0;
+                            
+                            if (this.itemDiscountType === 'percentage') {
+                                discountAmount = (subtotal * item.discount) / 100;
+                            } else {
+                                discountAmount = item.discount;
+                            }
+                            
+                            item.sub_value = subtotal - discountAmount;
 
                             // Update display
                             this.renderItems();
@@ -1871,7 +1949,7 @@
 
                 this.invoiceItems.forEach((item, index) => {
                     // Create hidden inputs for each item field
-                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount', 'additional',
+                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount', 'discount_type', 'additional',
                         'sub_value', 'batch_number', 'expiry_date', 'notes'
                     ];
                     fields.forEach(field => {
