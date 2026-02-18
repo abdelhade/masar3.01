@@ -59,7 +59,7 @@
                     </small>
 
                     <small class="me-3">
-                        <button type="button" class="btn btn-primary btn-sm " onclick="window.print()">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="window.InvoiceApp.printInvoice()" id="print-invoice-btn">
                             <i class="fas fa-print me-2"></i>
                             {{ __('طباعة') }}
                         </button>

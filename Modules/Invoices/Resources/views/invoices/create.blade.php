@@ -996,6 +996,7 @@
                     item_id: item.id,
                     name: item.name,
                     code: item.code || '',
+                    barcode: item.barcode || '',
                     unit_id: defaultUnitId,
                     quantity: 1,
                     price: parseFloat(item.price) || 0,
@@ -1344,12 +1345,15 @@
                 const price = parseFloat(item.price) || 0;
                 const discount = parseFloat(item.discount) || 0;
 
-                item.sub_value = parseFloat(((quantity * price) - discount).toFixed(2));
+                // Calculate sub_value: (quantity * price) - (quantity * price * discount / 100)
+                const subtotal = quantity * price;
+                const discountAmount = (subtotal * discount) / 100;
+                item.sub_value = parseFloat((subtotal - discountAmount).toFixed(2));
 
                 // Update display
                 const subValueInput = document.getElementById('sub-value-' + index);
                 if (subValueInput) {
-                    subValueInput.value = item.sub_value;
+                    subValueInput.value = item.sub_value.toFixed(2);
                 }
 
                 this.calculateTotals();
@@ -1748,9 +1752,9 @@
                 priceListSelect.addEventListener('change', function(e) {
                     const newPriceListId = e.target.value;
                     console.log('🔵 Price list changed to:', newPriceListId);
-                    
+
                     self.selectedPriceListId = newPriceListId;
-                    
+
                     // Update prices for all items in the invoice
                     self.updateAllItemPrices();
                 });
@@ -1766,7 +1770,7 @@
                 }
 
                 console.log('🔄 Updating prices for all items...');
-                
+
                 // Update each item's price
                 this.invoiceItems.forEach((item, index) => {
                     this.updateItemPrice(item, index);
@@ -1787,7 +1791,7 @@
 
                 // Fetch price from API
                 const url = `/api/invoices/items/${item.item_id}/price?price_list_id=${this.selectedPriceListId}&unit_id=${item.unit_id}`;
-                
+
                 fetch(url)
                     .then(response => response.json())
                     .then(data => {
@@ -1795,7 +1799,7 @@
                             console.log(`✅ Updated price for item ${item.item_id}: ${data.price}`);
                             item.price = parseFloat(data.price);
                             item.sub_value = item.quantity * item.price * (1 - item.discount / 100);
-                            
+
                             // Update display
                             this.renderItems();
                             this.calculateTotals();
@@ -1809,8 +1813,8 @@
             },
 
             // Save invoice - NO VALIDATION, just send everything
-            submitForm() {
-                console.log('🔵 Submitting form...');
+            submitForm(printAfterSave = false) {
+                console.log('🔵 Submitting form...', { printAfterSave });
 
                 if (!this.validateForm()) {
                     return;
@@ -1881,8 +1885,94 @@
 
                 console.log('✅ Form filled, submitting...');
 
-                // ✅ Submit the form
-                document.getElementById('invoice-form').submit();
+                // If print after save, submit via AJAX
+                if (printAfterSave) {
+                    this.submitFormAjax();
+                } else {
+                    // ✅ Submit the form normally
+                    document.getElementById('invoice-form').submit();
+                }
+            },
+
+            /**
+             * Submit form via AJAX and print after success
+             */
+            submitFormAjax() {
+                const form = document.getElementById('invoice-form');
+                const formData = new FormData(form);
+
+                // Show loading
+                Swal.fire({
+                    title: 'جاري الحفظ...',
+                    text: 'يرجى الانتظار',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+
+                    if (data.success && data.operation_id) {
+                        console.log('✅ Invoice saved successfully:', data);
+
+                        Swal.fire({
+                            title: 'تم الحفظ بنجاح!',
+                            text: 'سيتم فتح صفحة الطباعة',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Open print page in new window
+                            const printUrl = data.print_url || `/invoice/print/${data.operation_id}`;
+                            window.open(printUrl, '_blank');
+
+                            // Optionally reload the page to show the saved invoice
+                            if (this.settings.new_after_save) {
+                                window.location.reload();
+                            }
+                        });
+                    } else {
+                        Swal.fire('خطأ', data.message || 'حدث خطأ أثناء الحفظ', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    console.error('❌ Error saving invoice:', error);
+                    Swal.fire('خطأ', 'حدث خطأ أثناء الحفظ', 'error');
+                });
+            },
+
+            /**
+             * Print invoice
+             * Save invoice first then print
+             */
+            printInvoice() {
+                console.log('🖨️ Print invoice clicked');
+
+                // Check if we have items
+                if (this.invoiceItems.length === 0) {
+                    Swal.fire('خطأ', 'لا يمكن طباعة فاتورة بدون أصناف.', 'error');
+                    return;
+                }
+
+                // Validate form
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                // Save and print directly without confirmation
+                this.submitForm(true);
             },
 
             // ✅ Validate form before submission
