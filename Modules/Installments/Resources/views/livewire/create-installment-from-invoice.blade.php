@@ -17,8 +17,9 @@
                             <div class="col-md-6 mb-3">
                                 <label for="accHeadId" class="form-label">{{ __('Client (Account)') }} <span
                                         class="text-danger">*</span></label>
-                                <select wire:model.live="accHeadId" id="accHeadId"
-                                    class="form-select bg-light @error('accHeadId') is-invalid @enderror" disabled>
+                                <select wire:model="accHeadId" id="accHeadId"
+                                    class="form-select bg-light @error('accHeadId') is-invalid @enderror"
+                                    style="pointer-events: none;">
                                     <option value="">{{ __('Select Client') }}</option>
                                     @foreach ($clients as $client)
                                         <option value="{{ $client->id }}">{{ $client->code }} - {{ $client->aname }}
@@ -173,10 +174,11 @@
 
 @push('scripts')
     <script>
-        (function() {
-            let installmentModalInstance = null;
-            let modalComponentId = null;
+        // Define modal instance globally so it can be accessed by Livewire events
+        let installmentModalInstance = null;
+        let modalComponentId = null;
 
+        (function() {
             function initModal() {
                 const modalElement = document.getElementById('installmentModal');
                 if (modalElement) {
@@ -259,6 +261,8 @@
                             installmentModalInstance.show();
                         }
                     }, 100);
+                }).catch(err => {
+                    console.error('❌ Error calling updateFromInvoice:', err);
                 });
             });
 

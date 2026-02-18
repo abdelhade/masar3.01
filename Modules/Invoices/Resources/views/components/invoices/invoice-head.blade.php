@@ -45,8 +45,9 @@
 
                     <small class="me-3">
                         @if (setting('enable_installment_from_invoice') && $type == 10)
-                            <button type="button" class="btn btn-md btn-info"
-                                style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                            <button type="button" id="installment-button" class="btn btn-md btn-info"
+                                style="font-size: 0.8rem; padding: 0.25rem 0.5rem;"
+                                onclick="window.InvoiceApp.openInstallmentModal()">
                                 <i class="las la-calendar-check"></i> {{ __('Installment') }}
                             </button>
                         @endif

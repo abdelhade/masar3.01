@@ -258,6 +258,14 @@
             'cashAccounts' => $cashAccounts,
         ])
     </div>
+
+    {{-- Installment Modal --}}
+    @if (setting('enable_installment_from_invoice') && $type == 10)
+        @livewire('installments::create-installment-from-invoice', [
+            'invoiceTotal' => 0,
+            'clientAccountId' => null,
+        ])
+    @endif
 @endsection
 
 @section('script')
@@ -317,7 +325,8 @@
             invoiceItems: [],
             allItems: [],
             fuse: null,
-            itemDiscountType: localStorage.getItem('itemDiscountType') || 'percentage', // Load from localStorage or default to 'percentage'
+            itemDiscountType: localStorage.getItem('itemDiscountType') ||
+                'percentage', // Load from localStorage or default to 'percentage'
 
             // Totals
             subtotal: 0,
@@ -557,7 +566,8 @@
                     // Auto-calculate discount percentage from value
                     if (this.subtotal > 0) {
                         this.discountPercentage = (this.discountValue / this.subtotal) * 100;
-                        document.getElementById('discount-percentage').value = this.discountPercentage.toFixed(2);
+                        document.getElementById('discount-percentage').value = this.discountPercentage.toFixed(
+                            2);
                     }
                     this.calculateTotals();
                 });
@@ -579,7 +589,8 @@
                     const afterDiscount = this.subtotal - this.discountValue;
                     if (afterDiscount > 0) {
                         this.additionalPercentage = (this.additionalValue / afterDiscount) * 100;
-                        document.getElementById('additional-percentage').value = this.additionalPercentage.toFixed(2);
+                        document.getElementById('additional-percentage').value = this.additionalPercentage
+                            .toFixed(2);
                     }
                     this.calculateTotals();
                 });
@@ -623,8 +634,28 @@
                     if (this.lastSelectedIndex !== undefined) {
                         this.showItemDetails(this.lastSelectedIndex);
                     }
+
+                    // Update installment modal data if it exists
+                    this.updateInstallmentModalData();
                 });
 
+            },
+
+            /**
+             * Update installment modal data when client or total changes
+             */
+            updateInstallmentModalData() {
+                const acc1Id = $('#acc1-id').val();
+
+                if (!acc1Id || acc1Id === '' || acc1Id === 'null') {
+                    return;
+                }
+
+                // Dispatch Livewire event to update modal data (without opening it)
+                Livewire.dispatch('client-changed-in-invoice', {
+                    invoiceTotal: this.totalAfterAdditional,
+                    clientAccountId: acc1Id
+                });
             },
 
             // Update table headers based on visible columns
@@ -640,15 +671,15 @@
                     const th = document.createElement('th');
                     th.className = 'font-bold fw-bold text-center';
                     th.style.fontSize = '0.8rem';
-                    
+
                     // Special handling for discount column - add toggle button
                     if (col === 'discount') {
                         const discountLabel = this.allColumns[col] || col;
-                        const typeLabel = this.itemDiscountType === 'percentage' ? '%' : '{{ __("Value") }}';
+                        const typeLabel = this.itemDiscountType === 'percentage' ? '%' : '{{ __('Value') }}';
                         th.innerHTML = `
                             ${discountLabel}
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-primary ms-1" 
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary ms-1"
                                     style="font-size: 0.65rem; padding: 1px 6px;"
                                     onclick="window.InvoiceApp.toggleDiscountType()"
                                     title="{{ __('Toggle between percentage and value') }}">
@@ -658,7 +689,7 @@
                     } else {
                         th.textContent = this.allColumns[col] || col;
                     }
-                    
+
                     thead.appendChild(th);
                 });
 
@@ -1192,10 +1223,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                                                ${unit.name}
-                                                                                                                                                                                                                                                                                            </option>
-                                                                                                                                                                                                                                                                                        `).join('')}
+                                                                                                                                                                                                                                                                                                    <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                                        ${unit.name}
+                                                                                                                                                                                                                                                                                                    </option>
+                                                                                                                                                                                                                                                                                                `).join('')}
                                 </select>
                             </td>`;
 
@@ -1391,7 +1422,7 @@
                 // Calculate sub_value based on discount type
                 const subtotal = quantity * price;
                 let discountAmount = 0;
-                
+
                 if (this.itemDiscountType === 'percentage') {
                     // Discount is percentage
                     discountAmount = (subtotal * discount) / 100;
@@ -1399,7 +1430,7 @@
                     // Discount is fixed value
                     discountAmount = discount;
                 }
-                
+
                 item.sub_value = parseFloat((subtotal - discountAmount).toFixed(2));
 
                 // Update display
@@ -1461,6 +1492,9 @@
 
                 // Update balance after invoice
                 this.calculateBalance();
+
+                // Update installment modal data if client is selected
+                this.updateInstallmentModalData();
             },
 
             // Update totals display
@@ -1505,18 +1539,18 @@
             toggleDiscountType() {
                 // Toggle between 'percentage' and 'value'
                 this.itemDiscountType = this.itemDiscountType === 'percentage' ? 'value' : 'percentage';
-                
+
                 // Save to localStorage to persist across page refreshes
                 localStorage.setItem('itemDiscountType', this.itemDiscountType);
-                
+
                 // Update table header to show new type
                 this.updateTableHeaders();
-                
+
                 // Recalculate all items with new discount type
                 this.invoiceItems.forEach((item, index) => {
                     this.calculateItemTotal(index);
                 });
-                
+
                 console.log(`✅ Discount type changed to: ${this.itemDiscountType} (saved to localStorage)`);
             },
 
@@ -1861,7 +1895,8 @@
                 }
 
                 // Fetch price from API
-                const url = `/api/invoices/items/${item.item_id}/price?price_list_id=${this.selectedPriceListId}&unit_id=${item.unit_id}`;
+                const url =
+                    `/api/invoices/items/${item.item_id}/price?price_list_id=${this.selectedPriceListId}&unit_id=${item.unit_id}`;
 
                 fetch(url)
                     .then(response => response.json())
@@ -1869,24 +1904,26 @@
                         if (data.success && data.price !== null) {
                             console.log(`✅ Updated price for item ${item.item_id}: ${data.price}`);
                             item.price = parseFloat(data.price);
-                            
+
                             // Calculate sub_value using the same logic as calculateItemTotal
                             const subtotal = item.quantity * item.price;
                             let discountAmount = 0;
-                            
+
                             if (this.itemDiscountType === 'percentage') {
                                 discountAmount = (subtotal * item.discount) / 100;
                             } else {
                                 discountAmount = item.discount;
                             }
-                            
+
                             item.sub_value = subtotal - discountAmount;
 
                             // Update display
                             this.renderItems();
                             this.calculateTotals();
                         } else {
-                            console.log(`⚠️ No price found for item ${item.item_id} in price list ${this.selectedPriceListId}`);
+                            console.log(
+                                `⚠️ No price found for item ${item.item_id} in price list ${this.selectedPriceListId}`
+                            );
                         }
                     })
                     .catch(error => {
@@ -1896,7 +1933,6 @@
 
             // Save invoice - NO VALIDATION, just send everything
             submitForm(printAfterSave = false) {
-                console.log('🔵 Submitting form...', { printAfterSave });
 
                 if (!this.validateForm()) {
                     return;
@@ -1953,7 +1989,8 @@
 
                 this.invoiceItems.forEach((item, index) => {
                     // Create hidden inputs for each item field
-                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount', 'discount_type', 'additional',
+                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount', 'discount_type',
+                        'additional',
                         'sub_value', 'batch_number', 'expiry_date', 'notes'
                     ];
                     fields.forEach(field => {
@@ -1994,45 +2031,45 @@
                 });
 
                 fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.close();
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
 
-                    if (data.success && data.operation_id) {
-                        console.log('✅ Invoice saved successfully:', data);
+                        if (data.success && data.operation_id) {
+                            console.log('✅ Invoice saved successfully:', data);
 
-                        Swal.fire({
-                            title: 'تم الحفظ بنجاح!',
-                            text: 'سيتم فتح صفحة الطباعة',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            // Open print page in new window
-                            const printUrl = data.print_url || `/invoice/print/${data.operation_id}`;
-                            window.open(printUrl, '_blank');
+                            Swal.fire({
+                                title: 'تم الحفظ بنجاح!',
+                                text: 'سيتم فتح صفحة الطباعة',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Open print page in new window
+                                const printUrl = data.print_url || `/invoice/print/${data.operation_id}`;
+                                window.open(printUrl, '_blank');
 
-                            // Optionally reload the page to show the saved invoice
-                            if (this.settings.new_after_save) {
-                                window.location.reload();
-                            }
-                        });
-                    } else {
-                        Swal.fire('خطأ', data.message || 'حدث خطأ أثناء الحفظ', 'error');
-                    }
-                })
-                .catch(error => {
-                    Swal.close();
-                    console.error('❌ Error saving invoice:', error);
-                    Swal.fire('خطأ', 'حدث خطأ أثناء الحفظ', 'error');
-                });
+                                // Optionally reload the page to show the saved invoice
+                                if (this.settings.new_after_save) {
+                                    window.location.reload();
+                                }
+                            });
+                        } else {
+                            Swal.fire('خطأ', data.message || 'حدث خطأ أثناء الحفظ', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.close();
+                        console.error('❌ Error saving invoice:', error);
+                        Swal.fire('خطأ', 'حدث خطأ أثناء الحفظ', 'error');
+                    });
             },
 
             /**
@@ -2055,6 +2092,32 @@
 
                 // Save and print directly without confirmation
                 this.submitForm(true);
+            },
+
+            /**
+             * Open installment modal
+             */
+            openInstallmentModal() {
+                // Get current client account ID
+                const acc1Id = $('#acc1-id').val();
+
+                if (!acc1Id || acc1Id === '' || acc1Id === 'null') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'تحذير',
+                        text: 'يرجى اختيار العميل في الفاتورة أولاً',
+                        confirmButtonText: 'حسناً'
+                    });
+                    return;
+                }
+
+                // Use Livewire.dispatch instead of window event
+                const eventData = {
+                    invoiceTotal: this.totalAfterAdditional,
+                    clientAccountId: acc1Id
+                };
+                // Dispatch Livewire event (this will be caught by the modal)
+                Livewire.dispatch('update-installment-data', eventData);
             },
 
             // ✅ Validate form before submission
