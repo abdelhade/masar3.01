@@ -118,6 +118,41 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ __('Subtotal') }}:</label>
+                                <div class="form-control-static">{{ number_format($invoice->fat_val ?? 0, 2) }}</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ __('Discount') }}:</label>
+                                <div class="form-control-static">{{ number_format($invoice->fat_dis ?? 0, 2) }}</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ __('Additional') }}:</label>
+                                <div class="form-control-static">{{ number_format($invoice->fat_add ?? 0, 2) }}</div>
+                            </div>
+
+                            @if(isVatEnabled())
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ __('VAT') }}:</label>
+                                <div class="form-control-static">{{ number_format($invoice->vat_value ?? 0, 2) }}</div>
+                            </div>
+                            @endif
+                        </div>
+
+                        @if(isWithholdingTaxEnabled())
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ __('Withholding Tax') }}:</label>
+                                <div class="form-control-static">{{ number_format($invoice->withholding_tax_value ?? 0, 2) }}</div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">{{ __('Total Amount') }}:</label>
                                 <div class="form-control-static">
                                     <h4 class="mb-0">{{ number_format($invoice->fat_net ?? $invoice->pro_value ?? 0, 2) }}</h4>

@@ -83,7 +83,7 @@ class InvoiceFormController extends Controller
         // Get cash accounts
         $cashAccounts = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('acc_type', 5) // Assuming acc_type 5 is cash
+            ->where('code', 'like', '1102%')
             ->select('id', 'aname')
             ->get();
 
@@ -99,7 +99,7 @@ class InvoiceFormController extends Controller
         // Get invoice settings and user permissions
         $isSales = in_array($type, [10, 12, 14, 16, 19, 22]);
         $isPurchase = in_array($type, [11, 13, 15, 17, 20, 23, 24, 25]);
-        
+
         $defaultAcc1Id = null;
         if ($isSales) {
             $defaultAcc1Id = 61; // العميل النقدي
@@ -116,7 +116,7 @@ class InvoiceFormController extends Controller
             'multi_currency_enabled' => setting('multi_currency_enabled', false),
             'allow_edit_transaction_date' => setting('allow_edit_transaction_date', true),
             'use_system_date_for_transactions' => setting('use_system_date_for_transactions', true),
-            
+
             // Invoice Settings
             'prevent_negative_invoice' => setting('prevent_negative_invoice', true),
             'new_after_save' => setting('new_after_save', true),
@@ -135,31 +135,31 @@ class InvoiceFormController extends Controller
             'show_due_date_in_invoices' => setting('show_due_date_in_invoices', true),
             'default_quantity_greater_than_zero' => setting('default_quantity_greater_than_zero', true),
             'allow_hide_items_by_company' => setting('allow_hide_items_by_company', true),
-            
+
             // Display Settings
             'invoice_show_item_details' => setting('invoice_show_item_details', true),
             'invoice_show_recommended_items' => setting('invoice_show_recommended_items', false),
             'show_print_mode_switch' => setting('show_print_mode_switch', true),
-            
+
             // Account Settings (for invoice logic)
             'allowed_discount_account' => setting('allowed_discount_account', null),
             'employee_adding_account' => setting('employee_adding_account', null),
             'employee_salary_account' => setting('employee_salary_account', null),
             'employee_discount_account' => setting('employee_discount_account', null),
-            
+
             // Tax Settings
             'is_vat_enabled' => isVatEnabled(),
             'vat_level' => getVatLevel(),
             'is_withholding_tax_enabled' => isWithholdingTaxEnabled(),
             'withholding_tax_level' => getWithholdingTaxLevel(),
-            
+
             // Expiry Date Settings
             'expiry_mode' => [
                 'disabled' => setting('expiry_mode_disabled', false),
                 'nearest_first' => setting('expiry_mode_nearest_first', true),
                 'show_all' => setting('expiry_mode_show_all', false),
             ],
-            
+
             // Permissions
             'permissions' => [
                 'prevent_transactions_without_stock' => auth()->user()->can('prevent_transactions_without_stock'),

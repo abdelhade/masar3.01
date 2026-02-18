@@ -200,7 +200,10 @@
                                         style="font-size: 0.75rem; height: 1.8em; padding: 2px 4px;" value="0">
                                 </div>
                             </div>
+                        @endif
 
+                        {{-- Withholding Tax --}}
+                        @if (isWithholdingTaxEnabled())
                             <div class="row mb-1 align-items-center">
                                 <div class="col-2 text-right font-weight-bold">
                                     <label style="font-size: 0.75rem;">{{ __('Withholding Tax %') }}</label>

@@ -252,8 +252,10 @@
     <div class="invoice-footer-container">
         @include('invoices::components.invoices.invoice-footer', [
             'type' => $type,
-            'vatPercentage' => isVatEnabled() ? setting('vat_percentage', 15) : 0,
-            'withholdingTaxPercentage' => setting('withholding_tax_percentage', 0),
+            'vatPercentage' => isVatEnabled() ? setting('default_vat_percentage', 0) : 0,
+            'withholdingTaxPercentage' => isWithholdingTaxEnabled()
+                ? setting('default_withholding_tax_percentage', 0)
+                : 0,
             'showBalance' => setting('show_balance', '1') === '1',
             'cashAccounts' => $cashAccounts,
         ])
@@ -274,8 +276,10 @@
         $invoiceConfig = [
             'type' => $type,
             'branchId' => $branchId ?? null,
-            'vatPercentage' => isVatEnabled() ? setting('vat_percentage', 15) : 0,
-            'withholdingTaxPercentage' => setting('withholding_tax_percentage', 0),
+            'vatPercentage' => isVatEnabled() ? setting('default_vat_percentage', 0) : 0,
+            'withholdingTaxPercentage' => isWithholdingTaxEnabled()
+                ? setting('default_withholding_tax_percentage', 0)
+                : 0,
             'storeUrl' => route('invoices.store'),
             'userSettings' => $userSettings ?? [],
             'defaultAcc1Id' => $defaultAcc1Id ?? null,
@@ -1223,10 +1227,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                                                                    <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                                                        ${unit.name}
-                                                                                                                                                                                                                                                                                                    </option>
-                                                                                                                                                                                                                                                                                                `).join('')}
+                                                                                                                                                                                                                                                                                                        <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                                            ${unit.name}
+                                                                                                                                                                                                                                                                                                        </option>
+                                                                                                                                                                                                                                                                                                    `).join('')}
                                 </select>
                             </td>`;
 
@@ -2116,8 +2120,13 @@
                     invoiceTotal: this.totalAfterAdditional,
                     clientAccountId: acc1Id
                 };
-                // Dispatch Livewire event (this will be caught by the modal)
-                Livewire.dispatch('update-installment-data', eventData);
+
+
+                // Dispatch Livewire event to update modal data AND open it
+                Livewire.dispatch('update-installment-data', {
+                    invoiceTotal: this.totalAfterAdditional,
+                    clientAccountId: acc1Id
+                });
             },
 
             // ✅ Validate form before submission

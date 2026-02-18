@@ -411,18 +411,22 @@
                             + {{ number_format($additional_value ?? 0, 2) }} جنيه
                         </span>
                     </div>
+                    @if(isVatEnabled())
                     <div class="total-row">
-                        <span class="total-label">ضريبة القيمة المضافة:</span>
+                        <span class="total-label">ضريبة القيمة المضافة ({{ setting('default_vat_percentage', 0) }}%):</span>
                         <span class="total-value">
                             + {{ number_format($vat_value ?? 0, 2) }} جنيه
                         </span>
                     </div>
+                    @endif
+                    @if(isWithholdingTaxEnabled())
                     <div class="total-row">
-                        <span class="total-label">ضريبة الاستقطاع:</span>
+                        <span class="total-label">الخصم من المنبع ({{ setting('default_withholding_tax_percentage', 0) }}%):</span>
                         <span class="total-value">
                             - {{ number_format($withholding_tax_value ?? 0, 2) }} جنيه
                         </span>
                     </div>
+                    @endif
                 </div>
 
                 <div class="right-totals">
