@@ -60,7 +60,8 @@
                     </small>
 
                     <small class="me-3">
-                        <button type="button" class="btn btn-primary btn-sm" onclick="window.InvoiceApp.printInvoice()" id="print-invoice-btn">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="window.InvoiceApp.printInvoice()"
+                            id="print-invoice-btn">
                             <i class="fas fa-print me-2"></i>
                             {{ __('طباعة') }}
                         </button>
@@ -148,21 +149,23 @@
             </div>
 
             {{-- الفئة السعرية (للمبيعات فقط) --}}
-            @if (in_array($type, [10, 12, 14, 16, 19, 22]))
-                <div class="col-md-1">
-                    <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">
-                        {{ __('Price List') }}
-                        <span class="text-danger">*</span>
-                    </label>
-                    <select id="price-list-id" class="form-select form-select-sm">
-                        <option value="">{{ __('اختر الفئة السعرية') }}</option>
-                        @foreach ($priceLists ?? [] as $priceList)
-                            <option value="{{ $priceList->id }}" {{ $loop->first ? 'selected' : '' }}>
-                                {{ $priceList->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+            @if (setting('invoice_select_price_type'))
+                @if (in_array($type, [10, 12, 14, 16, 19, 22]))
+                    <div class="col-md-1">
+                        <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">
+                            {{ __('Price List') }}
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select id="price-list-id" class="form-select form-select-sm">
+                            <option value="">{{ __('اختر الفئة السعرية') }}</option>
+                            @foreach ($priceLists ?? [] as $priceList)
+                                <option value="{{ $priceList->id }}" {{ $loop->first ? 'selected' : '' }}>
+                                    {{ $priceList->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
             @endif
             {{-- التاريخ --}}
             <div class="col-md-1">
@@ -174,13 +177,15 @@
             {{-- رقم الفاتورة --}}
             <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('رقم الفاتورة') }}</label>
-                <input type="text" id="pro-id" class="form-control form-control-sm" readonly placeholder="تلقائي">
+                <input type="text" id="pro-id" class="form-control form-control-sm" readonly
+                    placeholder="تلقائي">
             </div>
 
             @if ($type != 21)
                 {{-- S.N --}}
                 <div class="col-md-1">
-                    <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('S.N') }}</label>
+                    <label class="form-label mb-1 fw-semibold"
+                        style="font-size: 0.85rem;">{{ __('S.N') }}</label>
                     <input type="text" id="serial-number" class="form-control form-control-sm">
                 </div>
             @endif

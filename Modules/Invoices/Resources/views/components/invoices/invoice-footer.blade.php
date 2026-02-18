@@ -178,7 +178,7 @@
                         </div>
 
                         {{-- VAT --}}
-                        @if (isVatEnabled())
+                        @if (setting('enable_vat_fields') == '1' && setting('vat_level') != 'disabled')
                             <div class="row mb-1 align-items-center">
                                 <div class="col-2 text-right font-weight-bold">
                                     <label style="font-size: 0.75rem;">{{ __('VAT %') }}</label>
@@ -203,7 +203,7 @@
                         @endif
 
                         {{-- Withholding Tax --}}
-                        @if (isWithholdingTaxEnabled())
+                        @if (setting('enable_vat_fields') == '1' && setting('withholding_tax_level') != 'disabled')
                             <div class="row mb-1 align-items-center">
                                 <div class="col-2 text-right font-weight-bold">
                                     <label style="font-size: 0.75rem;">{{ __('Withholding Tax %') }}</label>

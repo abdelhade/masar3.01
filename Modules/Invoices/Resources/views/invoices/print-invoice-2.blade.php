@@ -259,7 +259,7 @@
                 <div class="info-row">
                     <span class="info-label">رقم الفاتورة:</span>
                     <span class="info-value">
-                        <span>{{ $pro_id ?? 'غير محدد' }}</span>
+                        <span>{{ $pro_id && $pro_id > 0 ? $pro_id : ($operation->id ?? 'غير محدد') }}</span>
                     </span>
                 </div>
                 <div class="info-row">

@@ -134,18 +134,18 @@
                                 <div class="form-control-static">{{ number_format($invoice->fat_add ?? 0, 2) }}</div>
                             </div>
 
-                            @if(isVatEnabled())
+                            @if(setting('enable_vat_fields') == '1' && setting('vat_level') != 'disabled')
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ __('VAT') }}:</label>
+                                <label class="form-label fw-bold">{{ __('VAT') }} ({{ setting('default_vat_percentage', 0) }}%):</label>
                                 <div class="form-control-static">{{ number_format($invoice->vat_value ?? 0, 2) }}</div>
                             </div>
                             @endif
                         </div>
 
-                        @if(isWithholdingTaxEnabled())
+                        @if(setting('enable_vat_fields') == '1' && setting('withholding_tax_level') != 'disabled')
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ __('Withholding Tax') }}:</label>
+                                <label class="form-label fw-bold">{{ __('Withholding Tax') }} ({{ setting('default_withholding_tax_percentage', 0) }}%):</label>
                                 <div class="form-control-static">{{ number_format($invoice->withholding_tax_value ?? 0, 2) }}</div>
                             </div>
                         </div>
