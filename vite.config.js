@@ -10,6 +10,7 @@ export default defineConfig({
             input: [
                 'resources/css/design-system.css',
                 'resources/css/themes/bootstrap-gradient-theme.css',
+                'resources/css/themes/dark-mode-fixes.css',
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/chart-setup.js',

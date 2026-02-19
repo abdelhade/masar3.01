@@ -14,6 +14,10 @@ class JournalDetail extends Model
 
     public $timestamps = false;
 
+    protected $casts = [
+        'crtime' => 'datetime',
+    ];
+
     protected static function booted()
     {
         static::addGlobalScope(new \App\Models\Scopes\BranchScope);
