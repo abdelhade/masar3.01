@@ -1587,6 +1587,9 @@
 
                 // Update installment modal data if client is selected
                 this.updateInstallmentModalData();
+
+                // ✅ Handle cash account auto-fill when total changes
+                this.handleCashAccountReceivedAmount();
             },
 
             // Update totals display
@@ -1729,6 +1732,8 @@
                     this.currentBalance = 0;
                     this.calculateBalance();
                     this.clearRecommendedItems();
+                    // Clear cash account auto-fill
+                    this.handleCashAccountReceivedAmount();
                     return;
                 }
 
@@ -1751,6 +1756,9 @@
                         } else {
                             console.error('❌ Element current-balance-header not found!');
                         }
+
+                        // ✅ Handle cash account auto-fill AFTER balance is fetched
+                        this.handleCashAccountReceivedAmount();
                     })
                     .catch(error => {
                         console.error('❌ Error fetching account balance:', error);
@@ -1877,6 +1885,52 @@
                         'badge bg-success';
                 } else {
                     console.error('❌ Element balance-after-header not found!');
+                }
+            },
+
+            /**
+             * Handle cash account auto-fill for received amount
+             * Cash Customer ID: 61 (العميل النقدي)
+             * Cash Supplier ID: 64 (المورد النقدي)
+             */
+            handleCashAccountReceivedAmount() {
+                const acc1Id = $('#acc1-id').val();
+                const receivedInput = document.getElementById('received-from-client');
+                
+                if (!receivedInput) {
+                    return;
+                }
+
+                // Check if account is cash account (61 or 64)
+                const isCashAccount = (acc1Id === '61' || acc1Id === '64');
+
+                if (isCashAccount) {
+                    // Auto-fill with total and make readonly
+                    receivedInput.value = this.totalAfterAdditional.toFixed(2);
+                    this.receivedFromClient = this.totalAfterAdditional;
+                    receivedInput.readOnly = true;
+                    receivedInput.style.backgroundColor = '#e9ecef'; // Gray background
+                    receivedInput.style.cursor = 'not-allowed';
+                } else {
+                    // Make editable for other accounts
+                    receivedInput.readOnly = false;
+                    receivedInput.style.backgroundColor = '';
+                    receivedInput.style.cursor = '';
+                }
+
+                // Recalculate remaining
+                this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(2));
+                
+                // Update display
+                const remainingDisplay = document.getElementById('display-remaining');
+                if (remainingDisplay) {
+                    remainingDisplay.textContent = this.remaining.toFixed(2);
+                    remainingDisplay.classList.remove('text-danger', 'text-success');
+                    if (this.remaining > 0.01) {
+                        remainingDisplay.classList.add('text-danger');
+                    } else if (this.remaining < -0.01) {
+                        remainingDisplay.classList.add('text-success');
+                    }
                 }
             },
 
