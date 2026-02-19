@@ -55,8 +55,6 @@ class SaveInvoiceService
             throw new \Exception('لا يمكن حفظ الفاتورة بدون أصناف.');
         }
 
-
-
         // ✅ إضافة جديدة: التحقق من تواريخ الصلاحية المنتهية (اختياري)
         $checkExpiredItems = setting('prevent_selling_expired_items', '1') == '1';
 
@@ -94,8 +92,8 @@ class SaveInvoiceService
                 if ($balanceAfterInvoice > $customer->debit_limit) {
                     throw new \Exception(sprintf(
                         'تجاوز العميل حد الائتمان المسموح (الحد: %s، الرصيد بعد الفاتورة: %s)',
-                        number_format((float)$customer->debit_limit, 3),
-                        number_format((float)$balanceAfterInvoice, 3)
+                        number_format((float) $customer->debit_limit, 3),
+                        number_format((float) $balanceAfterInvoice, 3)
                     ));
                 }
             }
@@ -151,7 +149,7 @@ class SaveInvoiceService
                 // ✅ 4. Compare base quantities
                 if (! $allowNegative && $availableQty < $quantityInBaseUnits) {
                     $itemName = Item::find($item['item_id'])->name;
-                    throw new \Exception('الكمية غير متوفرة للصنف: ' . $itemName . ' (المتاح: ' . $availableQty . ')');
+                    throw new \Exception('الكمية غير متوفرة للصنف: '.$itemName.' (المتاح: '.$availableQty.')');
                 }
             }
         }
@@ -167,7 +165,7 @@ class SaveInvoiceService
             $isReceipt = in_array($data->type, [10, 22, 13]);
             $isPayment = in_array($data->type, [11, 12]);
 
-            $currencyId =  $data->currency_id;
+            $currencyId = $data->currency_id;
             $currencyRate = $data->currency_rate;
 
             $operationData = [
@@ -206,7 +204,7 @@ class SaveInvoiceService
                 'currency_rate' => $currencyRate,
                 'acc1_before' => $data->currentBalance ?? 0,
                 'acc1_after' => $data->balanceAfterInvoice ?? 0,
-                'template_id' => $data->selectedTemplateId ?? null,
+                'template_id' => $data->template_id ?? $data->selectedTemplateId ?? null,
                 'currency_id' => $data->currency_id ?? null, // ✅ Save currency ID
                 'currency_rate' => $currencyRate, // ✅ Save currency rate (validated)
             ];
@@ -253,7 +251,7 @@ class SaveInvoiceService
                             $parent->workflow_state,
                             $operation->workflow_state,
                             Auth::id(),
-                            'convert_to_' . $operation->pro_type,
+                            'convert_to_'.$operation->pro_type,
                             $data->branch_id
                         );
 
@@ -279,7 +277,7 @@ class SaveInvoiceService
                                 $root->workflow_state,
                                 $this->getWorkflowStateByType($operation->pro_type),
                                 Auth::id(),
-                                'root_update_to_' . $operation->pro_type,
+                                'root_update_to_'.$operation->pro_type,
                                 $data->branch_id
                             );
                         }
@@ -308,7 +306,6 @@ class SaveInvoiceService
 
             // Calculate detail_value for all items with distributed invoice discounts/additions/taxes
             $calculatedItems = $this->calculateItemDetailValues($items, $invoiceData);
-
 
             // ✅ استخدام syncInvoiceItems بدلاً من الحذف والإضافة
             if ($isEdit && $operationId) {
@@ -405,7 +402,7 @@ class SaveInvoiceService
             return $operation->id;
         } catch (\Exception $e) {
             DB::rollBack();
-            logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
+            logger()->error('خطأ أثناء حفظ الفاتورة: '.$e->getMessage());
             logger()->error($e->getTraceAsString());
 
             throw $e;
@@ -495,7 +492,7 @@ class SaveInvoiceService
             throw $e;
         } catch (\Exception $e) {
 
-            throw new \RuntimeException('Failed to calculate detail values: ' . $e->getMessage(), 0, $e);
+            throw new \RuntimeException('Failed to calculate detail values: '.$e->getMessage(), 0, $e);
         }
     }
 
@@ -856,7 +853,7 @@ class SaveInvoiceService
                     'debit' => $data->discount_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'خصم مسموح به - ' . $data->notes,
+                    'info' => 'خصم مسموح به - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -868,7 +865,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->discount_value,
                     'type' => 1,
-                    'info' => 'خصم مسموح به - ' . $data->notes,
+                    'info' => 'خصم مسموح به - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -881,7 +878,7 @@ class SaveInvoiceService
                     'debit' => $data->discount_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'خصم مسموح به - ' . $data->notes,
+                    'info' => 'خصم مسموح به - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -893,7 +890,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->discount_value,
                     'type' => 1,
-                    'info' => 'خصم مسموح به - ' . $data->notes,
+                    'info' => 'خصم مسموح به - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -916,7 +913,7 @@ class SaveInvoiceService
                     'debit' => $data->discount_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'خصم مكتسب - ' . $data->notes,
+                    'info' => 'خصم مكتسب - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -928,7 +925,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->discount_value,
                     'type' => 1,
-                    'info' => 'خصم مكتسب - ' . $data->notes,
+                    'info' => 'خصم مكتسب - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -948,7 +945,7 @@ class SaveInvoiceService
                     'debit' => $data->additional_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'إضافات - ' . $data->notes,
+                    'info' => 'إضافات - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -960,7 +957,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->additional_value,
                     'type' => 1,
-                    'info' => 'إضافات - ' . $data->notes,
+                    'info' => 'إضافات - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -981,7 +978,7 @@ class SaveInvoiceService
                     'debit' => $data->additional_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'إضافات - ' . $data->notes,
+                    'info' => 'إضافات - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -993,7 +990,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->additional_value,
                     'type' => 1,
-                    'info' => 'إضافات - ' . $data->notes,
+                    'info' => 'إضافات - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1020,7 +1017,7 @@ class SaveInvoiceService
                     'debit' => $data->vat_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'ضريبة قيمة مضافة - ' . $data->notes,
+                    'info' => 'ضريبة قيمة مضافة - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1032,7 +1029,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->vat_value,
                     'type' => 1,
-                    'info' => 'ضريبة قيمة مضافة - ' . $data->notes,
+                    'info' => 'ضريبة قيمة مضافة - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1053,7 +1050,7 @@ class SaveInvoiceService
                     'debit' => $data->vat_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'ضريبة قيمة مضافة - ' . $data->notes,
+                    'info' => 'ضريبة قيمة مضافة - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1065,7 +1062,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->vat_value,
                     'type' => 1,
-                    'info' => 'ضريبة قيمة مضافة - ' . $data->notes,
+                    'info' => 'ضريبة قيمة مضافة - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1091,7 +1088,7 @@ class SaveInvoiceService
                     'debit' => $data->withholding_tax_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'خصم من المنبع - ' . $data->notes,
+                    'info' => 'خصم من المنبع - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1103,7 +1100,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->withholding_tax_value,
                     'type' => 1,
-                    'info' => 'خصم من المنبع - ' . $data->notes,
+                    'info' => 'خصم من المنبع - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1116,7 +1113,7 @@ class SaveInvoiceService
                     'debit' => $data->withholding_tax_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'خصم من المنبع - ' . $data->notes,
+                    'info' => 'خصم من المنبع - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1128,7 +1125,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->withholding_tax_value,
                     'type' => 1,
-                    'info' => 'خصم من المنبع - ' . $data->notes,
+                    'info' => 'خصم من المنبع - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1176,7 +1173,7 @@ class SaveInvoiceService
                 'op_id' => $operation->id,
                 'pro_type' => $data->type,
                 'date' => $data->pro_date,
-                'details' => 'قيد تكلفة البضاعة - ' . $data->notes,
+                'details' => 'قيد تكلفة البضاعة - '.$data->notes,
                 'user' => Auth::id(),
                 'branch_id' => $data->branch_id,
             ]);
@@ -1251,7 +1248,7 @@ class SaveInvoiceService
             'acc2' => $cashBoxId,
             'pro_value' => $voucherValue,
             'pro_date' => $data->pro_date,
-            'info' => 'سند ' . $voucherType . ' آلي مرتبط بعملية رقم ' . $operation->id,
+            'info' => 'سند '.$voucherType.' آلي مرتبط بعملية رقم '.$operation->id,
             'op2' => $operation->id,
             'is_journal' => 1,
             'is_stock' => 0,
@@ -1269,7 +1266,7 @@ class SaveInvoiceService
             'op2' => $operation->id,
             'pro_type' => $proType,
             'date' => $data->pro_date,
-            'details' => 'قيد سند ' . $voucherType . ' آلي',
+            'details' => 'قيد سند '.$voucherType.' آلي',
             'user' => Auth::id(),
             'branch_id' => $data->branch_id,
         ]);
@@ -1280,7 +1277,7 @@ class SaveInvoiceService
             'debit' => $voucherValue,
             'credit' => 0,
             'type' => 1,
-            'info' => 'سند ' . $voucherType,
+            'info' => 'سند '.$voucherType,
             'op_id' => $voucher->id,
             'isdeleted' => 0,
             'branch_id' => $data->branch_id,
@@ -1292,7 +1289,7 @@ class SaveInvoiceService
             'debit' => 0,
             'credit' => $voucherValue,
             'type' => 1,
-            'info' => 'سند ' . $voucherType,
+            'info' => 'سند '.$voucherType,
             'op_id' => $voucher->id,
             'isdeleted' => 0,
             'branch_id' => $data->branch_id,
@@ -1310,7 +1307,7 @@ class SaveInvoiceService
         $processedItemIds = [];
 
         $currencyId = $data->currency_id;
-        $currencyRate = (float)($data->currency_rate ?? 1);
+        $currencyRate = (float) ($data->currency_rate ?? 1);
 
         foreach ($calculatedItems as $invoiceItem) {
             $itemId = $invoiceItem['item_id'];
@@ -1329,9 +1326,9 @@ class SaveInvoiceService
                 ->value('u_val') ?? 1;
 
             if (in_array($data->type, [11, 13, 20])) {
-                $itemCost = (float)($uVal > 0 ? ($price / $uVal) : $price); // Base Price
+                $itemCost = (float) ($uVal > 0 ? ($price / $uVal) : $price); // Base Price
             } else {
-                $itemCost = (float)(Item::where('id', $itemId)->value('average_cost') ?? 0);
+                $itemCost = (float) (Item::where('id', $itemId)->value('average_cost') ?? 0);
             }
 
             $batchNumber = $invoiceItem['batch_number'] ?? null;
@@ -1415,7 +1412,7 @@ class SaveInvoiceService
     {
         $data = is_array($data) ? (object) $data : $data;
         $currencyId = $data->currency_id;
-        $currencyRate = (float)($data->currency_rate ?? 1);
+        $currencyRate = (float) ($data->currency_rate ?? 1);
 
         foreach ($calculatedItems as $invoiceItem) {
             $itemId = $invoiceItem['item_id'];
@@ -1428,9 +1425,9 @@ class SaveInvoiceService
                 ->value('u_val') ?? 1;
 
             if (in_array($data->type, [11, 13, 20])) {
-                $itemCost = (float)($uVal > 0 ? ($price / $uVal) : $price); // Base Price
+                $itemCost = (float) ($uVal > 0 ? ($price / $uVal) : $price); // Base Price
             } else {
-                $itemCost = (float)(Item::where('id', $itemId)->value('average_cost') ?? 0);
+                $itemCost = (float) (Item::where('id', $itemId)->value('average_cost') ?? 0);
             }
 
             $batchNumber = $invoiceItem['batch_number'] ?? null;
@@ -1617,7 +1614,7 @@ class SaveInvoiceService
             $profit = -abs($profit);
         }
 
-        return (float)$profit;
+        return (float) $profit;
     }
 
     /**
@@ -1789,7 +1786,7 @@ class SaveInvoiceService
                     'debit' => $data->discount_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'خصم مسموح به - ' . $data->notes,
+                    'info' => 'خصم مسموح به - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1800,7 +1797,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->discount_value,
                     'type' => 1,
-                    'info' => 'خصم مسموح به - ' . $data->notes,
+                    'info' => 'خصم مسموح به - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1812,7 +1809,7 @@ class SaveInvoiceService
                     'debit' => $data->discount_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'خصم مسموح به - ' . $data->notes,
+                    'info' => 'خصم مسموح به - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1823,7 +1820,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->discount_value,
                     'type' => 1,
-                    'info' => 'خصم مسموح به - ' . $data->notes,
+                    'info' => 'خصم مسموح به - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1840,7 +1837,7 @@ class SaveInvoiceService
                     'debit' => $data->discount_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'خصم مكتسب - ' . $data->notes,
+                    'info' => 'خصم مكتسب - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1851,7 +1848,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->discount_value,
                     'type' => 1,
-                    'info' => 'خصم مكتسب - ' . $data->notes,
+                    'info' => 'خصم مكتسب - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1868,7 +1865,7 @@ class SaveInvoiceService
                     'debit' => $data->additional_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'إضافات - ' . $data->notes,
+                    'info' => 'إضافات - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1879,7 +1876,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->additional_value,
                     'type' => 1,
-                    'info' => 'إضافات - ' . $data->notes,
+                    'info' => 'إضافات - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1896,7 +1893,7 @@ class SaveInvoiceService
                     'debit' => $data->additional_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'إضافات - ' . $data->notes,
+                    'info' => 'إضافات - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1907,7 +1904,7 @@ class SaveInvoiceService
                     'debit' => 0,
                     'credit' => $data->additional_value,
                     'type' => 1,
-                    'info' => 'إضافات - ' . $data->notes,
+                    'info' => 'إضافات - '.$data->notes,
                     'op_id' => $operation->id,
                     'isdeleted' => 0,
                     'branch_id' => $data->branch_id,
@@ -1926,7 +1923,7 @@ class SaveInvoiceService
                         'debit' => $data->vat_value,
                         'credit' => 0,
                         'type' => 1,
-                        'info' => 'ضريبة قيمة مضافة - ' . $data->notes,
+                        'info' => 'ضريبة قيمة مضافة - '.$data->notes,
                         'op_id' => $operation->id,
                         'isdeleted' => 0,
                         'branch_id' => $data->branch_id,
@@ -1937,7 +1934,7 @@ class SaveInvoiceService
                         'debit' => 0,
                         'credit' => $data->vat_value,
                         'type' => 1,
-                        'info' => 'ضريبة قيمة مضافة - ' . $data->notes,
+                        'info' => 'ضريبة قيمة مضافة - '.$data->notes,
                         'op_id' => $operation->id,
                         'isdeleted' => 0,
                         'branch_id' => $data->branch_id,
@@ -1953,7 +1950,7 @@ class SaveInvoiceService
                         'debit' => $data->vat_value,
                         'credit' => 0,
                         'type' => 1,
-                        'info' => 'ضريبة قيمة مضافة - ' . $data->notes,
+                        'info' => 'ضريبة قيمة مضافة - '.$data->notes,
                         'op_id' => $operation->id,
                         'isdeleted' => 0,
                         'branch_id' => $data->branch_id,
@@ -1964,7 +1961,7 @@ class SaveInvoiceService
                         'debit' => 0,
                         'credit' => $data->vat_value,
                         'type' => 1,
-                        'info' => 'ضريبة قيمة مضافة - ' . $data->notes,
+                        'info' => 'ضريبة قيمة مضافة - '.$data->notes,
                         'op_id' => $operation->id,
                         'isdeleted' => 0,
                         'branch_id' => $data->branch_id,
@@ -1985,7 +1982,7 @@ class SaveInvoiceService
                         'debit' => $data->withholding_tax_value,
                         'credit' => 0,
                         'type' => 1,
-                        'info' => 'خصم من المنبع - ' . $data->notes,
+                        'info' => 'خصم من المنبع - '.$data->notes,
                         'op_id' => $operation->id,
                         'isdeleted' => 0,
                         'branch_id' => $data->branch_id,
@@ -1996,7 +1993,7 @@ class SaveInvoiceService
                         'debit' => 0,
                         'credit' => $data->withholding_tax_value,
                         'type' => 1,
-                        'info' => 'خصم من المنبع - ' . $data->notes,
+                        'info' => 'خصم من المنبع - '.$data->notes,
                         'op_id' => $operation->id,
                         'isdeleted' => 0,
                         'branch_id' => $data->branch_id,
@@ -2008,7 +2005,7 @@ class SaveInvoiceService
                         'debit' => $data->withholding_tax_value,
                         'credit' => 0,
                         'type' => 1,
-                        'info' => 'خصم من المنبع - ' . $data->notes,
+                        'info' => 'خصم من المنبع - '.$data->notes,
                         'op_id' => $operation->id,
                         'isdeleted' => 0,
                         'branch_id' => $data->branch_id,
@@ -2019,7 +2016,7 @@ class SaveInvoiceService
                         'debit' => 0,
                         'credit' => $data->withholding_tax_value,
                         'type' => 1,
-                        'info' => 'خصم من المنبع - ' . $data->notes,
+                        'info' => 'خصم من المنبع - '.$data->notes,
                         'op_id' => $operation->id,
                         'isdeleted' => 0,
                         'branch_id' => $data->branch_id,

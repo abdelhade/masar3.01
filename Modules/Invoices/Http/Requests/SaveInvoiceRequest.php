@@ -28,6 +28,7 @@ class SaveInvoiceRequest extends FormRequest
             // Basic fields
             'type' => ['required', 'integer'],
             'branch_id' => ['required', 'integer', 'exists:branches,id'],
+            'template_id' => ['nullable', 'integer', 'exists:invoice_templates,id'],
             'acc1_id' => ['required', 'integer', 'exists:acc_head,id'],
             'acc2_id' => ['required', 'integer', 'exists:acc_head,id'],
             'pro_date' => ['required', 'date'],
@@ -95,7 +96,7 @@ class SaveInvoiceRequest extends FormRequest
     {
         \Log::error('SaveInvoiceRequest: Validation Failed', [
             'errors' => $validator->errors()->toArray(),
-            'input' => $this->all()
+            'input' => $this->all(),
         ]);
 
         parent::failedValidation($validator);

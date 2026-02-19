@@ -34,12 +34,12 @@
 
 
                     <small class="me-3">
-                        <strong>{{ __('Current Balance:') }}</strong>
+                        <strong>{{ __('After Invoice:') }}</strong>
                         <span id="current-balance-header" class="badge bg-light text-dark">0.00</span>
                     </small>
 
                     <small>
-                        <strong>{{ __('After Invoice:') }}</strong>
+                        <strong>{{ __('Current Balance:') }}</strong>
                         <span id="balance-after-header" class="badge bg-light text-dark">0.00</span>
                     </small>
 

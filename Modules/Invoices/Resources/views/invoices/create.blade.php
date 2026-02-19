@@ -196,6 +196,7 @@
             {{-- Hidden inputs for all invoice data --}}
             <input type="hidden" name="type" id="form-type">
             <input type="hidden" name="branch_id" id="form-branch-id">
+            <input type="hidden" name="template_id" id="form-template-id">
             <input type="hidden" name="acc1_id" id="form-acc1-id">
             <input type="hidden" name="acc2_id" id="form-acc2-id">
             <input type="hidden" name="pro_date" id="form-pro-date">
@@ -2044,6 +2045,13 @@
 
                 document.getElementById('form-currency-id').value = this.currencyId || 1;
                 document.getElementById('form-currency-rate').value = this.exchangeRate || 1;
+
+                // ✅ Add template ID
+                const templateSelect = document.getElementById('invoice-template');
+                const selectedTemplateId = templateSelect?.value || '';
+                if (document.getElementById('form-template-id')) {
+                    document.getElementById('form-template-id').value = selectedTemplateId;
+                }
 
                 document.getElementById('form-pro-date').value = document.getElementById('pro-date')?.value || '';
                 document.getElementById('form-emp-id').value = document.getElementById('emp-id')?.value || '';
