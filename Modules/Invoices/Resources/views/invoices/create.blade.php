@@ -1057,6 +1057,14 @@
                 const defaultUnitId = item.default_unit_id || item.unit_id || (item.units && item.units.length > 0 ?
                     item.units[0].id : 1);
 
+                // ✅ For purchase invoices, use last_purchase_price if available
+                const isPurchaseInvoice = [11, 13, 15, 17, 24, 25].includes(this.type);
+                let itemPrice = parseFloat(item.price) || 0;
+                
+                if (isPurchaseInvoice && item.last_purchase_price) {
+                    itemPrice = parseFloat(item.last_purchase_price) || 0;
+                }
+
                 const newItem = {
                     id: Date.now(),
                     item_id: item.id,
@@ -1065,12 +1073,12 @@
                     barcode: item.barcode || '',
                     unit_id: defaultUnitId,
                     quantity: 1,
-                    price: parseFloat(item.price) || 0,
-                    item_price: parseFloat(item.price) || 0,
+                    price: itemPrice,
+                    item_price: itemPrice,
                     discount: 0,
                     discount_percentage: 0,
                     discount_value: 0,
-                    sub_value: parseFloat(item.price) || 0,
+                    sub_value: itemPrice,
                     batch_number: '',
                     expiry_date: null,
                     available_units: item.units || []
