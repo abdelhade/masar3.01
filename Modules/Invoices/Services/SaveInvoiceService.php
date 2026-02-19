@@ -1367,7 +1367,8 @@ class SaveInvoiceService
                     'fat_quantity' => $quantity, // ✅ Display Quantity
                     'item_price' => $uVal > 0 ? (($price / $uVal) * $currencyRate) : ($price * $currencyRate), // ✅ Base Price * Rate
                     'fat_price' => $price, // ✅ Display Price (لوحدة العرض)
-                    'item_discount' => $discount,
+                    'item_discount' => $invoiceItem['discount_value'] ?? $invoiceItem['discount'] ?? 0,
+                    'item_discount_pre' => $invoiceItem['discount_percentage'] ?? 0, // ✅ Save discount percentage
                     'detail_value' => $subValue, // ✅ Critical: Use calculated_detail_value directly (from DetailValueCalculator)
                     'notes' => $invoiceItem['notes'] ?? '',
                     'cost_price' => $itemCost,
@@ -1445,7 +1446,8 @@ class SaveInvoiceService
         $unitId = $invoiceItem['unit_id'];
         $price = $invoiceItem['price'];
         $subValue = $invoiceItem['calculated_detail_value'];
-        $discount = $invoiceItem['discount'] ?? 0;
+        $discount = $invoiceItem['discount_value'] ?? $invoiceItem['discount'] ?? 0; // ✅ Use discount_value
+        $discountPercentage = $invoiceItem['discount_percentage'] ?? 0; // ✅ Add discount_percentage
 
         // Fetch u_val explicitly
         $uVal = DB::table('item_units')
@@ -1478,6 +1480,7 @@ class SaveInvoiceService
                 'fat_quantity' => $quantity, // ✅ Display Quantity (توحيد الحفظ)
                 'fat_price' => $price, // ✅ Display Price
                 'item_discount' => $discount,
+                'item_discount_pre' => $discountPercentage, // ✅ Save discount percentage
                 'detail_value' => $subValue,
                 'is_stock' => 1,
                 'notes' => $invoiceItem['notes'] ?? '',
@@ -1506,6 +1509,7 @@ class SaveInvoiceService
                 'fat_quantity' => $quantity, // ✅ Display Quantity
                 'fat_price' => $price, // ✅ Display Price
                 'item_discount' => $discount,
+                'item_discount_pre' => $discountPercentage, // ✅ Save discount percentage
                 'detail_value' => $subValue,
                 'is_stock' => 1,
                 'fat_quantity' => $quantity,
@@ -1534,6 +1538,7 @@ class SaveInvoiceService
                 'fat_quantity' => $quantity, // ✅ Display Quantity
                 'fat_price' => $price, // ✅ Display Price
                 'item_discount' => $discount,
+                'item_discount_pre' => $discountPercentage, // ✅ Save discount percentage
                 'detail_value' => $subValue,
                 'is_stock' => 0,
                 'notes' => $invoiceItem['notes'] ?? '',
@@ -1565,6 +1570,7 @@ class SaveInvoiceService
                 'fat_quantity' => $quantity, // ✅ Display Quantity
                 'fat_price' => $price, // ✅ Display Price
                 'item_discount' => $discount,
+                'item_discount_pre' => $discountPercentage, // ✅ Save discount percentage
                 'detail_value' => $subValue, // ✅ Critical: Use calculated_detail_value directly (from DetailValueCalculator)
                 'is_stock' => 1,
                 'notes' => $invoiceItem['notes'] ?? '',
