@@ -28,6 +28,8 @@ class SaveInvoiceRequest extends FormRequest
             // Basic fields
             'type' => ['required', 'integer'],
             'branch_id' => ['required', 'integer', 'exists:branches,id'],
+            'template_id' => ['nullable', 'integer', 'exists:invoice_templates,id'],
+            'pro_id' => ['nullable', 'integer'],
             'acc1_id' => ['required', 'integer', 'exists:acc_head,id'],
             'acc2_id' => ['required', 'integer', 'exists:acc_head,id'],
             'pro_date' => ['required', 'date'],
@@ -62,11 +64,17 @@ class SaveInvoiceRequest extends FormRequest
             'items.*.quantity' => ['required', 'numeric', 'min:0.001'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
+            'items.*.discount_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'items.*.discount_value' => ['nullable', 'numeric', 'min:0'],
             'items.*.additional' => ['nullable', 'numeric', 'min:0'],
             'items.*.sub_value' => ['required', 'numeric'],
             'items.*.batch_number' => ['nullable', 'string', 'max:100'],
             'items.*.expiry_date' => ['nullable', 'date'],
             'items.*.notes' => ['nullable', 'string', 'max:500'],
+            'items.*.length' => ['nullable', 'numeric', 'min:0'],
+            'items.*.width' => ['nullable', 'numeric', 'min:0'],
+            'items.*.height' => ['nullable', 'numeric', 'min:0'],
+            'items.*.density' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 
@@ -95,7 +103,7 @@ class SaveInvoiceRequest extends FormRequest
     {
         \Log::error('SaveInvoiceRequest: Validation Failed', [
             'errors' => $validator->errors()->toArray(),
-            'input' => $this->all()
+            'input' => $this->all(),
         ]);
 
         parent::failedValidation($validator);

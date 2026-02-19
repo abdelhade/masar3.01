@@ -19,8 +19,11 @@ class ItemsApiController extends Controller
     public function lite(Request $request)
     {
         $term = trim((string)$request->input('term', ''));
-        $branchId = $request->input('branch_id');
-        $type = $request->input('type');
+        $branchIdParam = $request->input('branch_id');
+        $branchId = ($branchIdParam === 'null' || $branchIdParam === '') ? null : $branchIdParam;
+        
+        $typeParam = $request->input('type');
+        $type = ($typeParam === 'null' || $typeParam === '') ? null : $typeParam;
 
         // ✅ Build cache key with version
         // $cacheVersion = Cache::get('items_cache_version', 1);

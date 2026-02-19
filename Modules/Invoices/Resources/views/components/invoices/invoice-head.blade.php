@@ -34,12 +34,12 @@
 
 
                     <small class="me-3">
-                        <strong>{{ __('Current Balance:') }}</strong>
+                        <strong>{{ __('After Invoice:') }}</strong>
                         <span id="current-balance-header" class="badge bg-light text-dark">0.00</span>
                     </small>
 
                     <small>
-                        <strong>{{ __('After Invoice:') }}</strong>
+                        <strong>{{ __('Current Balance:') }}</strong>
                         <span id="balance-after-header" class="badge bg-light text-dark">0.00</span>
                     </small>
 
@@ -178,7 +178,7 @@
             <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('رقم الفاتورة') }}</label>
                 <input type="text" id="pro-id" class="form-control form-control-sm" readonly
-                    placeholder="تلقائي">
+                    value="{{ $nextProId ?? '' }}">
             </div>
 
             @if ($type != 21)

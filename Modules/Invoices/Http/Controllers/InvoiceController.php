@@ -2,24 +2,24 @@
 
 namespace Modules\Invoices\Http\Controllers;
 
-use Carbon\Carbon;
+use App\Http\Controllers\Controller;
 use App\Models\Item;
-use App\Models\User;
-use Modules\HR\Models\Employee;
-use App\Models\OperHead;
-use App\Models\JournalHead;
-use Illuminate\Http\Request;
 use App\Models\JournalDetail;
+use App\Models\JournalHead;
 use App\Models\OperationItems;
+use App\Models\OperHead;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Modules\Accounts\Models\AccHead;
-use RealRashid\SweetAlert\Facades\Alert;
+use Modules\HR\Models\Employee;
+use Modules\Invoices\Http\Requests\SaveInvoiceRequest;
 use Modules\Invoices\Services\RecalculationServiceHelper;
 use Modules\Invoices\Services\SaveInvoiceService;
-use Modules\Invoices\Http\Requests\SaveInvoiceRequest;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class InvoiceController extends Controller
 {
@@ -56,7 +56,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'view ' . $this->titles[$invoiceType];
         $user = Auth::user();
-        if (!($user instanceof User) || !$user->can($permissionName)) {
+        if (! ($user instanceof User) || ! $user->can($permissionName)) {
             abort(403, 'You do not have permission to view ' . $this->titles[$invoiceType]);
         }
 
@@ -136,7 +136,7 @@ class InvoiceController extends Controller
         return redirect()->route('invoices.form.create', [
             'type' => $type,
             'hash' => $expectedHash,
-            'branch_id' => $request->get('branch_id', auth()->user()->branch_id ?? null)
+            'branch_id' => $request->get('branch_id', auth()->user()->branch_id ?? null),
         ]);
     }
 
@@ -206,7 +206,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'view ' . $this->titles[$type];
         $user = Auth::user();
-        if (!($user instanceof User) || !$user->can($permissionName)) {
+        if (! ($user instanceof User) || ! $user->can($permissionName)) {
             abort(403, 'You do not have permission to view ' . $this->titles[$type]);
         }
 
@@ -230,12 +230,13 @@ class InvoiceController extends Controller
 
         $permissionName = 'edit ' . $this->titles[$type];
         $user = Auth::user();
-        if (!($user instanceof User) || !$user->can($permissionName)) {
+        if (! ($user instanceof User) || ! $user->can($permissionName)) {
             abort(403, 'You do not have permission to edit ' . $this->titles[$type]);
         }
 
         if ($invoice->is_posted ?? false) {
             Alert::toast('Cannot edit a posted invoice.', 'warning');
+
             return redirect()->route('invoices.index');
         }
 
@@ -297,7 +298,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'delete ' . $this->titles[$type];
         $user = Auth::user();
-        if (!($user instanceof User) || !$user->can($permissionName)) {
+        if (! ($user instanceof User) || ! $user->can($permissionName)) {
             abort(403, 'You do not have permission to delete ' . $this->titles[$type]);
         }
 
@@ -358,7 +359,7 @@ class InvoiceController extends Controller
             }); // انتهى الـ Transaction وتم عمل Commit
 
             // 3. إعادة حساب average_cost والأرباح والقيود بعد الحذف
-            if (!empty($recalcData['itemIds']) && !empty($recalcData['invoiceDate'])) {
+            if (! empty($recalcData['itemIds']) && ! empty($recalcData['invoiceDate'])) {
                 try {
                     // استخدام Helper لاختيار تلقائي للطريقة المناسبة (Queue/Stored Procedure/PHP)
                     // إعادة حساب average_cost (فقط إذا كانت الفاتورة تؤثر على average_cost)
@@ -407,7 +408,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'print ' . $this->titles[$type];
         $user = Auth::user();
-        if (!($user instanceof User) || !$user->can($permissionName)) {
+        if (! ($user instanceof User) || ! $user->can($permissionName)) {
             abort(403, 'You do not have permission to print this type.');
         }
 
@@ -417,15 +418,13 @@ class InvoiceController extends Controller
         $employee = Employee::find($operation->emp_id);
         $delivery = Employee::find($operation->delivery_id);
 
-        $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22, 26]) ? 'العميل' : 
-                    (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'المورد' : 
-                    (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'المخزن' : 'غير محدد'));
+        $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22, 26]) ? 'العميل' : (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'المورد' : (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'المخزن' : 'غير محدد'));
 
         // Prepare invoice items with all details
         $invoiceItems = $operation->operationItems->map(function ($item) {
             $itemModel = Item::with('units')->find($item->item_id);
             $unit = \App\Models\Unit::find($item->unit_id);
-            
+
             // Get barcode for this item and unit
             $barcode = DB::table('barcodes')
                 ->where('item_id', $item->item_id)
@@ -435,7 +434,7 @@ class InvoiceController extends Controller
             $quantity = $item->qty_in ?: $item->qty_out;
             $price = $item->item_price;
             $discount = $item->item_discount;
-            
+
             // Calculate sub_value: (quantity * price) - ((quantity * price * discount) / 100)
             $subtotal = $quantity * $price;
             $discountAmount = ($subtotal * $discount) / 100;
@@ -459,36 +458,36 @@ class InvoiceController extends Controller
 
         // Calculate totals
         $subtotal = $invoiceItems->sum('sub_value');
-        
+
         // Invoice level discount
         $invoiceDiscountPercentage = $operation->discount_percentage ?? 0;
         $invoiceDiscountValue = $operation->discount_value ?? 0;
         if ($invoiceDiscountPercentage > 0) {
             $invoiceDiscountValue = ($subtotal * $invoiceDiscountPercentage) / 100;
         }
-        
+
         $afterDiscount = $subtotal - $invoiceDiscountValue;
-        
+
         // Additional
         $additionalPercentage = $operation->additional_percentage ?? 0;
         $additionalValue = $operation->additional_value ?? 0;
         if ($additionalPercentage > 0) {
             $additionalValue = ($afterDiscount * $additionalPercentage) / 100;
         }
-        
+
         $afterAdditional = $afterDiscount + $additionalValue;
-        
+
         // VAT
         $vatPercentage = $operation->vat_percentage ?? 0;
         $vatValue = ($afterAdditional * $vatPercentage) / 100;
-        
+
         // Withholding Tax
         $withholdingTaxPercentage = $operation->withholding_tax_percentage ?? 0;
         $withholdingTaxValue = ($afterAdditional * $withholdingTaxPercentage) / 100;
-        
+
         // Total
         $totalAfterAdditional = $afterAdditional + $vatValue - $withholdingTaxValue;
-        
+
         // Paid and remaining
         $paidFromClient = $operation->paid_from_client ?? 0;
         $remaining = $totalAfterAdditional - $paidFromClient;

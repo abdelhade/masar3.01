@@ -22,7 +22,8 @@ class InvoiceTemplatesSeeder extends Seeder
                     'unit',
                     'quantity',
                     'price',
-                    'discount',
+                    'discount_percentage',
+                    'discount_value',
                     'sub_value'
                 ],
                 'invoice_types' => [10], // فاتورة مبيعات
@@ -99,7 +100,8 @@ class InvoiceTemplatesSeeder extends Seeder
                     'unit',
                     'quantity',
                     'price',
-                    'discount',
+                    'discount_percentage',
+                    'discount_value',
                     'sub_value'
                 ],
                 'invoice_types' => [14, 16], // 14: أمر بيع, 16: عرض سعر لعميل
@@ -159,7 +161,8 @@ class InvoiceTemplatesSeeder extends Seeder
                     'item_name',
                     'quantity',
                     'price',
-                    'discount',
+                    'discount_percentage',
+                    'discount_value',
                     'sub_value'
                 ],
                 'invoice_types' => [24], // فاتورة خدمة
@@ -175,7 +178,8 @@ class InvoiceTemplatesSeeder extends Seeder
                     'unit',
                     'quantity',
                     'price',
-                    'discount',
+                    'discount_percentage',
+                    'discount_value',
                     'sub_value'
                 ],
                 'invoice_types' => [26], // اتفاقية تسعير
@@ -210,7 +214,8 @@ class InvoiceTemplatesSeeder extends Seeder
                     'batch_number',    // ✅
                     'expiry_date',     // ✅
                     'price',
-                    'discount',
+                    'discount_percentage',
+                    'discount_value',
                     'sub_value'
                 ],
                 'invoice_types' => [10, 11, 12, 13], // مبيعات، مشتريات، مردودات

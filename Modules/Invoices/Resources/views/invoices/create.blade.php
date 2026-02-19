@@ -196,6 +196,8 @@
             {{-- Hidden inputs for all invoice data --}}
             <input type="hidden" name="type" id="form-type">
             <input type="hidden" name="branch_id" id="form-branch-id">
+            <input type="hidden" name="template_id" id="form-template-id">
+            <input type="hidden" name="pro_id" id="form-pro-id">
             <input type="hidden" name="acc1_id" id="form-acc1-id">
             <input type="hidden" name="acc2_id" id="form-acc2-id">
             <input type="hidden" name="pro_date" id="form-pro-date">
@@ -225,6 +227,7 @@
             <div class="invoice-header-card">
                 @include('invoices::components.invoices.invoice-head', [
                     'type' => $type,
+                    'nextProId' => $nextProId,
                     'branches' => $branches,
                     'acc1Role' => in_array($type, [10, 12, 14, 16, 19, 22]) ? __('Customer') : __('Supplier'),
                     'acc2Role' => __('Store'),
@@ -293,6 +296,8 @@
                 'expiry_date' => __('Expiry Date'),
                 'price' => __('Price'),
                 'discount' => __('Discount'),
+                'discount_percentage' => __('Discount %'),
+                'discount_value' => __('Discount Value'),
                 'sub_value' => __('Value'),
                 'length' => __('Length'),
                 'width' => __('Width'),
@@ -322,15 +327,16 @@
             selectedPriceListId: null, // Selected price list for sales invoices
 
             // Template columns
-            visibleColumns: ['item_name', 'code', 'unit', 'quantity', 'price', 'discount', 'sub_value'],
+            visibleColumns: ['item_name', 'code', 'unit', 'quantity', 'price', 'discount_percentage', 'discount_value',
+                'sub_value'
+            ],
             allColumns: CONFIG.translations,
 
             // Data
             invoiceItems: [],
             allItems: [],
             fuse: null,
-            itemDiscountType: localStorage.getItem('itemDiscountType') ||
-                'percentage', // Load from localStorage or default to 'percentage'
+            isSaved: false, // ✅ Track if invoice is saved
 
             // Totals
             subtotal: 0,
@@ -354,7 +360,6 @@
 
             // Initialize
             init() {
-                console.log(`🔵 Loaded discount type from localStorage: ${this.itemDiscountType}`);
                 this.initializeSelect2();
                 this.loadDefaultTemplate();
                 this.setDefaultValues();
@@ -392,8 +397,6 @@
 
             // Initialize Select2 for searchable dropdowns
             initializeSelect2() {
-                console.log('🔵 initializeSelect2 called');
-
                 // Save reference to this
                 const self = this;
 
@@ -411,19 +414,11 @@
 
                 // ✅ Attach event listener BEFORE setting default value
                 $('#acc1-id').on('change', function(e) {
-                    console.log('🔵 acc1-id changed event fired!', {
-                        value: $(this).val(),
-                        event: e
-                    });
-
                     const accountId = $(this).val();
-                    console.log('� Account ID from jQuery:', accountId);
 
                     if (accountId) {
-                        console.log('✅ Calling updateAccountBalance with:', accountId);
                         self.updateAccountBalance(accountId);
                     } else {
-                        console.log('⚠️ No accountId selected, clearing data');
                         self.currentBalance = 0;
                         self.calculatedBalanceAfter = 0;
 
@@ -440,7 +435,6 @@
 
                 // ✅ Set default account AFTER attaching event listener
                 if (CONFIG.defaultAcc1Id) {
-                    console.log('🔵 Setting default acc1:', CONFIG.defaultAcc1Id);
                     $('#acc1-id').val(CONFIG.defaultAcc1Id).trigger('change');
                 }
 
@@ -628,9 +622,6 @@
                                         const editableColumns = this.getEditableColumns();
                                         if (editableColumns.length > 0) {
                                             const firstEditableColumn = editableColumns[0];
-                                            console.log(
-                                                '🔵 Template changed - focusing first field:',
-                                                firstEditableColumn);
                                             this.focusField(firstEditableColumn, 0);
                                         }
                                     });
@@ -691,25 +682,7 @@
                     const th = document.createElement('th');
                     th.className = 'font-bold fw-bold text-center';
                     th.style.fontSize = '0.8rem';
-
-                    // Special handling for discount column - add toggle button
-                    if (col === 'discount') {
-                        const discountLabel = this.allColumns[col] || col;
-                        const typeLabel = this.itemDiscountType === 'percentage' ? '%' : '{{ __('Value') }}';
-                        th.innerHTML = `
-                            ${discountLabel}
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-primary ms-1"
-                                    style="font-size: 0.65rem; padding: 1px 6px;"
-                                    onclick="window.InvoiceApp.toggleDiscountType()"
-                                    title="{{ __('Toggle between percentage and value') }}">
-                                ${typeLabel}
-                            </button>
-                        `;
-                    } else {
-                        th.textContent = this.allColumns[col] || col;
-                    }
-
+                    th.textContent = this.allColumns[col] || col;
                     thead.appendChild(th);
                 });
 
@@ -1095,7 +1068,8 @@
                     price: parseFloat(item.price) || 0,
                     item_price: parseFloat(item.price) || 0,
                     discount: 0,
-                    discount_type: this.itemDiscountType, // Save current discount type with item
+                    discount_percentage: 0,
+                    discount_value: 0,
                     sub_value: parseFloat(item.price) || 0,
                     batch_number: '',
                     expiry_date: null,
@@ -1214,8 +1188,6 @@
 
                 // Attach event listeners to inputs
                 this.attachItemEventListeners();
-
-                console.log('✅ renderItems completed - DOM updated');
             },
 
             // Render single item row
@@ -1262,10 +1234,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                                                                ${unit.name}
-                                                                                                                                                                                                                                                                                                            </option>
-                                                                                                                                                                                                                                                                                                        `).join('')}
+                                                                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                                                                ${unit.name}
+                                                                                                                                                                                                                                                                                                                            </option>
+                                                                                                                                                                                                                                                                                                                        `).join('')}
                                 </select>
                             </td>`;
 
@@ -1303,13 +1275,34 @@
                                        data-index="${index}" data-field="price">
                             </td>`;
 
-                    case 'discount':
+                    case 'discount_percentage':
                         const canEditDiscount = this.settings.permissions.allow_discount_change;
+                        return `
+                            <td style="width: 10%;" onclick="event.stopPropagation();">
+                                <input type="number" id="discount-percentage-${index}" class="form-control text-center"
+                                       value="${item.discount_percentage || 0}" step="0.01" min="0" max="100"
+                                       ${!canEditDiscount ? 'readonly tabindex="-1" style="background-color: #f8f9fa;"' : ''}
+                                       data-index="${index}" data-field="discount_percentage">
+                            </td>`;
+
+                    case 'discount_value':
+                        const canEditDiscountValue = this.settings.permissions.allow_discount_change;
+                        return `
+                            <td style="width: 10%;" onclick="event.stopPropagation();">
+                                <input type="number" id="discount-value-${index}" class="form-control text-center"
+                                       value="${item.discount_value || 0}" step="0.01" min="0"
+                                       ${!canEditDiscountValue ? 'readonly tabindex="-1" style="background-color: #f8f9fa;"' : ''}
+                                       data-index="${index}" data-field="discount_value">
+                            </td>`;
+
+                    case 'discount':
+                        // Legacy support - if old templates still use 'discount'
+                        const canEditDiscountLegacy = this.settings.permissions.allow_discount_change;
                         return `
                             <td style="width: 15%;" onclick="event.stopPropagation();">
                                 <input type="number" id="discount-${index}" class="form-control text-center"
-                                       value="${item.discount}" step="0.01"
-                                       ${!canEditDiscount ? 'readonly tabindex="-1" style="background-color: #f8f9fa;"' : ''}
+                                       value="${item.discount || 0}" step="0.01"
+                                       ${!canEditDiscountLegacy ? 'readonly tabindex="-1" style="background-color: #f8f9fa;"' : ''}
                                        data-index="${index}" data-field="discount">
                             </td>`;
 
@@ -1366,7 +1359,8 @@
 
                 // Quantity, price, discount inputs
                 document.querySelectorAll(
-                        '[data-field="quantity"], [data-field="price"], [data-field="discount"]')
+                        '[data-field="quantity"], [data-field="price"], [data-field="discount"], [data-field="discount_percentage"], [data-field="discount_value"]'
+                    )
                     .forEach(input => {
                         input.addEventListener('input', (e) => {
                             const index = parseInt(e.target.dataset.index);
@@ -1374,6 +1368,38 @@
                             const value = parseFloat(e.target.value) || 0;
 
                             this.invoiceItems[index][field] = value;
+
+                            // ✅ Sync discount_percentage and discount_value
+                            if (field === 'discount_percentage') {
+                                // Calculate discount_value from percentage
+                                const subtotal = this.invoiceItems[index].quantity * this.invoiceItems[
+                                    index].price;
+                                this.invoiceItems[index].discount_value = (subtotal * value) / 100;
+
+                                // Update the discount_value input
+                                const discountValueInput = document.getElementById(
+                                    `discount-value-${index}`);
+                                if (discountValueInput) {
+                                    discountValueInput.value = this.invoiceItems[index].discount_value
+                                        .toFixed(2);
+                                }
+                            } else if (field === 'discount_value') {
+                                // Calculate discount_percentage from value
+                                const subtotal = this.invoiceItems[index].quantity * this.invoiceItems[
+                                    index].price;
+                                if (subtotal > 0) {
+                                    this.invoiceItems[index].discount_percentage = (value / subtotal) * 100;
+
+                                    // Update the discount_percentage input
+                                    const discountPercentageInput = document.getElementById(
+                                        `discount-percentage-${index}`);
+                                    if (discountPercentageInput) {
+                                        discountPercentageInput.value = this.invoiceItems[index]
+                                            .discount_percentage.toFixed(2);
+                                    }
+                                }
+                            }
+
                             this.calculateItemTotal(index);
                         });
 
@@ -1492,19 +1518,10 @@
                 const item = this.invoiceItems[index];
                 const quantity = parseFloat(item.quantity) || 0;
                 const price = parseFloat(item.price) || 0;
-                const discount = parseFloat(item.discount) || 0;
 
-                // Calculate sub_value based on discount type
+                // Calculate sub_value using discount_value (always use value, not percentage)
                 const subtotal = quantity * price;
-                let discountAmount = 0;
-
-                if (this.itemDiscountType === 'percentage') {
-                    // Discount is percentage
-                    discountAmount = (subtotal * discount) / 100;
-                } else {
-                    // Discount is fixed value
-                    discountAmount = discount;
-                }
+                const discountAmount = parseFloat(item.discount_value) || 0;
 
                 item.sub_value = parseFloat((subtotal - discountAmount).toFixed(2));
 
@@ -1610,25 +1627,6 @@
                 }
             },
 
-            // Toggle discount type between percentage and value
-            toggleDiscountType() {
-                // Toggle between 'percentage' and 'value'
-                this.itemDiscountType = this.itemDiscountType === 'percentage' ? 'value' : 'percentage';
-
-                // Save to localStorage to persist across page refreshes
-                localStorage.setItem('itemDiscountType', this.itemDiscountType);
-
-                // Update table header to show new type
-                this.updateTableHeaders();
-
-                // Recalculate all items with new discount type
-                this.invoiceItems.forEach((item, index) => {
-                    this.calculateItemTotal(index);
-                });
-
-                console.log(`✅ Discount type changed to: ${this.itemDiscountType} (saved to localStorage)`);
-            },
-
             // Remove item
             removeItem(index) {
                 if (confirm('هل تريد حذف هذا الصنف؟')) {
@@ -1645,13 +1643,6 @@
                     console.error('❌ Item not found at index:', index);
                     return;
                 }
-
-                console.log('📦 showItemDetails called:', {
-                    index: index,
-                    item_id: item.item_id,
-                    item_name: item.name,
-                    full_item: item
-                });
 
                 // ✅ Track last selected index for refreshing when warehouse/customer changes
                 this.lastSelectedIndex = index;
@@ -1700,7 +1691,6 @@
 
                 fetch(url)
                     .then(response => {
-                        console.log('📡 Response status:', response.status);
                         return response.json();
                     })
                     .then(res => {
@@ -1735,13 +1725,7 @@
              * Update account balance when account changes
              */
             updateAccountBalance(accountId) {
-                console.log('🔵 updateAccountBalance called', {
-                    accountId: accountId,
-                    type: typeof accountId
-                });
-
                 if (!accountId) {
-                    console.log('⚠️ No accountId, resetting balance to 0');
                     this.currentBalance = 0;
                     this.calculateBalance();
                     this.clearRecommendedItems();
@@ -1749,19 +1733,14 @@
                 }
 
                 const url = `/api/accounts/${accountId}/balance`;
-                console.log('🌐 Fetching balance from:', url);
 
                 // Fetch account balance from API
                 fetch(url)
                     .then(response => {
-                        console.log('📡 Response status:', response.status);
                         return response.json();
                     })
                     .then(data => {
-                        console.log('📥 API Response:', data);
-
                         this.currentBalance = parseFloat(data.balance) || 0;
-                        console.log('💰 Current Balance set to:', this.currentBalance);
 
                         this.calculateBalance();
 
@@ -1769,7 +1748,6 @@
                         const balanceDisplay = document.getElementById('current-balance-header');
                         if (balanceDisplay) {
                             balanceDisplay.textContent = this.currentBalance.toFixed(2);
-                            console.log('✅ Updated current-balance-header to:', this.currentBalance.toFixed(2));
                         } else {
                             console.error('❌ Element current-balance-header not found!');
                         }
@@ -1786,33 +1764,18 @@
              * Load recommended items for account
              */
             loadRecommendedItems(accountId) {
-                console.log('🔵 loadRecommendedItems called', {
-                    accountId: accountId,
-                    setting: this.settings.invoice_show_recommended_items,
-                    allSettings: this.settings
-                });
-
-                // ✅ ALWAYS load for testing - remove this check temporarily
-                // if (!this.settings.invoice_show_recommended_items) {
-                //     console.log('⚠️ Recommended items disabled in settings');
-                //     return;
-                // }
 
                 const url = `/api/invoices/customers/${accountId}/recommended-items?limit=5`;
-                console.log('🌐 Fetching recommended items from:', url);
 
                 fetch(url)
                     .then(response => {
-                        console.log('📡 Recommended items response status:', response.status);
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
                         return response.json();
                     })
                     .then(data => {
-                        console.log('📥 Recommended items response:', data);
                         if (data.success && data.items) {
-                            console.log('✅ Found', data.items.length, 'recommended items');
                             this.displayRecommendedItems(data.items);
                         } else {
                             console.error('❌ No items in response or success=false');
@@ -1829,7 +1792,6 @@
              * Display recommended items in the footer
              */
             displayRecommendedItems(items) {
-                console.log('🔵 displayRecommendedItems called with', items);
 
                 const container = document.getElementById('recommended-items-list');
 
@@ -1843,10 +1805,8 @@
                     return;
                 }
 
-                console.log('✅ Building HTML for', items.length, 'items');
                 let html = '<div class="list-group list-group-flush">';
                 items.forEach((item, index) => {
-                    console.log(`  Item ${index}:`, item);
                     html += `
                         <a href="#" class="list-group-item list-group-item-action p-1 small"
                            onclick="InvoiceApp.addItemById(${item.id}); return false;"
@@ -1926,13 +1886,11 @@
             initializePriceListSelector() {
                 const priceListSelect = document.getElementById('price-list-id');
                 if (!priceListSelect) {
-                    console.log('⚠️ Price list selector not found (not a sales invoice)');
                     return;
                 }
 
                 // Set default price list (first option)
                 this.selectedPriceListId = priceListSelect.value || null;
-                console.log('🔵 Default price list ID:', this.selectedPriceListId);
 
                 // Save reference to this
                 const self = this;
@@ -1940,7 +1898,6 @@
                 // Listen for price list changes
                 priceListSelect.addEventListener('change', function(e) {
                     const newPriceListId = e.target.value;
-                    console.log('🔵 Price list changed to:', newPriceListId);
 
                     self.selectedPriceListId = newPriceListId;
 
@@ -1954,11 +1911,9 @@
              */
             updateAllItemPrices() {
                 if (!this.selectedPriceListId) {
-                    console.log('⚠️ No price list selected');
                     return;
                 }
 
-                console.log('🔄 Updating prices for all items...');
 
                 // Update each item's price
                 this.invoiceItems.forEach((item, index) => {
@@ -1986,7 +1941,6 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success && data.price !== null) {
-                            console.log(`✅ Updated price for item ${item.item_id}: ${data.price}`);
                             item.price = parseFloat(data.price);
 
                             // Calculate sub_value using the same logic as calculateItemTotal
@@ -2026,6 +1980,10 @@
                 document.getElementById('form-type').value = this.type;
                 document.getElementById('form-branch-id').value = this.branchId;
 
+                // ✅ Add pro_id from the visible field
+                const proId = document.getElementById('pro-id')?.value || '';
+                document.getElementById('form-pro-id').value = proId;
+
                 // For Select2 inputs, use jQuery to get current value
                 const acc1Val = $('#acc1-id').val();
                 const acc2Val = $('#acc2-id').val();
@@ -2033,17 +1991,15 @@
                 document.getElementById('form-acc1-id').value = acc1Val || '';
                 document.getElementById('form-acc2-id').value = acc2Val || '';
 
-                console.log('📊 Submitting Data:', {
-                    type: this.type,
-                    branch_id: this.branchId,
-                    acc1_id: acc1Val,
-                    acc2_id: acc2Val,
-                    currency_id: this.currencyId,
-                    currency_rate: this.exchangeRate
-                });
-
                 document.getElementById('form-currency-id').value = this.currencyId || 1;
                 document.getElementById('form-currency-rate').value = this.exchangeRate || 1;
+
+                // ✅ Add template ID
+                const templateSelect = document.getElementById('invoice-template');
+                const selectedTemplateId = templateSelect?.value || '';
+                if (document.getElementById('form-template-id')) {
+                    document.getElementById('form-template-id').value = selectedTemplateId;
+                }
 
                 document.getElementById('form-pro-date').value = document.getElementById('pro-date')?.value || '';
                 document.getElementById('form-emp-id').value = document.getElementById('emp-id')?.value || '';
@@ -2073,9 +2029,10 @@
 
                 this.invoiceItems.forEach((item, index) => {
                     // Create hidden inputs for each item field
-                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount', 'discount_type',
-                        'additional',
-                        'sub_value', 'batch_number', 'expiry_date', 'notes'
+                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount',
+                        'discount_percentage', 'discount_value',
+                        'additional', 'sub_value', 'batch_number', 'expiry_date', 'notes', 'length',
+                        'width', 'height', 'density'
                     ];
                     fields.forEach(field => {
                         const input = document.createElement('input');
@@ -2086,7 +2043,8 @@
                     });
                 });
 
-                console.log('✅ Form filled, submitting...');
+                // ✅ Mark as saved to prevent beforeunload warning
+                this.isSaved = true;
 
                 // If print after save, submit via AJAX
                 if (printAfterSave) {
@@ -2127,7 +2085,6 @@
                         Swal.close();
 
                         if (data.success && data.operation_id) {
-                            console.log('✅ Invoice saved successfully:', data);
 
                             Swal.fire({
                                 title: 'تم الحفظ بنجاح!',
@@ -2161,7 +2118,6 @@
              * Save invoice first then print
              */
             printInvoice() {
-                console.log('🖨️ Print invoice clicked');
 
                 // Check if we have items
                 if (this.invoiceItems.length === 0) {
@@ -2311,6 +2267,8 @@
                     'expiry': 'expiry_date',
                     'price': 'price',
                     'discount': 'discount',
+                    'discount_percentage': 'discount_percentage',
+                    'discount_value': 'discount_value',
                     'length': 'length',
                     'width': 'width',
                     'height': 'height',
@@ -2357,11 +2315,6 @@
             // Focus a specific field
             focusField(columnName, index) {
                 const fieldId = this.getFieldIdFromColumn(columnName, index);
-                console.log('🔵 focusField called:', {
-                    columnName,
-                    index,
-                    fieldId
-                });
 
                 if (!fieldId) {
                     console.warn('⚠️ No fieldId generated for:', {
@@ -2385,9 +2338,7 @@
                     // List all elements with IDs starting with the column name
                     const columnPrefix = columnName.replace('_', '-');
                     const similarElements = document.querySelectorAll(`[id^="${columnPrefix}"]`);
-                    similarElements.forEach(elem => {
-                        console.log('  - Found:', elem.id, elem.tagName);
-                    });
+                    similarElements.forEach(elem => {});
                 }
             },
 
@@ -2409,6 +2360,8 @@
                     'expiry_date': 'expiry-' + index,
                     'price': 'price-' + index,
                     'discount': 'discount-' + index,
+                    'discount_percentage': 'discount-percentage-' + index,
+                    'discount_value': 'discount-value-' + index,
                     'length': 'length-' + index,
                     'width': 'width-' + index,
                     'height': 'height-' + index,
@@ -2435,6 +2388,17 @@
 
 
             InvoiceApp.init();
+
+            // ✅ Add beforeunload event to warn user before closing page with unsaved data
+            window.addEventListener('beforeunload', function(e) {
+                // Check if there are items in the invoice AND it's not saved yet
+                if (InvoiceApp.invoiceItems && InvoiceApp.invoiceItems.length > 0 && !InvoiceApp.isSaved) {
+                    // Standard way to show confirmation dialog
+                    e.preventDefault();
+                    e.returnValue = ''; // Chrome requires returnValue to be set
+                    return ''; // Some browsers show this message
+                }
+            });
         }
 
         if (document.readyState === 'loading') {
