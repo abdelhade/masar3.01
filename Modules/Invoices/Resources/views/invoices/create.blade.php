@@ -271,6 +271,17 @@
             'clientAccountId' => null,
         ])
     @endif
+
+    {{-- Account Creator Modal (Hidden by default) --}}
+    <div id="account-creator-container" style="display: none;">
+        @if (in_array($type, [10, 12, 14, 16, 19, 22, 26]))
+            {{-- Sales invoices - Add Client --}}
+            @livewire('accounts::account-creator', ['type' => 'client'])
+        @elseif (in_array($type, [11, 13, 15, 17, 20, 24, 25]))
+            {{-- Purchase invoices - Add Supplier --}}
+            @livewire('accounts::account-creator', ['type' => 'supplier'])
+        @endif
+    </div>
 @endsection
 
 @section('script')
@@ -1057,6 +1068,14 @@
                 const defaultUnitId = item.default_unit_id || item.unit_id || (item.units && item.units.length > 0 ?
                     item.units[0].id : 1);
 
+                // ✅ For purchase invoices, use last_purchase_price if available
+                const isPurchaseInvoice = [11, 13, 15, 17, 24, 25].includes(this.type);
+                let itemPrice = parseFloat(item.price) || 0;
+
+                if (isPurchaseInvoice && item.last_purchase_price) {
+                    itemPrice = parseFloat(item.last_purchase_price) || 0;
+                }
+
                 const newItem = {
                     id: Date.now(),
                     item_id: item.id,
@@ -1065,12 +1084,12 @@
                     barcode: item.barcode || '',
                     unit_id: defaultUnitId,
                     quantity: 1,
-                    price: parseFloat(item.price) || 0,
-                    item_price: parseFloat(item.price) || 0,
+                    price: itemPrice,
+                    item_price: itemPrice,
                     discount: 0,
                     discount_percentage: 0,
                     discount_value: 0,
-                    sub_value: parseFloat(item.price) || 0,
+                    sub_value: itemPrice,
                     batch_number: '',
                     expiry_date: null,
                     available_units: item.units || []
@@ -1234,10 +1253,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                                                                                ${unit.name}
-                                                                                                                                                                                                                                                                                                                            </option>
-                                                                                                                                                                                                                                                                                                                        `).join('')}
+                                                                                                                                                                                                                                                                                                                                <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                                                                    ${unit.name}
+                                                                                                                                                                                                                                                                                                                                </option>
+                                                                                                                                                                                                                                                                                                                            `).join('')}
                                 </select>
                             </td>`;
 
@@ -1587,6 +1606,9 @@
 
                 // Update installment modal data if client is selected
                 this.updateInstallmentModalData();
+
+                // ✅ Handle cash account auto-fill when total changes
+                this.handleCashAccountReceivedAmount();
             },
 
             // Update totals display
@@ -1729,6 +1751,8 @@
                     this.currentBalance = 0;
                     this.calculateBalance();
                     this.clearRecommendedItems();
+                    // Clear cash account auto-fill
+                    this.handleCashAccountReceivedAmount();
                     return;
                 }
 
@@ -1751,6 +1775,9 @@
                         } else {
                             console.error('❌ Element current-balance-header not found!');
                         }
+
+                        // ✅ Handle cash account auto-fill AFTER balance is fetched
+                        this.handleCashAccountReceivedAmount();
                     })
                     .catch(error => {
                         console.error('❌ Error fetching account balance:', error);
@@ -1877,6 +1904,52 @@
                         'badge bg-success';
                 } else {
                     console.error('❌ Element balance-after-header not found!');
+                }
+            },
+
+            /**
+             * Handle cash account auto-fill for received amount
+             * Cash Customer ID: 61 (العميل النقدي)
+             * Cash Supplier ID: 64 (المورد النقدي)
+             */
+            handleCashAccountReceivedAmount() {
+                const acc1Id = $('#acc1-id').val();
+                const receivedInput = document.getElementById('received-from-client');
+
+                if (!receivedInput) {
+                    return;
+                }
+
+                // Check if account is cash account (61 or 64)
+                const isCashAccount = (acc1Id === '61' || acc1Id === '64');
+
+                if (isCashAccount) {
+                    // Auto-fill with total and make readonly
+                    receivedInput.value = this.totalAfterAdditional.toFixed(2);
+                    this.receivedFromClient = this.totalAfterAdditional;
+                    receivedInput.readOnly = true;
+                    receivedInput.style.backgroundColor = '#e9ecef'; // Gray background
+                    receivedInput.style.cursor = 'not-allowed';
+                } else {
+                    // Make editable for other accounts
+                    receivedInput.readOnly = false;
+                    receivedInput.style.backgroundColor = '';
+                    receivedInput.style.cursor = '';
+                }
+
+                // Recalculate remaining
+                this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(2));
+
+                // Update display
+                const remainingDisplay = document.getElementById('display-remaining');
+                if (remainingDisplay) {
+                    remainingDisplay.textContent = this.remaining.toFixed(2);
+                    remainingDisplay.classList.remove('text-danger', 'text-success');
+                    if (this.remaining > 0.01) {
+                        remainingDisplay.classList.add('text-danger');
+                    } else if (this.remaining < -0.01) {
+                        remainingDisplay.classList.add('text-success');
+                    }
                 }
             },
 
@@ -2399,6 +2472,68 @@
                     return ''; // Some browsers show this message
                 }
             });
+
+            // ✅ Handle Add Account Button Click
+            const addAcc1Btn = document.getElementById('add-acc1-btn');
+            if (addAcc1Btn) {
+                addAcc1Btn.addEventListener('click', function() {
+                    // Trigger Livewire component to open modal
+                    const container = document.getElementById('account-creator-container');
+                    if (container) {
+                        container.style.display = 'block';
+                        // Find the Livewire component button and click it
+                        const livewireBtn = container.querySelector('button[wire\\:click="openModal"]');
+                        if (livewireBtn) {
+                            livewireBtn.click();
+                        }
+                    }
+                });
+            }
+
+            // ✅ Listen for account-created event from Livewire
+            // Method 1: Using Livewire.on (Livewire 3)
+            document.addEventListener('livewire:initialized', () => {
+                Livewire.on('account-created', (event) => {
+                    handleAccountCreated(event);
+                });
+            });
+
+            // Method 2: Using window event listener (fallback)
+            window.addEventListener('account-created', (event) => {
+                handleAccountCreated(event.detail);
+            });
+
+            // Handler function
+            function handleAccountCreated(eventData) {
+                // Handle both array format and direct object format
+                const accountData = Array.isArray(eventData) ? eventData[0] : eventData;
+
+
+                if (accountData && accountData.account) {
+                    const account = accountData.account;
+
+                    // Add new option to Select2
+                    const newOption = new Option(account.aname, account.id, true, true);
+                    $('#acc1-id').append(newOption).trigger('change');
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم بنجاح',
+                        text: 'تم إضافة ' + account.aname + ' وتحديده في الفاتورة',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Hide the container
+                    const container = document.getElementById('account-creator-container');
+                    if (container) {
+                        container.style.display = 'none';
+                    }
+                } else {
+                    console.error('❌ Invalid account data:', accountData);
+                }
+            }
         }
 
         if (document.readyState === 'loading') {

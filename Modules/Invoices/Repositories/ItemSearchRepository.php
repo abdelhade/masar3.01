@@ -391,6 +391,30 @@ class ItemSearchRepository
 
         $items = $query->limit(8000)->get()->toArray();
 
+        // Get all item IDs for bulk queries
+        $itemIds = array_map(fn($item) => $item->id, $items);
+
+        // ✅ Get last purchase prices for all items in one query (optimized)
+        $lastPurchasePrices = [];
+        if (!empty($itemIds)) {
+            $purchasePricesQuery = DB::table('operation_items as oi')
+                ->join('operhead as oh', 'oi.pro_id', '=', 'oh.id')
+                ->whereIn('oi.item_id', $itemIds)
+                ->whereIn('oh.pro_type', [11, 13, 15, 17, 20, 24, 25]) // Purchase types
+                ->where('oh.isdeleted', 0)
+                ->select('oi.item_id', 'oi.item_price', 'oh.pro_date', 'oh.id as operation_id')
+                ->orderBy('oh.pro_date', 'desc')
+                ->orderBy('oh.id', 'desc')
+                ->get();
+
+            // Group by item_id and get first (latest) price for each item
+            foreach ($purchasePricesQuery as $row) {
+                if (!isset($lastPurchasePrices[$row->item_id])) {
+                    $lastPurchasePrices[$row->item_id] = (float) $row->item_price;
+                }
+            }
+        }
+
         // Get units and barcodes for each item
         $result = [];
         foreach ($items as $item) {
@@ -419,12 +443,16 @@ class ItemSearchRepository
                 ->where('item_id', $item['id'])
                 ->value('price') ?? 0;
 
+            // ✅ Get last purchase price from our bulk query
+            $lastPurchasePrice = $lastPurchasePrices[$item['id']] ?? 0;
+
             $result[] = [
                 'id' => $item['id'],
                 'name' => $item['name'],
                 'code' => $item['code'] ?? '',
                 'barcode' => $barcode ?? '',
                 'price' => (float) $price,
+                'last_purchase_price' => $lastPurchasePrice, // ✅ Added
                 'units' => array_map(function ($u) {
                     $u = (array) $u;
                     return [
@@ -509,6 +537,7 @@ class ItemSearchRepository
             'code' => (string) $data['code'],
             'barcode' => '',
             'price' => (float) ($data['price'] ?? 0),
+            'last_purchase_price' => 0, // ✅ New item has no purchase history
             'units' => [
                 [
                     'id' => $data['unit_id'],
