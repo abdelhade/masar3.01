@@ -684,6 +684,109 @@
     background: linear-gradient(135deg, #262626 0%, #171717 100%);
 }
 
+/* Dark Mode for Search Results / Dropdowns */
+.dark .list-group {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .list-group-item {
+    background: #1f2937 !important;
+    color: #f3f4f6 !important;
+    border-color: #374151 !important;
+}
+
+.dark .list-group-item:hover {
+    background: #374151 !important;
+}
+
+.dark .list-group-item.active {
+    background: linear-gradient(135deg, #34d3a3 0%, #2ab88d 100%) !important;
+    border-color: #34d3a3 !important;
+    color: #ffffff !important;
+}
+
+/* Dark Mode for Forms */
+.dark .form-control,
+.dark .form-select {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .form-control:focus,
+.dark .form-select:focus {
+    background-color: #1f2937 !important;
+    border-color: #34d3a3 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .form-control::placeholder {
+    color: #9ca3af !important;
+}
+
+/* Dark Mode for Input Groups */
+.dark .input-group-text {
+    background-color: #374151 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+/* Dark Mode for Tables */
+.dark .table {
+    color: #f3f4f6 !important;
+}
+
+.dark .table tbody tr {
+    border-color: #374151 !important;
+}
+
+.dark .table tbody tr:hover {
+    background-color: #374151 !important;
+}
+
+/* Dark Mode for Cards */
+.dark .card-header {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
+    color: #f3f4f6 !important;
+    border-color: #374151 !important;
+}
+
+.dark .card-body {
+    background-color: #1f2937 !important;
+    color: #f3f4f6 !important;
+}
+
+/* Dark Mode for Borders */
+.dark .border,
+.dark .border-secondary {
+    border-color: #374151 !important;
+}
+
+/* Dark Mode for Alerts */
+.dark .alert {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+/* Dark Mode for Badges */
+.dark .badge {
+    filter: brightness(0.9);
+}
+
+/* Dark Mode for Specific Invoice Elements */
+.dark [style*="background: white"],
+.dark [style*="background:white"],
+.dark [style*="background:#fff"],
+.dark [style*="background: #fff"] {
+    background: #1f2937 !important;
+}
+
+.dark [style*="box-shadow"] {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
 /* ============================================
    15. ANIMATION ENHANCEMENTS
    ============================================ */

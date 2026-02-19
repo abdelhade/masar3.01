@@ -15,7 +15,10 @@
 
 {{-- Load Modern Theme (Gradient) if selected --}}
 @if(session('theme') === 'modern')
-    @vite(['resources/css/themes/bootstrap-gradient-theme.css'])
+    @vite(['resources/css/themes/bootstrap-gradient-theme.css', 'resources/css/themes/dark-mode-fixes.css'])
+@else
+    {{-- Load dark mode fixes even with default theme --}}
+    @vite(['resources/css/themes/dark-mode-fixes.css'])
 @endif
 
 @fluxAppearance

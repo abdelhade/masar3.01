@@ -1,0 +1,484 @@
+/**
+ * Dark Mode Fixes for massar1.02
+ * إصلاحات خاصة للوضع الداكن
+ */
+
+/* ============================================
+   INVOICE SEARCH DROPDOWN - DARK MODE
+   ============================================ */
+
+/* Search Results Dropdown */
+.dark .list-group.position-absolute[style*="background: white"],
+.dark .list-group.position-absolute[style*="background:white"] {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* List Items in Search Results */
+.dark .list-group-item {
+    background-color: #1f2937 !important;
+    color: #f3f4f6 !important;
+    border-color: #374151 !important;
+}
+
+.dark .list-group-item:hover {
+    background-color: #374151 !important;
+}
+
+.dark .list-group-item.active {
+    background: linear-gradient(135deg, #34d3a3 0%, #2ab88d 100%) !important;
+    border-color: #34d3a3 !important;
+    color: #ffffff !important;
+}
+
+.dark .list-group-item-success {
+    background-color: #1f2937 !important;
+    color: #10b981 !important;
+}
+
+.dark .list-group-item-success.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+}
+
+/* ============================================
+   FORMS - DARK MODE
+   ============================================ */
+
+.dark .form-control,
+.dark .form-select,
+.dark textarea.form-control {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .form-control:focus,
+.dark .form-select:focus,
+.dark textarea.form-control:focus {
+    background-color: #1f2937 !important;
+    border-color: #34d3a3 !important;
+    color: #f3f4f6 !important;
+    box-shadow: 0 0 0 0.25rem rgba(52, 211, 163, 0.25) !important;
+}
+
+.dark .form-control::placeholder,
+.dark textarea.form-control::placeholder {
+    color: #9ca3af !important;
+}
+
+.dark .form-control:disabled,
+.dark .form-select:disabled {
+    background-color: #374151 !important;
+    color: #6b7280 !important;
+}
+
+/* Input Groups */
+.dark .input-group-text {
+    background-color: #374151 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+/* ============================================
+   TABLES - DARK MODE
+   ============================================ */
+
+.dark .table {
+    color: #f3f4f6 !important;
+    border-color: #374151 !important;
+}
+
+.dark .table thead {
+    background-color: #374151 !important;
+    color: #f3f4f6 !important;
+    border-color: #4b5563 !important;
+}
+
+.dark .table tbody tr {
+    border-color: #374151 !important;
+}
+
+.dark .table tbody tr:hover {
+    background-color: #374151 !important;
+}
+
+.dark .table td,
+.dark .table th {
+    border-color: #374151 !important;
+}
+
+/* ============================================
+   CARDS - DARK MODE
+   ============================================ */
+
+.dark .card {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .card-header {
+    background-color: #374151 !important;
+    color: #f3f4f6 !important;
+    border-color: #4b5563 !important;
+}
+
+.dark .card-body {
+    background-color: #1f2937 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .card-footer {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+/* ============================================
+   BORDERS - DARK MODE
+   ============================================ */
+
+.dark .border,
+.dark .border-secondary,
+.dark .border-1,
+.dark .border-2,
+.dark .border-3 {
+    border-color: #374151 !important;
+}
+
+.dark .border-top {
+    border-top-color: #374151 !important;
+}
+
+.dark .border-bottom {
+    border-bottom-color: #374151 !important;
+}
+
+.dark .border-start {
+    border-left-color: #374151 !important;
+}
+
+.dark .border-end {
+    border-right-color: #374151 !important;
+}
+
+/* Specific fix for invoice rows with border-secondary */
+.dark .row.border.border-secondary,
+.dark .border.border-secondary {
+    border-color: #4b5563 !important;
+    background-color: #1f2937 !important;
+}
+
+.dark .row.border-secondary.border-3 {
+    border-color: #4b5563 !important;
+    border-width: 3px !important;
+}
+
+/* Rounded borders in dark mode */
+.dark .rounded,
+.dark .rounded-1,
+.dark .rounded-2,
+.dark .rounded-3 {
+    border-color: #374151 !important;
+}
+
+/* ============================================
+   MODALS - DARK MODE
+   ============================================ */
+
+.dark .modal-content {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .modal-header {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .modal-body {
+    background-color: #1f2937 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .modal-footer {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+.dark .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* ============================================
+   DROPDOWNS - DARK MODE
+   ============================================ */
+
+.dark .dropdown-menu {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .dropdown-item {
+    color: #f3f4f6 !important;
+}
+
+.dark .dropdown-item:hover,
+.dark .dropdown-item:focus {
+    background-color: #374151 !important;
+    color: #ffffff !important;
+}
+
+.dark .dropdown-divider {
+    border-color: #374151 !important;
+}
+
+/* ============================================
+   ALERTS - DARK MODE
+   ============================================ */
+
+.dark .alert {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .alert-success {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    border-color: #10b981 !important;
+    color: #10b981 !important;
+}
+
+.dark .alert-danger {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+}
+
+.dark .alert-warning {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    border-color: #f59e0b !important;
+    color: #f59e0b !important;
+}
+
+.dark .alert-info {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    border-color: #3b82f6 !important;
+    color: #3b82f6 !important;
+}
+
+/* ============================================
+   TEXT COLORS - DARK MODE
+   ============================================ */
+
+.dark .text-muted {
+    color: #9ca3af !important;
+}
+
+.dark .text-dark {
+    color: #f3f4f6 !important;
+}
+
+.dark .text-secondary {
+    color: #d1d5db !important;
+}
+
+/* ============================================
+   BACKGROUNDS - DARK MODE
+   ============================================ */
+
+.dark .bg-light {
+    background-color: #374151 !important;
+}
+
+.dark .bg-white {
+    background-color: #1f2937 !important;
+}
+
+.dark .bg-secondary {
+    background-color: #374151 !important;
+}
+
+/* Any element with border should have dark background */
+.dark [class*="border"] {
+    border-color: #374151 !important;
+}
+
+.dark [class*="border-secondary"] {
+    border-color: #4b5563 !important;
+}
+
+.dark [class*="border-primary"] {
+    border-color: #34d3a3 !important;
+}
+
+.dark [class*="border-success"] {
+    border-color: #10b981 !important;
+}
+
+.dark [class*="border-danger"] {
+    border-color: #ef4444 !important;
+}
+
+.dark [class*="border-warning"] {
+    border-color: #f59e0b !important;
+}
+
+.dark [class*="border-info"] {
+    border-color: #3b82f6 !important;
+}
+
+/* ============================================
+   INVOICE SPECIFIC - DARK MODE
+   ============================================ */
+
+/* Content Wrapper */
+.dark .content-wrapper {
+    background-color: #111827 !important;
+}
+
+/* Invoice Rows */
+.dark .row.border {
+    background-color: #1f2937 !important;
+}
+
+/* Invoice Rows with border-secondary */
+.dark .row.border.border-secondary {
+    background-color: #1f2937 !important;
+    border-color: #4b5563 !important;
+}
+
+.dark .row.border-secondary.border-3 {
+    border-color: #4b5563 !important;
+}
+
+/* Invoice sections with padding */
+.dark .p-2,
+.dark .p-3,
+.dark .p-4 {
+    background-color: transparent;
+}
+
+.dark .row.border.p-2,
+.dark .row.border.p-3 {
+    background-color: #1f2937 !important;
+}
+
+/* Labels */
+.dark label {
+    color: #f3f4f6 !important;
+}
+
+/* Small Text */
+.dark small {
+    color: #9ca3af !important;
+}
+
+/* HR Dividers */
+.dark hr {
+    border-color: #374151 !important;
+}
+
+/* Invoice item rows */
+.dark .invoice-item-row {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+/* Invoice totals section */
+.dark .invoice-totals {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+/* ============================================
+   SCROLLBARS - DARK MODE
+   ============================================ */
+
+.dark ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 5px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+}
+
+/* ============================================
+   LOADING STATES - DARK MODE
+   ============================================ */
+
+.dark .spinner-border {
+    color: #34d3a3 !important;
+}
+
+.dark .spinner-grow {
+    color: #34d3a3 !important;
+}
+
+/* ============================================
+   PAGINATION - DARK MODE
+   ============================================ */
+
+.dark .pagination .page-link {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .pagination .page-link:hover {
+    background-color: #374151 !important;
+    color: #ffffff !important;
+}
+
+.dark .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #34d3a3 0%, #2ab88d 100%) !important;
+    border-color: #34d3a3 !important;
+}
+
+.dark .pagination .page-item.disabled .page-link {
+    background-color: #374151 !important;
+    color: #6b7280 !important;
+}
+
+/* ============================================
+   TOOLTIPS - DARK MODE
+   ============================================ */
+
+.dark .tooltip-inner {
+    background-color: #1f2937 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .tooltip .arrow::before {
+    border-top-color: #1f2937 !important;
+}
+
+/* ============================================
+   POPOVERS - DARK MODE
+   ============================================ */
+
+.dark .popover {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .popover-header {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .popover-body {
+    color: #f3f4f6 !important;
+}
