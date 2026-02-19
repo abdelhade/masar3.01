@@ -29,6 +29,7 @@ class SaveInvoiceRequest extends FormRequest
             'type' => ['required', 'integer'],
             'branch_id' => ['required', 'integer', 'exists:branches,id'],
             'template_id' => ['nullable', 'integer', 'exists:invoice_templates,id'],
+            'pro_id' => ['nullable', 'integer'],
             'acc1_id' => ['required', 'integer', 'exists:acc_head,id'],
             'acc2_id' => ['required', 'integer', 'exists:acc_head,id'],
             'pro_date' => ['required', 'date'],

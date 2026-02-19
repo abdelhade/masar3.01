@@ -197,6 +197,7 @@
             <input type="hidden" name="type" id="form-type">
             <input type="hidden" name="branch_id" id="form-branch-id">
             <input type="hidden" name="template_id" id="form-template-id">
+            <input type="hidden" name="pro_id" id="form-pro-id">
             <input type="hidden" name="acc1_id" id="form-acc1-id">
             <input type="hidden" name="acc2_id" id="form-acc2-id">
             <input type="hidden" name="pro_date" id="form-pro-date">
@@ -226,6 +227,7 @@
             <div class="invoice-header-card">
                 @include('invoices::components.invoices.invoice-head', [
                     'type' => $type,
+                    'nextProId' => $nextProId,
                     'branches' => $branches,
                     'acc1Role' => in_array($type, [10, 12, 14, 16, 19, 22]) ? __('Customer') : __('Supplier'),
                     'acc2Role' => __('Store'),
@@ -2026,6 +2028,10 @@
                 // ✅ Fill hidden inputs with current data
                 document.getElementById('form-type').value = this.type;
                 document.getElementById('form-branch-id').value = this.branchId;
+
+                // ✅ Add pro_id from the visible field
+                const proId = document.getElementById('pro-id')?.value || '';
+                document.getElementById('form-pro-id').value = proId;
 
                 // For Select2 inputs, use jQuery to get current value
                 const acc1Val = $('#acc1-id').val();

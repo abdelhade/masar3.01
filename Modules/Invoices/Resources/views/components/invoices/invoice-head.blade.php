@@ -178,7 +178,7 @@
             <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('رقم الفاتورة') }}</label>
                 <input type="text" id="pro-id" class="form-control form-control-sm" readonly
-                    placeholder="تلقائي">
+                    value="{{ $nextProId ?? '' }}">
             </div>
 
             @if ($type != 21)
