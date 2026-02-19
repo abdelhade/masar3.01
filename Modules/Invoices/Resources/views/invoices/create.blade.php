@@ -271,6 +271,17 @@
             'clientAccountId' => null,
         ])
     @endif
+
+    {{-- Account Creator Modal (Hidden by default) --}}
+    <div id="account-creator-container" style="display: none;">
+        @if (in_array($type, [10, 12, 14, 16, 19, 22, 26]))
+            {{-- Sales invoices - Add Client --}}
+            @livewire('accounts::account-creator', ['type' => 'client'])
+        @elseif (in_array($type, [11, 13, 15, 17, 20, 24, 25]))
+            {{-- Purchase invoices - Add Supplier --}}
+            @livewire('accounts::account-creator', ['type' => 'supplier'])
+        @endif
+    </div>
 @endsection
 
 @section('script')
@@ -1060,7 +1071,7 @@
                 // ✅ For purchase invoices, use last_purchase_price if available
                 const isPurchaseInvoice = [11, 13, 15, 17, 24, 25].includes(this.type);
                 let itemPrice = parseFloat(item.price) || 0;
-                
+
                 if (isPurchaseInvoice && item.last_purchase_price) {
                     itemPrice = parseFloat(item.last_purchase_price) || 0;
                 }
@@ -1242,10 +1253,10 @@
                             <td style="width: 10%;" onclick="event.stopPropagation();">
                                 <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
                                     ${(item.available_units || []).map(unit => `
-                                                                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
-                                                                                                                                                                                                                                                                                                                                ${unit.name}
-                                                                                                                                                                                                                                                                                                                            </option>
-                                                                                                                                                                                                                                                                                                                        `).join('')}
+                                                                                                                                                                                                                                                                                                                                <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                                                                    ${unit.name}
+                                                                                                                                                                                                                                                                                                                                </option>
+                                                                                                                                                                                                                                                                                                                            `).join('')}
                                 </select>
                             </td>`;
 
@@ -1904,7 +1915,7 @@
             handleCashAccountReceivedAmount() {
                 const acc1Id = $('#acc1-id').val();
                 const receivedInput = document.getElementById('received-from-client');
-                
+
                 if (!receivedInput) {
                     return;
                 }
@@ -1928,7 +1939,7 @@
 
                 // Recalculate remaining
                 this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(2));
-                
+
                 // Update display
                 const remainingDisplay = document.getElementById('display-remaining');
                 if (remainingDisplay) {
@@ -2461,6 +2472,68 @@
                     return ''; // Some browsers show this message
                 }
             });
+
+            // ✅ Handle Add Account Button Click
+            const addAcc1Btn = document.getElementById('add-acc1-btn');
+            if (addAcc1Btn) {
+                addAcc1Btn.addEventListener('click', function() {
+                    // Trigger Livewire component to open modal
+                    const container = document.getElementById('account-creator-container');
+                    if (container) {
+                        container.style.display = 'block';
+                        // Find the Livewire component button and click it
+                        const livewireBtn = container.querySelector('button[wire\\:click="openModal"]');
+                        if (livewireBtn) {
+                            livewireBtn.click();
+                        }
+                    }
+                });
+            }
+
+            // ✅ Listen for account-created event from Livewire
+            // Method 1: Using Livewire.on (Livewire 3)
+            document.addEventListener('livewire:initialized', () => {
+                Livewire.on('account-created', (event) => {
+                    handleAccountCreated(event);
+                });
+            });
+
+            // Method 2: Using window event listener (fallback)
+            window.addEventListener('account-created', (event) => {
+                handleAccountCreated(event.detail);
+            });
+
+            // Handler function
+            function handleAccountCreated(eventData) {
+                // Handle both array format and direct object format
+                const accountData = Array.isArray(eventData) ? eventData[0] : eventData;
+
+
+                if (accountData && accountData.account) {
+                    const account = accountData.account;
+
+                    // Add new option to Select2
+                    const newOption = new Option(account.aname, account.id, true, true);
+                    $('#acc1-id').append(newOption).trigger('change');
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم بنجاح',
+                        text: 'تم إضافة ' + account.aname + ' وتحديده في الفاتورة',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Hide the container
+                    const container = document.getElementById('account-creator-container');
+                    if (container) {
+                        container.style.display = 'none';
+                    }
+                } else {
+                    console.error('❌ Invalid account data:', accountData);
+                }
+            }
         }
 
         if (document.readyState === 'loading') {

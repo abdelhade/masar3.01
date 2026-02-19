@@ -82,18 +82,27 @@
         <div class="row g-2">
             <input type="hidden" name="type" value="{{ $type }}">
 
-            {{-- العميل/المورد - With Select2 Search --}}
+            {{-- العميل/المورد - With Select2 Search + Add Button --}}
             <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">
                     {{ $acc1Role }}
                     <span class="text-danger">*</span>
                 </label>
-                <select id="acc1-id" class="form-select form-select-sm" style="width: 100%;">
-                    <option value="">{{ __('ابحث عن') }} {{ $acc1Role }}...</option>
-                    @foreach ($acc1Options as $option)
-                        <option value="{{ $option->id }}">{{ $option->aname }}</option>
-                    @endforeach
-                </select>
+                <div class="d-flex gap-1 align-items-stretch">
+                    <select id="acc1-id" class="form-select form-select-sm" style="flex: 1; min-width: 0;">
+                        <option value="">{{ __('ابحث عن') }} {{ $acc1Role }}...</option>
+                        @foreach ($acc1Options as $option)
+                            <option value="{{ $option->id }}">{{ $option->aname }}</option>
+                        @endforeach
+                    </select>
+                    {{-- زر إضافة عميل/مورد --}}
+                    <button type="button" class="btn btn-sm btn-primary d-flex align-items-center justify-content-center"
+                            id="add-acc1-btn"
+                            style="padding: 0.375rem 0.5rem; flex-shrink: 0; height: 100%;"
+                            title="{{ __('إضافة') }} {{ $acc1Role }}">
+                        <i class="las la-plus" style="font-size: 1.2rem;"></i>
+                    </button>
+                </div>
             </div>
 
             {{-- المخزن --}}

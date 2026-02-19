@@ -1,7 +1,7 @@
 {{-- resources/views/livewire/components/account-creator.blade.php --}}
 <div>
     <!-- زر فتح المودال -->
-    <button class="btn btn-primary cake cake-flash" type="button" class="{{ $buttonClass }}" wire:click="openModal">
+    <button class="btn btn-primary btn-sm cake cake-flash" type="button" class="{{ $buttonClass }}" wire:click="openModal">
         <i class="fas fa-plus"></i>
     </button>
 
