@@ -1,5 +1,7 @@
 @extends('admin.dashboard')
 
+@section('body_class', 'invoice-page-fixed')
+
 @section('sidebar')
     @if (in_array($type, [10, 12, 14, 16, 22, 26]))
         @include('components.sidebar.sales-invoices')
@@ -11,5 +13,2437 @@
 @endsection
 
 @section('content')
-    <livewire:invoices.create-invoice-form :type="$type" :hash="$hash" />
+
+    @push('styles')
+        <style>
+            /* Body padding for fixed footer - NO SCROLL */
+            /* NO PAGE SCROLL - Fixed layout components */
+            body.invoice-page-fixed {
+                height: 100vh !important;
+                overflow: hidden !important;
+            }
+
+            .invoice-page-fixed .page-wrapper {
+                height: 100vh !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+            }
+
+            .invoice-page-fixed .page-content {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                padding: 0 !important;
+            }
+
+            .invoice-page-fixed .container-fluid,
+            .invoice-page-fixed .container-fluid>.row {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .invoice-page-fixed #invoice-app {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                background: #fff;
+            }
+
+            .invoice-page-fixed #invoice-form {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+            }
+
+            .invoice-page-fixed .invoice-scroll-container {
+                flex: 1 !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                padding: 15px !important;
+            }
+
+            /* Allow dropdown to show outside scroll container */
+            .invoice-scroll-container .table-responsive {
+                overflow: visible !important;
+            }
+
+            .invoice-page-fixed #invoice-fixed-footer {
+                flex-shrink: 0 !important;
+                width: 100% !important;
+                z-index: 10;
+            }
+
+            /* Header styling to match image */
+            .invoice-header-card {
+                background: #f8f9fa;
+                border: 2px solid #6c757d;
+                border-radius: 8px;
+                margin-bottom: 15px;
+            }
+
+            .invoice-header-card .card-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 6px 6px 0 0;
+                padding: 10px 15px;
+            }
+
+            /* Table header styling to match image */
+            .invoice-data-grid thead th {
+                background: linear-gradient(135deg, #a8c0ff 0%, #c5d9ff 100%) !important;
+                color: #2c3e50;
+                font-weight: 600;
+                text-align: center;
+                border: 1px solid #90a4ae;
+            }
+
+            /* Search row styling */
+            .invoice-data-grid .search-row {
+                background: #e3f2fd !important;
+            }
+
+            text-align: center;
+            }
+
+            .footer-value.total {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                font-size: 1.2rem;
+            }
+
+            /* Button styling */
+            .btn-save-invoice {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                border: none;
+                color: white;
+                font-weight: 600;
+                padding: 12px 30px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+                transition: all 0.3s ease;
+            }
+
+            .btn-save-invoice:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+            }
+
+
+            /* Hidden class */
+            .hidden {
+                display: none !important;
+            }
+
+            /* Select2 dropdown positioning */
+            .select2-container {
+                z-index: 9999 !important;
+            }
+
+            .select2-dropdown {
+                z-index: 99999 !important;
+            }
+
+            /* Search dropdown must be above everything */
+            #search-results-dropdown * {
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+
+            #search-results-dropdown>div {
+                display: flex !important;
+            }
+        </style>
+    @endpush
+    {{-- Pure HTML - No Alpine --}}
+    <div id="invoice-app">
+        <form id="invoice-form" method="POST" action="{{ route('invoices.store') }}">
+            @csrf
+
+            {{-- Success Message --}}
+            @if (session('success'))
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __('تم بنجاح') }}',
+                            text: '{{ session('success') }}',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    });
+                </script>
+            @endif
+
+            {{-- Error Display --}}
+            @if ($errors->any())
+                <div class="alert alert-danger shadow-sm mb-3">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            {{-- Hidden inputs for all invoice data --}}
+            <input type="hidden" name="type" id="form-type">
+            <input type="hidden" name="branch_id" id="form-branch-id">
+            <input type="hidden" name="acc1_id" id="form-acc1-id">
+            <input type="hidden" name="acc2_id" id="form-acc2-id">
+            <input type="hidden" name="pro_date" id="form-pro-date">
+            <input type="hidden" name="emp_id" id="form-emp-id">
+            <input type="hidden" name="delivery_id" id="form-delivery-id">
+            <input type="hidden" name="accural_date" id="form-accural-date">
+            <input type="hidden" name="serial_number" id="form-serial-number">
+            <input type="hidden" name="cash_box_id" id="form-cash-box-id">
+            <input type="hidden" name="notes" id="form-notes">
+            <input type="hidden" name="discount_percentage" id="form-discount-percentage">
+            <input type="hidden" name="discount_value" id="form-discount-value">
+            <input type="hidden" name="additional_percentage" id="form-additional-percentage">
+            <input type="hidden" name="additional_value" id="form-additional-value">
+            <input type="hidden" name="vat_percentage" id="form-vat-percentage">
+            <input type="hidden" name="vat_value" id="form-vat-value">
+            <input type="hidden" name="withholding_tax_percentage" id="form-withholding-tax-percentage">
+            <input type="hidden" name="withholding_tax_value" id="form-withholding-tax-value">
+            <input type="hidden" name="subtotal" id="form-subtotal">
+            <input type="hidden" name="total_after_additional" id="form-total-after-additional">
+            <input type="hidden" name="received_from_client" id="form-received-from-client">
+            <input type="hidden" name="remaining" id="form-remaining">
+            <input type="hidden" name="currency_id" id="form-currency-id" value="1">
+            <input type="hidden" name="currency_rate" id="form-currency-rate" value="1">
+            <div id="form-items-container"></div>
+
+            {{-- Part 1: Invoice Header --}}
+            <div class="invoice-header-card">
+                @include('invoices::components.invoices.invoice-head', [
+                    'type' => $type,
+                    'branches' => $branches,
+                    'acc1Role' => in_array($type, [10, 12, 14, 16, 19, 22]) ? __('Customer') : __('Supplier'),
+                    'acc2Role' => __('Store'),
+                    'acc1Options' => $acc1Options,
+                    'acc2List' => $acc2List,
+                    'employees' => $employees,
+                    'deliverys' => $deliverys,
+                    'cashAccounts' => $cashAccounts,
+                    'showBalance' => setting('show_balance', '1') === '1',
+                    'currentBalance' => 0,
+                    'balanceAfterInvoice' => 0,
+                    'currency_id' => 1,
+                    'currency_rate' => 1,
+                ])
+            </div>
+
+            @include('invoices::components.invoices.invoice-item-table', [
+                'type' => $type,
+                'branchId' => $branchId,
+            ])
+        </form>
+    </div>
+
+    {{-- Invoice Footer - NOT fixed, at bottom of content --}}
+    <div class="invoice-footer-container">
+        @include('invoices::components.invoices.invoice-footer', [
+            'type' => $type,
+            'vatPercentage' => isVatEnabled() ? setting('default_vat_percentage', 0) : 0,
+            'withholdingTaxPercentage' => isWithholdingTaxEnabled()
+                ? setting('default_withholding_tax_percentage', 0)
+                : 0,
+            'showBalance' => setting('show_balance', '1') === '1',
+            'cashAccounts' => $cashAccounts,
+        ])
+    </div>
+
+    {{-- Installment Modal --}}
+    @if (setting('enable_installment_from_invoice') && $type == 10)
+        @livewire('installments::create-installment-from-invoice', [
+            'invoiceTotal' => 0,
+            'clientAccountId' => null,
+        ])
+    @endif
+@endsection
+
+@section('script')
+    @php
+        // ✅ Prepare all config as JSON to avoid Blade syntax issues
+        $invoiceConfig = [
+            'type' => $type,
+            'branchId' => $branchId ?? null,
+            'vatPercentage' => isVatEnabled() ? setting('default_vat_percentage', 0) : 0,
+            'withholdingTaxPercentage' => isWithholdingTaxEnabled()
+                ? setting('default_withholding_tax_percentage', 0)
+                : 0,
+            'storeUrl' => route('invoices.store'),
+            'userSettings' => $userSettings ?? [],
+            'defaultAcc1Id' => $defaultAcc1Id ?? null,
+            'defaultAcc2Id' => $defaultAcc2Id ?? null,
+            'translations' => [
+                'item_name' => __('Item Name'),
+                'code' => __('Code'),
+                'unit' => __('Unit'),
+                'quantity' => __('Quantity'),
+                'batch_number' => __('Batch Number'),
+                'expiry_date' => __('Expiry Date'),
+                'price' => __('Price'),
+                'discount' => __('Discount'),
+                'sub_value' => __('Value'),
+                'length' => __('Length'),
+                'width' => __('Width'),
+                'height' => __('Height'),
+                'density' => __('Density'),
+                'action' => __('Action'),
+            ],
+        ];
+    @endphp
+
+    {{-- Main Invoice JavaScript --}}
+    <script>
+        // ✅ Config from PHP (safe JSON encoding)
+        const CONFIG = @json($invoiceConfig);
+        const INVOICE_STORE_URL = CONFIG.storeUrl;
+
+        // Invoice State (Global)
+        window.InvoiceApp = {
+            // Config
+            type: CONFIG.type,
+            settings: CONFIG.userSettings || {},
+            branchId: CONFIG.branchId,
+            vatPercentage: CONFIG.vatPercentage,
+            withholdingTaxPercentage: CONFIG.withholdingTaxPercentage,
+            currencyId: 1, // Default
+            exchangeRate: 1, // Default
+            selectedPriceListId: null, // Selected price list for sales invoices
+
+            // Template columns
+            visibleColumns: ['item_name', 'code', 'unit', 'quantity', 'price', 'discount', 'sub_value'],
+            allColumns: CONFIG.translations,
+
+            // Data
+            invoiceItems: [],
+            allItems: [],
+            fuse: null,
+            itemDiscountType: localStorage.getItem('itemDiscountType') ||
+                'percentage', // Load from localStorage or default to 'percentage'
+
+            // Totals
+            subtotal: 0,
+            discountPercentage: 0,
+            discountValue: 0,
+            additionalPercentage: 0,
+            additionalValue: 0,
+            vatValue: 0,
+            withholdingTaxValue: 0,
+            totalAfterAdditional: 0,
+            receivedFromClient: 0,
+            remaining: 0,
+
+            // Account Balance
+            currentBalance: 0,
+            calculatedBalanceAfter: 0,
+
+            // Search
+            searchResults: [],
+            selectedIndex: -1,
+
+            // Initialize
+            init() {
+                console.log(`🔵 Loaded discount type from localStorage: ${this.itemDiscountType}`);
+                this.initializeSelect2();
+                this.loadDefaultTemplate();
+                this.setDefaultValues();
+                this.loadItems();
+                this.attachEventListeners();
+                this.renderItems();
+                this.initializePriceListSelector();
+            },
+
+            // Load default template
+            loadDefaultTemplate() {
+                const templateSelect = document.getElementById('invoice-template');
+                if (templateSelect) {
+                    const defaultOption = templateSelect.querySelector('option[selected]');
+                    if (defaultOption) {
+                        const columnsJson = defaultOption.getAttribute('data-columns');
+                        if (columnsJson) {
+                            try {
+                                let columns = JSON.parse(columnsJson);
+
+                                // ✅ Hide expiry columns if disabled in settings
+                                if (this.settings.expiry_mode && this.settings.expiry_mode.disabled) {
+                                    columns = columns.filter(c => c !== 'batch_number' && c !== 'expiry_date');
+                                }
+
+                                this.visibleColumns = columns;
+                                this.updateTableHeaders();
+                            } catch (e) {
+                                console.error('❌ Error parsing default template columns:', e);
+                            }
+                        }
+                    }
+                }
+            },
+
+            // Initialize Select2 for searchable dropdowns
+            initializeSelect2() {
+                console.log('🔵 initializeSelect2 called');
+
+                // Save reference to this
+                const self = this;
+
+                // Initialize Select2 for acc1 (Customer/Supplier) with search
+                $('#acc1-id').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: 'ابحث عن عميل/مورد...',
+                    allowClear: true,
+                    dropdownParent: $('#invoice-app'),
+                    language: {
+                        noResults: () => 'لا توجد نتائج',
+                        searching: () => 'جاري البحث...'
+                    }
+                });
+
+                // ✅ Attach event listener BEFORE setting default value
+                $('#acc1-id').on('change', function(e) {
+                    console.log('🔵 acc1-id changed event fired!', {
+                        value: $(this).val(),
+                        event: e
+                    });
+
+                    const accountId = $(this).val();
+                    console.log('� Account ID from jQuery:', accountId);
+
+                    if (accountId) {
+                        console.log('✅ Calling updateAccountBalance with:', accountId);
+                        self.updateAccountBalance(accountId);
+                    } else {
+                        console.log('⚠️ No accountId selected, clearing data');
+                        self.currentBalance = 0;
+                        self.calculatedBalanceAfter = 0;
+
+                        // Clear balance display
+                        const currentBalanceEl = document.getElementById('current-balance-header');
+                        const balanceAfterEl = document.getElementById('balance-after-header');
+                        if (currentBalanceEl) currentBalanceEl.textContent = '0.00';
+                        if (balanceAfterEl) balanceAfterEl.textContent = '0.00';
+
+                        // Clear recommended items
+                        self.clearRecommendedItems();
+                    }
+                });
+
+                // ✅ Set default account AFTER attaching event listener
+                if (CONFIG.defaultAcc1Id) {
+                    console.log('🔵 Setting default acc1:', CONFIG.defaultAcc1Id);
+                    $('#acc1-id').val(CONFIG.defaultAcc1Id).trigger('change');
+                }
+
+                // Initialize Select2 for acc2 (Store) with search
+                $('#acc2-id').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: 'ابحث عن مخزن...',
+                    allowClear: true,
+                    dropdownParent: $('#invoice-app'),
+                    language: {
+                        noResults: () => 'لا توجد نتائج',
+                        searching: () => 'جاري البحث...'
+                    }
+                });
+
+                // ✅ Set default store if exists
+                if (CONFIG.defaultAcc2Id) {
+                    $('#acc2-id').val(CONFIG.defaultAcc2Id).trigger('change');
+                }
+            },
+
+            // Set default values from settings
+            setDefaultValues() {
+                // Set default employee
+                const defaultEmployeeId = '{{ $defaultEmployeeId ?? '' }}';
+                if (defaultEmployeeId) {
+                    document.getElementById('emp-id').value = defaultEmployeeId;
+                }
+
+                // Set default delivery
+                const defaultDeliveryId = '{{ $defaultDeliveryId ?? '' }}';
+                if (defaultDeliveryId) {
+                    document.getElementById('delivery-id').value = defaultDeliveryId;
+                }
+
+                // Set default store
+                const defaultStoreId = '{{ $defaultStoreId ?? '' }}';
+                if (defaultStoreId) {
+                    document.getElementById('acc2-id').value = defaultStoreId;
+                }
+
+                // Set default customer/supplier based on invoice type
+                const invoiceType = {{ $type }};
+                const defaultCustomerId = '{{ $defaultCustomerId ?? '' }}';
+                const defaultSupplierId = '{{ $defaultSupplierId ?? '' }}';
+
+                if ([10, 12, 14, 16, 19, 22].includes(invoiceType) && defaultCustomerId) {
+                    // Sales invoices - set default customer
+                    $('#acc1-id').val(defaultCustomerId).trigger('change');
+                } else if ([11, 13, 15, 17, 20, 23].includes(invoiceType) && defaultSupplierId) {
+                    // Purchase invoices - set default supplier
+                    $('#acc1-id').val(defaultSupplierId).trigger('change');
+                }
+            },
+
+            // Load items from API
+            loadItems() {
+                const url = `/api/items/lite?branch_id=${this.branchId}&type=${this.type}&_t=${Date.now()}`;
+                this.updateStatus('جاري تحميل الأصناف...', 'primary');
+
+                fetch(url, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+
+                        if (Array.isArray(data)) {
+                            this.allItems = data;
+                            this.updateStatus('تم تحميل ' + data.length + ' صنف - البحث جاهز ✓', 'success');
+                        } else {
+                            console.error('❌ Response is not an array:', data);
+                            this.allItems = [];
+                            this.updateStatus('خطأ: البيانات المستلمة غير صحيحة', 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error loading items:', error);
+                        console.error('❌ Error details:', error.message);
+                        this.allItems = [];
+                        this.updateStatus('خطأ في تحميل الأصناف: ' + error.message, 'danger');
+                    });
+            },
+
+            // Attach event listeners
+            attachEventListeners() {
+                // Search input
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
+                    searchInput.addEventListener('keydown', (e) => this.handleSearchKeydown(e));
+                }
+
+                // Form submit
+                const form = document.getElementById('invoice-form');
+                if (form) {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.saveInvoice();
+                    });
+                }
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('#search-results-dropdown') && e.target.id !== 'search-input') {
+                        this.hideSearchResults();
+                    }
+                });
+                // Discount/Additional inputs with auto-sync between percentage and value
+                document.getElementById('discount-percentage')?.addEventListener('input', (e) => {
+                    this.discountPercentage = parseFloat(e.target.value) || 0;
+                    // Auto-calculate discount value from percentage
+                    if (this.subtotal > 0) {
+                        this.discountValue = (this.subtotal * this.discountPercentage) / 100;
+                        document.getElementById('discount-value').value = this.discountValue.toFixed(2);
+                    }
+                    this.calculateTotals();
+                });
+
+                document.getElementById('discount-value')?.addEventListener('input', (e) => {
+                    this.discountValue = parseFloat(e.target.value) || 0;
+                    // Auto-calculate discount percentage from value
+                    if (this.subtotal > 0) {
+                        this.discountPercentage = (this.discountValue / this.subtotal) * 100;
+                        document.getElementById('discount-percentage').value = this.discountPercentage.toFixed(
+                            2);
+                    }
+                    this.calculateTotals();
+                });
+
+                document.getElementById('additional-percentage')?.addEventListener('input', (e) => {
+                    this.additionalPercentage = parseFloat(e.target.value) || 0;
+                    // Auto-calculate additional value from percentage
+                    const afterDiscount = this.subtotal - this.discountValue;
+                    if (afterDiscount > 0) {
+                        this.additionalValue = (afterDiscount * this.additionalPercentage) / 100;
+                        document.getElementById('additional-value').value = this.additionalValue.toFixed(2);
+                    }
+                    this.calculateTotals();
+                });
+
+                document.getElementById('additional-value')?.addEventListener('input', (e) => {
+                    this.additionalValue = parseFloat(e.target.value) || 0;
+                    // Auto-calculate additional percentage from value
+                    const afterDiscount = this.subtotal - this.discountValue;
+                    if (afterDiscount > 0) {
+                        this.additionalPercentage = (this.additionalValue / afterDiscount) * 100;
+                        document.getElementById('additional-percentage').value = this.additionalPercentage
+                            .toFixed(2);
+                    }
+                    this.calculateTotals();
+                });
+
+                document.getElementById('received-from-client')?.addEventListener('input', (e) => {
+                    this.receivedFromClient = parseFloat(e.target.value) || 0;
+                    this.calculateTotals();
+                });
+
+                // Template selector
+                document.getElementById('invoice-template')?.addEventListener('change', (e) => {
+                    const selectedOption = e.target.options[e.target.selectedIndex];
+                    const columnsJson = selectedOption.getAttribute('data-columns');
+                    if (columnsJson) {
+                        try {
+                            let columns = JSON.parse(columnsJson);
+
+                            // ✅ Hide expiry columns if disabled in settings
+                            if (this.settings.expiry_mode && this.settings.expiry_mode.disabled) {
+                                columns = columns.filter(c => c !== 'batch_number' && c !== 'expiry_date');
+                            }
+
+                            this.visibleColumns = columns;
+                            this.updateTableHeaders();
+                            this.renderItems();
+
+                            // ✅ Focus على أول حقل editable في أول صنف (لو موجود)
+                            if (this.invoiceItems.length > 0) {
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        const editableColumns = this.getEditableColumns();
+                                        if (editableColumns.length > 0) {
+                                            const firstEditableColumn = editableColumns[0];
+                                            console.log(
+                                                '🔵 Template changed - focusing first field:',
+                                                firstEditableColumn);
+                                            this.focusField(firstEditableColumn, 0);
+                                        }
+                                    });
+                                });
+                            }
+                        } catch (error) {
+                            console.error('❌ Error parsing columns:', error);
+                        }
+                    }
+                });
+
+                // ✅ Update item details when warehouse changes
+                $('#acc2-id').on('change', () => {
+                    if (this.lastSelectedIndex !== undefined) {
+                        this.showItemDetails(this.lastSelectedIndex);
+                    }
+                });
+
+                // ✅ Update item details when customer/supplier changes
+                $('#acc1-id').on('change', () => {
+                    if (this.lastSelectedIndex !== undefined) {
+                        this.showItemDetails(this.lastSelectedIndex);
+                    }
+
+                    // Update installment modal data if it exists
+                    this.updateInstallmentModalData();
+                });
+
+            },
+
+            /**
+             * Update installment modal data when client or total changes
+             */
+            updateInstallmentModalData() {
+                const acc1Id = $('#acc1-id').val();
+
+                if (!acc1Id || acc1Id === '' || acc1Id === 'null') {
+                    return;
+                }
+
+                // Dispatch Livewire event to update modal data (without opening it)
+                Livewire.dispatch('client-changed-in-invoice', {
+                    invoiceTotal: this.totalAfterAdditional,
+                    clientAccountId: acc1Id
+                });
+            },
+
+            // Update table headers based on visible columns
+            updateTableHeaders() {
+                const thead = document.querySelector('.invoice-data-grid thead tr');
+                if (!thead) return;
+
+                // Clear existing headers (except action column)
+                thead.innerHTML = '';
+
+                // Add headers for visible columns
+                this.visibleColumns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.className = 'font-bold fw-bold text-center';
+                    th.style.fontSize = '0.8rem';
+
+                    // Special handling for discount column - add toggle button
+                    if (col === 'discount') {
+                        const discountLabel = this.allColumns[col] || col;
+                        const typeLabel = this.itemDiscountType === 'percentage' ? '%' : '{{ __('Value') }}';
+                        th.innerHTML = `
+                            ${discountLabel}
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary ms-1"
+                                    style="font-size: 0.65rem; padding: 1px 6px;"
+                                    onclick="window.InvoiceApp.toggleDiscountType()"
+                                    title="{{ __('Toggle between percentage and value') }}">
+                                ${typeLabel}
+                            </button>
+                        `;
+                    } else {
+                        th.textContent = this.allColumns[col] || col;
+                    }
+
+                    thead.appendChild(th);
+                });
+
+                // Add action column
+                const actionTh = document.createElement('th');
+                actionTh.className = 'font-bold fw-bold text-center';
+                actionTh.style.fontSize = '0.8rem';
+                actionTh.textContent = CONFIG.translations.action;
+                thead.appendChild(actionTh);
+            },
+
+            // Handle search
+            handleSearch(term) {
+
+                if (!term || term.length < 1) {
+                    this.hideSearchResults();
+                    return;
+                }
+                // Simple vanilla JS search - no Fuse.js
+                const lowerTerm = term.toLowerCase();
+                this.searchResults = this.allItems.filter(item => {
+                    const nameMatch = item.name && item.name.toLowerCase().includes(lowerTerm);
+                    const codeMatch = item.code && item.code.toString().toLowerCase().includes(lowerTerm);
+                    const barcodeMatch = item.barcode && item.barcode.toLowerCase().includes(lowerTerm);
+                    return nameMatch || codeMatch || barcodeMatch;
+                }).slice(0, 50);
+
+                this.selectedIndex = this.searchResults.length > 0 ? 0 : -1;
+
+                this.renderSearchResults();
+                this.showSearchResults();
+            },
+
+            // Handle search keydown
+            handleSearchKeydown(e) {
+                const dropdown = document.getElementById('search-results-dropdown');
+                const isDropdownVisible = dropdown && dropdown.style.display === 'block' && !dropdown.classList
+                    .contains('hidden');
+
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (isDropdownVisible && this.selectedIndex >= 0 && this.searchResults[this.selectedIndex]) {
+                        // Add selected item
+                        this.addItem(this.searchResults[this.selectedIndex]);
+                    } else if (isDropdownVisible && this.searchResults.length > 0) {
+                        // Auto-select first result if none selected
+                        this.addItem(this.searchResults[0]);
+                    } else {
+                        // Create new item if no results
+                        const searchInput = document.getElementById('search-input');
+                        if (searchInput && searchInput.value.trim()) {
+                            this.createNewItem(searchInput.value.trim());
+                        }
+                    }
+                    return;
+                }
+
+                if (!isDropdownVisible) return;
+
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        if (this.selectedIndex < this.searchResults.length - 1) {
+                            this.selectedIndex++;
+                            this.highlightSelectedResult();
+                        }
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        if (this.selectedIndex > 0) {
+                            this.selectedIndex--;
+                            this.highlightSelectedResult();
+                        }
+                        break;
+                    case 'Escape':
+                        e.preventDefault();
+                        this.hideSearchResults();
+                        break;
+                }
+            },
+            highlightSelectedResult() {
+                const dropdown = document.getElementById('search-results-dropdown');
+                if (!dropdown) return;
+
+                const items = dropdown.querySelectorAll('.search-result-item');
+                items.forEach((item, index) => {
+                    if (index === this.selectedIndex) {
+                        // ✅ نفس اللون الأزرق الواضح
+                        item.style.background = '#5b6ef5 !important';
+                        item.style.borderLeft = '5px solid #4051d4';
+                        item.style.boxShadow = '0 2px 8px rgba(91, 110, 245, 0.4)';
+
+                        // ✅ خلي النصوص كلها بيضا
+                        const allDivs = item.querySelectorAll('div');
+                        allDivs.forEach(el => {
+                            el.style.color = 'white !important';
+                        });
+
+                        // ✅ حتى الـ price badge يبقى أبيض
+                        const priceDiv = item.querySelector('div:last-child');
+                        if (priceDiv) {
+                            priceDiv.style.background = 'rgba(255, 255, 255, 0.2) !important';
+                            priceDiv.style.color = 'white !important';
+                            priceDiv.style.border = '1px solid white';
+                        }
+
+                        item.scrollIntoView({
+                            block: 'nearest',
+                            behavior: 'smooth'
+                        });
+                    } else {
+                        item.style.background = 'white !important';
+                        item.style.borderLeft = 'none';
+                        item.style.boxShadow = 'none';
+
+                        // ✅ رجع الألوان الأصلية
+                        const leftDiv = item.querySelector('div:first-child');
+                        if (leftDiv) {
+                            const nameDiv = leftDiv.querySelector('div:first-child');
+                            const codeDiv = leftDiv.querySelector('div:last-child');
+                            if (nameDiv) nameDiv.style.color = '#000 !important';
+                            if (codeDiv) codeDiv.style.color = '#666 !important';
+                        }
+
+                        // ✅ رجع لون الـ price badge
+                        const priceDiv = item.querySelector('div:last-child');
+                        if (priceDiv) {
+                            priceDiv.style.background = '#667eea !important';
+                            priceDiv.style.color = 'white !important';
+                            priceDiv.style.border = 'none';
+                        }
+                    }
+                });
+            },
+
+            // Render search results
+            renderSearchResults() {
+                const dropdown = document.getElementById('search-results-dropdown');
+                if (!dropdown) {
+                    console.error('❌ Dropdown not found!');
+                    return;
+                }
+
+                dropdown.innerHTML = '';
+
+                if (this.searchResults.length === 0) {
+                    const searchInput = document.getElementById('search-input');
+                    const searchTerm = searchInput?.value || '';
+
+                    if (searchTerm.trim().length > 0) {
+                        const createBtn = document.createElement('div');
+                        createBtn.className = 'create-new-item-btn';
+                        createBtn.style.cssText = `
+                display: block !important;
+                padding: 15px !important;
+                cursor: pointer !important;
+                background: #667eea !important;
+                color: white !important;
+                font-size: 16px !important;
+                font-weight: bold !important;
+                border-bottom: 1px solid #e0e0e0 !important;
+                text-align: right !important;
+            `;
+                        createBtn.textContent = '➕ إنشاء صنف جديد: ' + searchTerm;
+                        createBtn.onclick = () => this.createNewItem(searchTerm);
+                        createBtn.onmouseenter = function() {
+                            this.style.background = '#5568d3 !important';
+                        };
+                        createBtn.onmouseleave = function() {
+                            this.style.background = '#667eea !important';
+                        };
+
+                        dropdown.appendChild(createBtn);
+                    }
+                } else {
+                    this.searchResults.forEach((item, index) => {
+                        const resultDiv = document.createElement('div');
+                        resultDiv.className = 'search-result-item';
+                        resultDiv.style.cssText = `
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 12px 15px !important;
+                cursor: pointer !important;
+                background: white !important;
+                border-bottom: 1px solid #e0e0e0 !important;
+                min-height: 60px !important;
+            `;
+
+                        // Left side
+                        const leftDiv = document.createElement('div');
+                        leftDiv.style.cssText = `
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 4px !important;
+                flex: 1 !important;
+            `;
+
+                        const nameDiv = document.createElement('div');
+                        nameDiv.style.cssText = `
+                color: #000 !important;
+                font-size: 16px !important;
+                font-weight: bold !important;
+                line-height: 1.4 !important;
+            `;
+                        nameDiv.textContent = item.name || 'بدون اسم';
+
+                        const codeDiv = document.createElement('div');
+                        codeDiv.style.cssText = `
+                color: #666 !important;
+                font-size: 13px !important;
+                line-height: 1.4 !important;
+            `;
+                        codeDiv.textContent = 'كود: ' + (item.code || '-');
+
+                        leftDiv.appendChild(nameDiv);
+                        leftDiv.appendChild(codeDiv);
+
+                        // Right side
+                        const priceDiv = document.createElement('div');
+                        priceDiv.style.cssText = `
+                background: #667eea !important;
+                color: white !important;
+                padding: 8px 15px !important;
+                border-radius: 5px !important;
+                font-size: 14px !important;
+                font-weight: bold !important;
+                white-space: nowrap !important;
+                margin-right: 10px !important;
+            `;
+                        priceDiv.textContent = (parseFloat(item.price) || 0).toFixed(2) + ' ج.م';
+
+                        resultDiv.appendChild(leftDiv);
+                        resultDiv.appendChild(priceDiv);
+
+                        // ✅ Highlight selected item
+                        if (index === this.selectedIndex) {
+                            resultDiv.style.background = '#5b6ef5 !important';
+                            resultDiv.style.borderLeft = '5px solid #4051d4';
+                            resultDiv.style.boxShadow = '0 2px 8px rgba(91, 110, 245, 0.4)';
+
+                            // ✅ خلي النصوص بيضا
+                            nameDiv.style.color = 'white !important';
+                            codeDiv.style.color = 'white !important';
+                            priceDiv.style.background = 'rgba(255, 255, 255, 0.2) !important';
+                            priceDiv.style.color = 'white !important';
+                            priceDiv.style.border = '1px solid white';
+                        }
+
+                        // Hover effects
+                        resultDiv.onmouseenter = function() {
+                            if (index !== InvoiceApp.selectedIndex) {
+                                this.style.background = '#f5f5f5 !important';
+                            }
+                        };
+                        resultDiv.onmouseleave = function() {
+                            if (index !== InvoiceApp.selectedIndex) {
+                                this.style.background = 'white !important';
+                                this.style.borderLeft = 'none';
+                            }
+                        };
+
+                        resultDiv.onclick = () => this.addItem(item);
+
+                        dropdown.appendChild(resultDiv);
+                    });
+                }
+            },
+
+            // Show/hide search results
+            showSearchResults() {
+                const dropdown = document.getElementById('search-results-dropdown');
+                const searchInput = document.getElementById('search-input');
+
+                if (!dropdown) {
+                    console.error('❌ Dropdown element not found!');
+                    return;
+                }
+
+                if (!searchInput) {
+                    console.error('❌ Search input not found!');
+                    return;
+                }
+
+                // Calculate position relative to search input
+                const rect = searchInput.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                // Calculate dropdown width (don't exceed viewport)
+                const maxWidth = Math.min(550, viewportWidth - 40); // Max 800px or viewport - 40px margin
+                const dropdownWidth = Math.min(rect.width * 2, maxWidth);
+
+                // Calculate left position (ensure it stays in viewport)
+                let leftPosition = rect.left;
+                if (leftPosition + dropdownWidth > viewportWidth) {
+                    // If dropdown exceeds viewport, align to right edge
+                    leftPosition = viewportWidth - dropdownWidth - 20; // 20px margin from edge
+                }
+
+                // Calculate top position (below search input)
+                let topPosition = rect.bottom + 2;
+
+                // If dropdown would go below viewport, show it above input instead
+                const estimatedHeight = 300; // Estimated dropdown height
+                if (topPosition + estimatedHeight > viewportHeight) {
+                    topPosition = rect.top - estimatedHeight - 2;
+                }
+
+                // Set ALL required styles with corrected positioning
+                dropdown.style.position = 'fixed';
+                dropdown.style.top = topPosition + 'px';
+                dropdown.style.left = leftPosition + 'px';
+                dropdown.style.width = dropdownWidth + 'px';
+                dropdown.style.maxWidth = maxWidth + 'px';
+                dropdown.style.maxHeight = '400px';
+                dropdown.style.overflowY = 'auto';
+                dropdown.style.background = 'white';
+                dropdown.style.border = '2px solid #667eea'; // Make it more visible
+                dropdown.style.borderRadius = '8px';
+                dropdown.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.3)'; // Stronger shadow
+                dropdown.style.zIndex = '999999';
+                dropdown.style.display = 'block';
+                dropdown.style.visibility = 'visible';
+                dropdown.style.opacity = '1';
+
+                dropdown.classList.remove('hidden');
+
+            },
+
+            hideSearchResults() {
+                const dropdown = document.getElementById('search-results-dropdown');
+                if (dropdown) {
+                    dropdown.classList.add('hidden');
+                    dropdown.style.display = 'none';
+                }
+            },
+
+            // Add item to invoice
+            // Add item to invoice
+            addItem(item) {
+                // Ensure we have required fields
+                if (!item.id || !item.name) {
+                    console.error('❌ Invalid item data:', item);
+                    this.updateStatus('خطأ: بيانات الصنف غير صحيحة', 'danger');
+                    return;
+                }
+
+                // ✅ Check for duplicate items based on settings
+                const isSales = [10, 12, 14, 16, 22, 26].includes(this.type);
+                const isPurchases = [11, 13, 15, 17, 24, 25].includes(this.type);
+
+                const preventDuplicate = (isSales && this.settings.prevent_duplicate_items_in_sales) ||
+                    (isPurchases && this.settings.prevent_duplicate_items_in_purchases);
+
+                if (preventDuplicate) {
+                    const exists = this.invoiceItems.some(i => i.item_id === item.id);
+                    if (exists) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'تنبيه',
+                            text: 'هذا الصنف مضاف بالفعل في الفاتورة، والإعدادات تمنع التكرار.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        this.updateStatus('⚠️ الصنف مضاف بالفعل', 'warning');
+                        return;
+                    }
+                }
+
+                // Get default unit
+                const defaultUnitId = item.default_unit_id || item.unit_id || (item.units && item.units.length > 0 ?
+                    item.units[0].id : 1);
+
+                const newItem = {
+                    id: Date.now(),
+                    item_id: item.id,
+                    name: item.name,
+                    code: item.code || '',
+                    barcode: item.barcode || '',
+                    unit_id: defaultUnitId,
+                    quantity: 1,
+                    price: parseFloat(item.price) || 0,
+                    item_price: parseFloat(item.price) || 0,
+                    discount: 0,
+                    discount_type: this.itemDiscountType, // Save current discount type with item
+                    sub_value: parseFloat(item.price) || 0,
+                    batch_number: '',
+                    expiry_date: null,
+                    available_units: item.units || []
+                };
+
+                this.invoiceItems.push(newItem);
+                this.renderItems();
+                this.calculateTotals();
+
+                // Clear search first
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) searchInput.value = '';
+                this.hideSearchResults();
+
+                this.updateStatus('✓ تم إضافة الصنف', 'success');
+
+                // ✅ Focus على أول حقل editable - بعد الـ rendering مباشرة
+                const itemIndex = this.invoiceItems.length - 1;
+
+                // Use multiple requestAnimationFrame to ensure DOM is fully rendered
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        const editableColumns = this.getEditableColumns();
+
+                        if (editableColumns.length > 0) {
+                            const firstEditableColumn = editableColumns[0];
+                            this.focusField(firstEditableColumn, itemIndex);
+                        }
+                        // Show item details AFTER focus attempt
+                        this.showItemDetails(itemIndex);
+                    });
+                });
+            },
+
+            // Create new item
+            createNewItem(name) {
+                if (!name || name.trim().length === 0) return;
+
+                this.updateStatus('جاري إنشاء الصنف...', 'primary');
+
+                fetch('/api/items/quick-create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            name: name.trim(),
+                            code: 'AUTO',
+                            price: 0,
+                            unit_id: 1
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.item) {
+                            this.allItems.push(data.item);
+                            this.updateStatus('✓ تم إنشاء الصنف بنجاح', 'success');
+
+                            // Hide search results
+                            this.hideSearchResults();
+
+                            // Add item to invoice
+                            this.addItem(data.item);
+                        } else {
+                            console.error('❌ No item in response:', data);
+                            this.updateStatus('خطأ: لم يتم إرجاع بيانات الصنف', 'danger');
+                            this.hideSearchResults();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error creating item:', error);
+                        this.updateStatus('خطأ في إنشاء الصنف: ' + error.message, 'danger');
+                        this.hideSearchResults();
+                    });
+            },
+
+            // Render items table
+            renderItems() {
+                const tbody = document.getElementById('invoice-items-tbody');
+                if (!tbody) return;
+
+                // Find the search row
+                const searchRow = tbody.querySelector('.search-row');
+
+                if (this.invoiceItems.length === 0) {
+                    // Remove all rows except search row
+                    const rows = tbody.querySelectorAll('tr:not(.search-row)');
+                    rows.forEach(row => row.remove());
+                    return;
+                }
+
+                // Generate items HTML
+                const itemsHTML = this.invoiceItems.map((item, index) => this.renderItemRow(item, index)).join('');
+
+                // Insert items BEFORE search row
+                if (searchRow) {
+                    // Remove old item rows (keep search row)
+                    const rows = tbody.querySelectorAll('tr:not(.search-row)');
+                    rows.forEach(row => row.remove());
+
+                    // Insert new items before search row
+                    searchRow.insertAdjacentHTML('beforebegin', itemsHTML);
+                } else {
+                    // Fallback: just set innerHTML
+                    tbody.innerHTML = itemsHTML;
+                }
+
+                // Attach event listeners to inputs
+                this.attachItemEventListeners();
+
+                console.log('✅ renderItems completed - DOM updated');
+            },
+
+            // Render single item row
+            renderItemRow(item, index) {
+                let html =
+                    `<tr data-index="${index}" onclick="InvoiceApp.showItemDetails(${index})" style="cursor: pointer;">`;
+
+                // Render columns based on visible columns
+                this.visibleColumns.forEach(col => {
+                    html += this.renderColumn(col, item, index);
+                });
+
+                // Action column
+                html += `
+                    <td class="action-cell" style="width: 50px;" onclick="event.stopPropagation();">
+                        <button type="button" class="btn btn-link text-danger p-0" onclick="InvoiceApp.removeItem(${index})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>`;
+
+                return html;
+            },
+
+            // Render single column
+            renderColumn(columnName, item, index) {
+                switch (columnName) {
+                    case 'item_name':
+                        return `
+                            <td style="width: 18%;">
+                                <div class="static-text" style="font-weight: 900; font-size: 1.2rem; color: #000;">
+                                    ${item.name}
+                                </div>
+                            </td>`;
+
+                    case 'code':
+                        return `
+                            <td style="width: 10%;">
+                                <div class="static-text">${item.code || ''}</div>
+                            </td>`;
+
+                    case 'unit':
+                        return `
+                            <td style="width: 10%;" onclick="event.stopPropagation();">
+                                <select id="unit-${index}" class="form-control" data-index="${index}" data-field="unit">
+                                    ${(item.available_units || []).map(unit => `
+                                                                                                                                                                                                                                                                                                            <option value="${unit.id}" data-u-val="${unit.u_val}" ${unit.id == item.unit_id ? 'selected' : ''}>
+                                                                                                                                                                                                                                                                                                                ${unit.name}
+                                                                                                                                                                                                                                                                                                            </option>
+                                                                                                                                                                                                                                                                                                        `).join('')}
+                                </select>
+                            </td>`;
+
+                    case 'quantity':
+                        return `
+                            <td style="width: 10%;" onclick="event.stopPropagation();">
+                                <input type="number" id="quantity-${index}" class="form-control text-center"
+                                       value="${item.quantity}" step="0.001" min="0"
+                                       data-index="${index}" data-field="quantity">
+                            </td>`;
+
+                    case 'batch_number':
+                        return `
+                            <td style="width: 12%;" onclick="event.stopPropagation();">
+                                <input type="text" id="batch-${index}" class="form-control text-center"
+                                       value="${item.batch_number || ''}"
+                                       data-index="${index}" data-field="batch">
+                            </td>`;
+
+                    case 'expiry_date':
+                        return `
+                            <td style="width: 12%;" onclick="event.stopPropagation();">
+                                <input type="date" id="expiry-${index}" class="form-control text-center"
+                                       value="${item.expiry_date || ''}"
+                                       data-index="${index}" data-field="expiry">
+                            </td>`;
+
+                    case 'price':
+                        const canEditPrice = this.settings.permissions.allow_price_change;
+                        return `
+                            <td style="width: 15%;" onclick="event.stopPropagation();">
+                                <input type="number" id="price-${index}" class="form-control text-center"
+                                       value="${item.price}" step="0.01"
+                                       ${!canEditPrice ? 'readonly tabindex="-1" style="background-color: #f8f9fa;"' : ''}
+                                       data-index="${index}" data-field="price">
+                            </td>`;
+
+                    case 'discount':
+                        const canEditDiscount = this.settings.permissions.allow_discount_change;
+                        return `
+                            <td style="width: 15%;" onclick="event.stopPropagation();">
+                                <input type="number" id="discount-${index}" class="form-control text-center"
+                                       value="${item.discount}" step="0.01"
+                                       ${!canEditDiscount ? 'readonly tabindex="-1" style="background-color: #f8f9fa;"' : ''}
+                                       data-index="${index}" data-field="discount">
+                            </td>`;
+
+                    case 'sub_value':
+                        return `
+                            <td style="width: 15%;" onclick="event.stopPropagation();">
+                                <input type="number" id="sub-value-${index}" class="form-control text-center"
+                                    value="${item.sub_value}" readonly tabindex="-1">
+                            </td>`;
+
+                    case 'length':
+                    case 'width':
+                    case 'height':
+                    case 'density':
+                        return `
+                            <td style="width: 10%;" onclick="event.stopPropagation();">
+                                <input type="number" id="${columnName}-${index}" class="form-control text-center"
+                                       value="${item[columnName] || 0}" step="0.01"
+                                       data-index="${index}" data-field="${columnName}">
+                            </td>`;
+
+                    default:
+                        return `<td></td>`;
+                }
+            },
+
+            // Attach event listeners to item inputs
+            attachItemEventListeners() {
+                document.querySelectorAll('[id^="sub-value-"]').forEach(input => {
+                    input.addEventListener('focus', (e) => {
+                        e.preventDefault();
+                        e.target.blur(); // ✅ ارجع الـ focus فوراً
+
+                        // ✅ روح على البحث بدلاً منه
+                        const searchInput = document.getElementById('search-input');
+                        if (searchInput) {
+                            searchInput.focus();
+                            searchInput.select();
+                        }
+                    });
+
+                    // ✅ امنع keyboard navigation على sub_value
+                    input.addEventListener('keydown', (e) => {
+                        e.preventDefault();
+                        if (e.key === 'Enter' || e.key === 'Tab') {
+                            const searchInput = document.getElementById('search-input');
+                            if (searchInput) {
+                                searchInput.focus();
+                                searchInput.select();
+                            }
+                        }
+                    });
+                });
+
+                // Quantity, price, discount inputs
+                document.querySelectorAll(
+                        '[data-field="quantity"], [data-field="price"], [data-field="discount"]')
+                    .forEach(input => {
+                        input.addEventListener('input', (e) => {
+                            const index = parseInt(e.target.dataset.index);
+                            const field = e.target.dataset.field;
+                            const value = parseFloat(e.target.value) || 0;
+
+                            this.invoiceItems[index][field] = value;
+                            this.calculateItemTotal(index);
+                        });
+
+                        input.addEventListener('focus', (e) => e.target.select());
+
+                        // ✅ Add keyboard navigation - Enter/Tab to next field
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, false);
+                            } else if (e.key === 'Tab' && !e.shiftKey) {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, false);
+                            } else if (e.key === 'Tab' && e.shiftKey) {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, true);
+                            }
+                        });
+                    });
+
+                // Unit select
+                document.querySelectorAll('[data-field="unit"]').forEach(select => {
+                    select.addEventListener('change', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        const selectedOption = e.target.options[e.target.selectedIndex];
+                        const uVal = parseFloat(selectedOption.dataset.uVal) || 1;
+
+                        this.invoiceItems[index].unit_id = parseInt(e.target.value);
+                        this.invoiceItems[index].price = (this.invoiceItems[index]
+                                .item_price || 0) *
+                            uVal;
+
+                        this.calculateItemTotal(index);
+                        this.renderItems();
+                    });
+
+                    // ✅ Add keyboard navigation for select
+                    select.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const index = parseInt(e.target.dataset.index);
+                            this.moveToNextField(index, 'unit', false);
+                        }
+                    });
+                });
+
+                // Batch and expiry
+                document.querySelectorAll('[data-field="batch"], [data-field="expiry"]').forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        const field = e.target.dataset.field;
+
+                        if (field === 'batch') {
+                            this.invoiceItems[index].batch_number = e.target.value;
+                        } else if (field === 'expiry') {
+                            this.invoiceItems[index].expiry_date = e.target.value;
+                        }
+                    });
+
+                    // ✅ Add keyboard navigation
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const index = parseInt(e.target.dataset.index);
+                            const field = e.target.dataset.field;
+                            this.moveToNextField(index, field, false);
+                        }
+                    });
+                });
+
+                // ✅ Length, Width, Height, Density fields
+                document.querySelectorAll(
+                        '[data-field="length"], [data-field="width"], [data-field="height"], [data-field="density"]')
+                    .forEach(input => {
+                        input.addEventListener('input', (e) => {
+                            const index = parseInt(e.target.dataset.index);
+                            const field = e.target.dataset.field;
+                            const value = parseFloat(e.target.value) || 0;
+
+                            this.invoiceItems[index][field] = value;
+                            // You might want to recalculate totals here if needed
+                        });
+
+                        input.addEventListener('focus', (e) => e.target.select());
+
+                        // ✅ Add keyboard navigation
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, false);
+                            } else if (e.key === 'Tab' && !e.shiftKey) {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, false);
+                            } else if (e.key === 'Tab' && e.shiftKey) {
+                                e.preventDefault();
+                                const index = parseInt(e.target.dataset.index);
+                                const field = e.target.dataset.field;
+                                this.moveToNextField(index, field, true);
+                            }
+                        });
+                    });
+            },
+
+            // Calculate item total
+            calculateItemTotal(index) {
+                const item = this.invoiceItems[index];
+                const quantity = parseFloat(item.quantity) || 0;
+                const price = parseFloat(item.price) || 0;
+                const discount = parseFloat(item.discount) || 0;
+
+                // Calculate sub_value based on discount type
+                const subtotal = quantity * price;
+                let discountAmount = 0;
+
+                if (this.itemDiscountType === 'percentage') {
+                    // Discount is percentage
+                    discountAmount = (subtotal * discount) / 100;
+                } else {
+                    // Discount is fixed value
+                    discountAmount = discount;
+                }
+
+                item.sub_value = parseFloat((subtotal - discountAmount).toFixed(2));
+
+                // Update display
+                const subValueInput = document.getElementById('sub-value-' + index);
+                if (subValueInput) {
+                    subValueInput.value = item.sub_value.toFixed(2);
+                }
+
+                this.calculateTotals();
+            },
+
+            // Calculate totals
+            calculateTotals() {
+                // Subtotal
+                this.subtotal = this.invoiceItems.reduce((sum, item) => sum + (parseFloat(item.sub_value) ||
+                    0), 0);
+                this.subtotal = parseFloat(this.subtotal.toFixed(2));
+
+                // Discount
+                if (this.discountPercentage > 0) {
+                    this.discountValue = parseFloat(((this.subtotal * this.discountPercentage) / 100)
+                        .toFixed(2));
+                } else if (this.subtotal > 0 && this.discountValue > 0) {
+                    this.discountPercentage = parseFloat(((this.discountValue / this.subtotal) * 100)
+                        .toFixed(2));
+                }
+
+                const afterDiscount = parseFloat((this.subtotal - this.discountValue).toFixed(2));
+
+                // Additional
+                if (this.additionalPercentage > 0) {
+                    this.additionalValue = parseFloat(((afterDiscount * this.additionalPercentage) / 100)
+                        .toFixed(2));
+                } else if (afterDiscount > 0 && this.additionalValue > 0) {
+                    this.additionalPercentage = parseFloat(((this.additionalValue / afterDiscount) * 100)
+                        .toFixed(2));
+                }
+
+                const afterAdditional = parseFloat((afterDiscount + this.additionalValue).toFixed(2));
+
+                // VAT
+                this.vatValue = parseFloat(((afterAdditional * this.vatPercentage) / 100).toFixed(2));
+
+                // Withholding Tax
+                this.withholdingTaxValue = parseFloat(((afterAdditional * this.withholdingTaxPercentage) /
+                    100).toFixed(
+                    2));
+
+                // Total
+                this.totalAfterAdditional = parseFloat((afterAdditional + this.vatValue - this
+                        .withholdingTaxValue)
+                    .toFixed(2));
+
+                // Remaining
+                this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(
+                    2));
+
+                this.updateTotalsDisplay();
+
+                // Update balance after invoice
+                this.calculateBalance();
+
+                // Update installment modal data if client is selected
+                this.updateInstallmentModalData();
+            },
+
+            // Update totals display
+            updateTotalsDisplay() {
+                // Update all display fields
+                const displayUpdates = {
+                    'display-subtotal': this.subtotal.toFixed(2),
+                    'display-total': this.totalAfterAdditional.toFixed(2),
+                    'display-received': this.receivedFromClient.toFixed(2),
+                    'display-remaining': this.remaining.toFixed(2)
+                };
+
+                Object.entries(displayUpdates).forEach(([id, value]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = value;
+                });
+
+                // Update readonly input fields
+                const inputUpdates = {
+                    'vat-value-display': this.vatValue.toFixed(2),
+                    'withholding-tax-value-display': this.withholdingTaxValue.toFixed(2)
+                };
+
+                Object.entries(inputUpdates).forEach(([id, value]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = value;
+                });
+
+                // Update remaining color
+                const remainingEl = document.getElementById('display-remaining');
+                if (remainingEl) {
+                    remainingEl.classList.remove('text-danger', 'text-success');
+                    if (this.remaining > 0.01) {
+                        remainingEl.classList.add('text-danger');
+                    } else if (this.remaining < -0.01) {
+                        remainingEl.classList.add('text-success');
+                    }
+                }
+            },
+
+            // Toggle discount type between percentage and value
+            toggleDiscountType() {
+                // Toggle between 'percentage' and 'value'
+                this.itemDiscountType = this.itemDiscountType === 'percentage' ? 'value' : 'percentage';
+
+                // Save to localStorage to persist across page refreshes
+                localStorage.setItem('itemDiscountType', this.itemDiscountType);
+
+                // Update table header to show new type
+                this.updateTableHeaders();
+
+                // Recalculate all items with new discount type
+                this.invoiceItems.forEach((item, index) => {
+                    this.calculateItemTotal(index);
+                });
+
+                console.log(`✅ Discount type changed to: ${this.itemDiscountType} (saved to localStorage)`);
+            },
+
+            // Remove item
+            removeItem(index) {
+                if (confirm('هل تريد حذف هذا الصنف؟')) {
+                    this.invoiceItems.splice(index, 1);
+                    this.renderItems();
+                    this.calculateTotals();
+                }
+            },
+
+            // Show item details in footer (Fetch from API)
+            showItemDetails(index) {
+                const item = this.invoiceItems[index];
+                if (!item) {
+                    console.error('❌ Item not found at index:', index);
+                    return;
+                }
+
+                console.log('📦 showItemDetails called:', {
+                    index: index,
+                    item_id: item.item_id,
+                    item_name: item.name,
+                    full_item: item
+                });
+
+                // ✅ Track last selected index for refreshing when warehouse/customer changes
+                this.lastSelectedIndex = index;
+
+                // Check if item details card exists (might be hidden by settings)
+                const itemDetailsCard = document.getElementById('item-details-card');
+                if (!itemDetailsCard) {
+                    return;
+                }
+
+                // Helper function to safely update element
+                const safeUpdate = (id, value) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                    } else {
+                        console.warn(`⚠️ Element not found: ${id}`);
+                    }
+                };
+
+                // Set basic details first (fast)
+                safeUpdate('selected-item-name', item.name || '-');
+
+                // Find unit name
+                const unitSelect = document.getElementById(`unit-${index}`);
+                const unitName = unitSelect ? unitSelect.options[unitSelect.selectedIndex].text : (item.unit_name ||
+                    '-');
+                safeUpdate('selected-item-unit', unitName);
+                safeUpdate('selected-item-price', (item.price || 0).toFixed(2));
+
+                // Show loading state for API data
+                safeUpdate('selected-item-store', '...');
+                safeUpdate('selected-item-available', '...');
+                safeUpdate('selected-item-total', '...');
+                safeUpdate('selected-item-last-price', '...');
+                safeUpdate('selected-item-avg-cost', '...');
+
+                // Fetch real-time details from API
+                const customerId = $('#acc1-id').val();
+                const warehouseId = $('#acc2-id').val();
+                const branchId = this.branchId;
+
+                let url = `/api/invoices/items/${item.item_id}/details?branch_id=${branchId}`;
+                if (customerId) url += `&customer_id=${customerId}`;
+                if (warehouseId) url += `&warehouse_id=${warehouseId}`;
+
+                fetch(url)
+                    .then(response => {
+                        console.log('📡 Response status:', response.status);
+                        return response.json();
+                    })
+                    .then(res => {
+                        if (res.success && res.data) {
+                            const data = res.data;
+
+                            // Get store name if available
+                            const storeSelect = document.getElementById('acc2-id');
+                            const storeName = storeSelect && storeSelect.selectedIndex >= 0 ?
+                                storeSelect.options[storeSelect.selectedIndex].text : '-';
+
+                            safeUpdate('selected-item-store', storeName);
+                            safeUpdate('selected-item-available', (data.warehouse_stock || 0).toLocaleString());
+                            safeUpdate('selected-item-total', (data.stock_quantity || 0).toLocaleString());
+                            safeUpdate('selected-item-last-price', (data.last_purchase_price || 0).toFixed(2));
+                            safeUpdate('selected-item-avg-cost', (data.item?.average_cost || 0).toFixed(2));
+                            safeUpdate('selected-item-price', (data.sale_price || 0).toFixed(2));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error fetching item details:', error);
+                        // Reset on error with safe updates
+                        safeUpdate('selected-item-available', '-');
+                        safeUpdate('selected-item-total', '-');
+                        safeUpdate('selected-item-store', '-');
+                        safeUpdate('selected-item-last-price', '-');
+                        safeUpdate('selected-item-avg-cost', '-');
+                    });
+            },
+
+            /**
+             * Update account balance when account changes
+             */
+            updateAccountBalance(accountId) {
+                console.log('🔵 updateAccountBalance called', {
+                    accountId: accountId,
+                    type: typeof accountId
+                });
+
+                if (!accountId) {
+                    console.log('⚠️ No accountId, resetting balance to 0');
+                    this.currentBalance = 0;
+                    this.calculateBalance();
+                    this.clearRecommendedItems();
+                    return;
+                }
+
+                const url = `/api/accounts/${accountId}/balance`;
+                console.log('🌐 Fetching balance from:', url);
+
+                // Fetch account balance from API
+                fetch(url)
+                    .then(response => {
+                        console.log('📡 Response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('📥 API Response:', data);
+
+                        this.currentBalance = parseFloat(data.balance) || 0;
+                        console.log('💰 Current Balance set to:', this.currentBalance);
+
+                        this.calculateBalance();
+
+                        // Update display
+                        const balanceDisplay = document.getElementById('current-balance-header');
+                        if (balanceDisplay) {
+                            balanceDisplay.textContent = this.currentBalance.toFixed(2);
+                            console.log('✅ Updated current-balance-header to:', this.currentBalance.toFixed(2));
+                        } else {
+                            console.error('❌ Element current-balance-header not found!');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error fetching account balance:', error);
+                    });
+
+                // Fetch recommended items
+                this.loadRecommendedItems(accountId);
+            },
+
+            /**
+             * Load recommended items for account
+             */
+            loadRecommendedItems(accountId) {
+                console.log('🔵 loadRecommendedItems called', {
+                    accountId: accountId,
+                    setting: this.settings.invoice_show_recommended_items,
+                    allSettings: this.settings
+                });
+
+                // ✅ ALWAYS load for testing - remove this check temporarily
+                // if (!this.settings.invoice_show_recommended_items) {
+                //     console.log('⚠️ Recommended items disabled in settings');
+                //     return;
+                // }
+
+                const url = `/api/invoices/customers/${accountId}/recommended-items?limit=5`;
+                console.log('🌐 Fetching recommended items from:', url);
+
+                fetch(url)
+                    .then(response => {
+                        console.log('📡 Recommended items response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('📥 Recommended items response:', data);
+                        if (data.success && data.items) {
+                            console.log('✅ Found', data.items.length, 'recommended items');
+                            this.displayRecommendedItems(data.items);
+                        } else {
+                            console.error('❌ No items in response or success=false');
+                            this.clearRecommendedItems();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error fetching recommended items:', error);
+                        this.clearRecommendedItems();
+                    });
+            },
+
+            /**
+             * Display recommended items in the footer
+             */
+            displayRecommendedItems(items) {
+                console.log('🔵 displayRecommendedItems called with', items);
+
+                const container = document.getElementById('recommended-items-list');
+
+                if (!container) {
+                    console.error('❌ Element recommended-items-list not found!');
+                    return;
+                }
+
+                if (!items || items.length === 0) {
+                    container.innerHTML = '<p class="text-muted text-center mb-0 small">لا توجد أصناف موصى بها</p>';
+                    return;
+                }
+
+                console.log('✅ Building HTML for', items.length, 'items');
+                let html = '<div class="list-group list-group-flush">';
+                items.forEach((item, index) => {
+                    console.log(`  Item ${index}:`, item);
+                    html += `
+                        <a href="#" class="list-group-item list-group-item-action p-1 small"
+                           onclick="InvoiceApp.addItemById(${item.id}); return false;"
+                           title="اضغط لإضافة الصنف">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-truncate" style="max-width: 150px;">
+                                    <strong>${item.name}</strong>
+                                    ${item.code ? `<small class="text-muted">(${item.code})</small>` : ''}
+                                </div>
+                                <div class="text-end">
+                                    <small class="badge bg-primary">${item.transaction_count}×</small>
+                                    <small class="text-muted">${parseFloat(item.avg_price).toFixed(2)}</small>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                html += '</div>';
+
+                container.innerHTML = html;
+            },
+
+            /**
+             * Clear recommended items
+             */
+            clearRecommendedItems() {
+                const container = document.getElementById('recommended-items-list');
+                if (container) {
+                    container.innerHTML = '<p class="text-muted text-center mb-0 small">لا توجد أصناف موصى بها</p>';
+                }
+            },
+
+            /**
+             * Add item by ID (from recommended items)
+             */
+            addItemById(itemId) {
+                const item = this.allItems.find(i => i.id === itemId);
+                if (item) {
+                    this.addItem(item, false);
+                } else {
+                    console.error('❌ Item not found:', itemId);
+                    this.updateStatus('الصنف غير موجود', 'danger');
+                }
+            },
+
+            /**
+             * Calculate balance after invoice
+             */
+            calculateBalance() {
+                const invoiceType = parseInt(this.type) || 10;
+                // Make sure we have valid numbers
+                const currentBal = parseFloat(this.currentBalance) || 0;
+                const totalAfter = parseFloat(this.totalAfterAdditional) || 0;
+
+                if ([10, 12, 14, 16].includes(invoiceType)) {
+                    // Sales invoices - increase debit balance
+                    this.calculatedBalanceAfter = currentBal + totalAfter;
+                } else {
+                    // Purchase invoices - decrease debit balance
+                    this.calculatedBalanceAfter = currentBal - totalAfter;
+                }
+
+                // Update display
+                const balanceAfterDisplay = document.getElementById('balance-after-header');
+                if (balanceAfterDisplay) {
+                    balanceAfterDisplay.textContent = this.calculatedBalanceAfter.toFixed(2);
+                    balanceAfterDisplay.className = this.calculatedBalanceAfter < 0 ? 'badge bg-danger' :
+                        'badge bg-success';
+                } else {
+                    console.error('❌ Element balance-after-header not found!');
+                }
+            },
+
+            /**
+             * Initialize price list selector (for sales invoices only)
+             */
+            initializePriceListSelector() {
+                const priceListSelect = document.getElementById('price-list-id');
+                if (!priceListSelect) {
+                    console.log('⚠️ Price list selector not found (not a sales invoice)');
+                    return;
+                }
+
+                // Set default price list (first option)
+                this.selectedPriceListId = priceListSelect.value || null;
+                console.log('🔵 Default price list ID:', this.selectedPriceListId);
+
+                // Save reference to this
+                const self = this;
+
+                // Listen for price list changes
+                priceListSelect.addEventListener('change', function(e) {
+                    const newPriceListId = e.target.value;
+                    console.log('🔵 Price list changed to:', newPriceListId);
+
+                    self.selectedPriceListId = newPriceListId;
+
+                    // Update prices for all items in the invoice
+                    self.updateAllItemPrices();
+                });
+            },
+
+            /**
+             * Update prices for all items in the invoice based on selected price list
+             */
+            updateAllItemPrices() {
+                if (!this.selectedPriceListId) {
+                    console.log('⚠️ No price list selected');
+                    return;
+                }
+
+                console.log('🔄 Updating prices for all items...');
+
+                // Update each item's price
+                this.invoiceItems.forEach((item, index) => {
+                    this.updateItemPrice(item, index);
+                });
+
+                // Re-render and recalculate
+                this.renderItems();
+                this.calculateTotals();
+            },
+
+            /**
+             * Update single item price based on selected price list
+             */
+            updateItemPrice(item, index) {
+                if (!this.selectedPriceListId || !item.item_id || !item.unit_id) {
+                    return;
+                }
+
+                // Fetch price from API
+                const url =
+                    `/api/invoices/items/${item.item_id}/price?price_list_id=${this.selectedPriceListId}&unit_id=${item.unit_id}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.price !== null) {
+                            console.log(`✅ Updated price for item ${item.item_id}: ${data.price}`);
+                            item.price = parseFloat(data.price);
+
+                            // Calculate sub_value using the same logic as calculateItemTotal
+                            const subtotal = item.quantity * item.price;
+                            let discountAmount = 0;
+
+                            if (this.itemDiscountType === 'percentage') {
+                                discountAmount = (subtotal * item.discount) / 100;
+                            } else {
+                                discountAmount = item.discount;
+                            }
+
+                            item.sub_value = subtotal - discountAmount;
+
+                            // Update display
+                            this.renderItems();
+                            this.calculateTotals();
+                        } else {
+                            console.log(
+                                `⚠️ No price found for item ${item.item_id} in price list ${this.selectedPriceListId}`
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error fetching item price:', error);
+                    });
+            },
+
+            // Save invoice - NO VALIDATION, just send everything
+            submitForm(printAfterSave = false) {
+
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                // ✅ Fill hidden inputs with current data
+                document.getElementById('form-type').value = this.type;
+                document.getElementById('form-branch-id').value = this.branchId;
+
+                // For Select2 inputs, use jQuery to get current value
+                const acc1Val = $('#acc1-id').val();
+                const acc2Val = $('#acc2-id').val();
+
+                document.getElementById('form-acc1-id').value = acc1Val || '';
+                document.getElementById('form-acc2-id').value = acc2Val || '';
+
+                console.log('📊 Submitting Data:', {
+                    type: this.type,
+                    branch_id: this.branchId,
+                    acc1_id: acc1Val,
+                    acc2_id: acc2Val,
+                    currency_id: this.currencyId,
+                    currency_rate: this.exchangeRate
+                });
+
+                document.getElementById('form-currency-id').value = this.currencyId || 1;
+                document.getElementById('form-currency-rate').value = this.exchangeRate || 1;
+
+                document.getElementById('form-pro-date').value = document.getElementById('pro-date')?.value || '';
+                document.getElementById('form-emp-id').value = document.getElementById('emp-id')?.value || '';
+                document.getElementById('form-delivery-id').value = document.getElementById('delivery-id')?.value || '';
+                document.getElementById('form-accural-date').value = document.getElementById('accural-date')?.value ||
+                    '';
+                document.getElementById('form-serial-number').value = document.getElementById('serial-number')?.value ||
+                    '';
+                document.getElementById('form-cash-box-id').value = document.getElementById('cash-box-id')?.value || '';
+                document.getElementById('form-notes').value = document.getElementById('notes')?.value || '';
+                document.getElementById('form-discount-percentage').value = this.discountPercentage;
+                document.getElementById('form-discount-value').value = this.discountValue;
+                document.getElementById('form-additional-percentage').value = this.additionalPercentage;
+                document.getElementById('form-additional-value').value = this.additionalValue;
+                document.getElementById('form-vat-percentage').value = this.vatPercentage;
+                document.getElementById('form-vat-value').value = this.vatValue;
+                document.getElementById('form-withholding-tax-percentage').value = this.withholdingTaxPercentage;
+                document.getElementById('form-withholding-tax-value').value = this.withholdingTaxValue;
+                document.getElementById('form-subtotal').value = this.subtotal;
+                document.getElementById('form-total-after-additional').value = this.totalAfterAdditional;
+                document.getElementById('form-received-from-client').value = this.receivedFromClient;
+                document.getElementById('form-remaining').value = this.remaining;
+
+                // ✅ Add items as hidden inputs
+                const itemsContainer = document.getElementById('form-items-container');
+                itemsContainer.innerHTML = ''; // Clear previous items
+
+                this.invoiceItems.forEach((item, index) => {
+                    // Create hidden inputs for each item field
+                    const fields = ['item_id', 'unit_id', 'quantity', 'price', 'discount', 'discount_type',
+                        'additional',
+                        'sub_value', 'batch_number', 'expiry_date', 'notes'
+                    ];
+                    fields.forEach(field => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `items[${index}][${field}]`;
+                        input.value = item[field] || '';
+                        itemsContainer.appendChild(input);
+                    });
+                });
+
+                console.log('✅ Form filled, submitting...');
+
+                // If print after save, submit via AJAX
+                if (printAfterSave) {
+                    this.submitFormAjax();
+                } else {
+                    // ✅ Submit the form normally
+                    document.getElementById('invoice-form').submit();
+                }
+            },
+
+            /**
+             * Submit form via AJAX and print after success
+             */
+            submitFormAjax() {
+                const form = document.getElementById('invoice-form');
+                const formData = new FormData(form);
+
+                // Show loading
+                Swal.fire({
+                    title: 'جاري الحفظ...',
+                    text: 'يرجى الانتظار',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
+
+                        if (data.success && data.operation_id) {
+                            console.log('✅ Invoice saved successfully:', data);
+
+                            Swal.fire({
+                                title: 'تم الحفظ بنجاح!',
+                                text: 'سيتم فتح صفحة الطباعة',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Open print page in new window
+                                const printUrl = data.print_url || `/invoice/print/${data.operation_id}`;
+                                window.open(printUrl, '_blank');
+
+                                // Optionally reload the page to show the saved invoice
+                                if (this.settings.new_after_save) {
+                                    window.location.reload();
+                                }
+                            });
+                        } else {
+                            Swal.fire('خطأ', data.message || 'حدث خطأ أثناء الحفظ', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.close();
+                        console.error('❌ Error saving invoice:', error);
+                        Swal.fire('خطأ', 'حدث خطأ أثناء الحفظ', 'error');
+                    });
+            },
+
+            /**
+             * Print invoice
+             * Save invoice first then print
+             */
+            printInvoice() {
+                console.log('🖨️ Print invoice clicked');
+
+                // Check if we have items
+                if (this.invoiceItems.length === 0) {
+                    Swal.fire('خطأ', 'لا يمكن طباعة فاتورة بدون أصناف.', 'error');
+                    return;
+                }
+
+                // Validate form
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                // Save and print directly without confirmation
+                this.submitForm(true);
+            },
+
+            /**
+             * Open installment modal
+             */
+            openInstallmentModal() {
+                // Get current client account ID
+                const acc1Id = $('#acc1-id').val();
+
+                if (!acc1Id || acc1Id === '' || acc1Id === 'null') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'تحذير',
+                        text: 'يرجى اختيار العميل في الفاتورة أولاً',
+                        confirmButtonText: 'حسناً'
+                    });
+                    return;
+                }
+
+                // Use Livewire.dispatch instead of window event
+                const eventData = {
+                    invoiceTotal: this.totalAfterAdditional,
+                    clientAccountId: acc1Id
+                };
+
+
+                // Dispatch Livewire event to update modal data AND open it
+                Livewire.dispatch('update-installment-data', {
+                    invoiceTotal: this.totalAfterAdditional,
+                    clientAccountId: acc1Id
+                });
+            },
+
+            // ✅ Validate form before submission
+            validateForm() {
+                // 1. Check for items
+                if (this.invoiceItems.length === 0) {
+                    Swal.fire('خطأ', 'لا يمكن حفظ فاتورة بدون أصناف.', 'error');
+                    return false;
+                }
+
+                // 2. Check for required headers
+                const acc1Val = $('#acc1-id').val();
+                if (!acc1Val) {
+                    Swal.fire('خطأ', 'يرجى اختيار العميل/المورد.', 'error');
+                    return false;
+                }
+
+                const acc2Val = $('#acc2-id').val();
+                if (!acc2Val) {
+                    Swal.fire('خطأ', 'يرجى اختيار المخزن.', 'error');
+                    return false;
+                }
+
+                // 3. Check items data
+                for (let i = 0; i < this.invoiceItems.length; i++) {
+                    const item = this.invoiceItems[i];
+
+                    // Prevent zero/negative quantity
+                    if (item.quantity <= 0) {
+                        Swal.fire('خطأ', `الصنف "${item.name}" لديه كمية غير صالحة.`, 'error');
+                        return false;
+                    }
+
+                    // Prevent zero price if settings don't allow it
+                    if (!this.settings.allow_zero_price_in_invoice && item.price <= 0) {
+                        Swal.fire('خطأ', `الصنف "${item.name}" لديه سعر صفري وهذا غير مسموح به.`, 'error');
+                        return false;
+                    }
+                }
+
+                // 4. Check negative invoice total if settings don't allow it
+                if (this.remaining < 0 && this.settings.prevent_negative_invoice) {
+                    Swal.fire('خطأ', 'قيمة الفاتورة لا يمكن أن تكون سالبة.', 'error');
+                    return false;
+                }
+
+                // 5. Check zero invoice total if settings don't allow it
+                if (this.remaining === 0 && !this.settings.allow_zero_invoice_total) {
+                    Swal.fire('خطأ', 'قيمة الفاتورة لا يمكن أن تكون صفراً.', 'error');
+                    return false;
+                }
+
+                return true;
+            },
+
+            // Update status message
+            updateStatus(text, type = 'info') {
+                const status = document.getElementById('search-status');
+                if (status) {
+                    status.innerHTML = text;
+                    status.className = 'text-' + type;
+                }
+            },
+
+            // Debug function - test search manually
+            testSearch(term = 'test') {
+                // Check if dropdown exists
+                const dropdown = document.getElementById('search-results-dropdown');
+                // Check if search input exists
+                const searchInput = document.getElementById('search-input');
+                // Run search
+                this.handleSearch(term);
+            },
+
+            // Debug function - show dropdown manually
+            forceShowDropdown() {
+                const dropdown = document.getElementById('search-results-dropdown');
+                if (dropdown) {
+                    dropdown.style.display = 'block';
+                    dropdown.style.visibility = 'visible';
+                    dropdown.style.opacity = '1';
+                    dropdown.style.position = 'fixed';
+                    dropdown.style.top = '200px';
+                    dropdown.style.left = '200px';
+                    dropdown.style.zIndex = '999999';
+                    dropdown.style.background = 'white';
+                    dropdown.style.border = '2px solid red';
+                    dropdown.style.padding = '20px';
+                    dropdown.innerHTML =
+                        '<div style="color: red; font-size: 20px;">TEST DROPDOWN - إذا ظهرت هذه الرسالة، الـ dropdown موجود!</div>';
+                    dropdown.classList.remove('hidden');
+                } else {
+                    console.error('❌ Dropdown not found!');
+                }
+            },
+            // Move to next/previous field (Tab Order)
+            moveToNextField(currentIndex, currentField, isReverse = false) {
+                const fieldMap = {
+                    'unit': 'unit',
+                    'quantity': 'quantity',
+                    'batch': 'batch_number',
+                    'expiry': 'expiry_date',
+                    'price': 'price',
+                    'discount': 'discount',
+                    'length': 'length',
+                    'width': 'width',
+                    'height': 'height',
+                    'density': 'density'
+                };
+
+                const currentColumn = fieldMap[currentField] || currentField;
+                const editableColumns = this.getEditableColumns();
+                const currentPos = editableColumns.indexOf(currentColumn);
+
+                if (currentPos === -1) {
+                    this.focusSearchInput();
+                    return;
+                }
+
+                if (isReverse) {
+                    // Shift+Tab: Go backward
+                    if (currentPos > 0) {
+                        const prevColumn = editableColumns[currentPos - 1];
+                        this.focusField(prevColumn, currentIndex);
+                    } else {
+                        // First field → go to search
+                        this.focusSearchInput();
+                    }
+                } else {
+                    // Enter/Tab: Go forward
+                    if (currentPos < editableColumns.length - 1) {
+                        const nextColumn = editableColumns[currentPos + 1];
+                        this.focusField(nextColumn, currentIndex);
+                    } else {
+                        // ✅ Last field → Skip delete button, go back to search
+                        this.focusSearchInput();
+                    }
+                }
+            },
+
+            // Get editable columns (skip item_name, code, sub_value) - IN ORDER
+            getEditableColumns() {
+                const nonEditable = ['item_name', 'code', 'sub_value'];
+                // Return columns in the same order as visibleColumns
+                return this.visibleColumns.filter(col => !nonEditable.includes(col));
+            },
+
+            // Focus a specific field
+            focusField(columnName, index) {
+                const fieldId = this.getFieldIdFromColumn(columnName, index);
+                console.log('🔵 focusField called:', {
+                    columnName,
+                    index,
+                    fieldId
+                });
+
+                if (!fieldId) {
+                    console.warn('⚠️ No fieldId generated for:', {
+                        columnName,
+                        index
+                    });
+                    console.warn('⚠️ NOT falling back to search - staying on current field');
+                    return; // Don't fallback to search
+                }
+
+                const el = document.getElementById(fieldId);
+                if (el) {
+                    el.focus();
+                    if (el.tagName === 'INPUT' && el.type !== 'date') {
+                        el.select();
+                    }
+                    return;
+                } else {
+                    console.error('❌ Element not found in DOM:', fieldId);
+                    console.error('❌ Available elements with similar IDs:');
+                    // List all elements with IDs starting with the column name
+                    const columnPrefix = columnName.replace('_', '-');
+                    const similarElements = document.querySelectorAll(`[id^="${columnPrefix}"]`);
+                    similarElements.forEach(elem => {
+                        console.log('  - Found:', elem.id, elem.tagName);
+                    });
+                }
+            },
+
+            // Focus search input helper
+            focusSearchInput() {
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            },
+
+            // Get field ID from column name
+            getFieldIdFromColumn(columnName, index) {
+                const columnToFieldMap = {
+                    'unit': 'unit-' + index,
+                    'quantity': 'quantity-' + index,
+                    'batch_number': 'batch-' + index,
+                    'expiry_date': 'expiry-' + index,
+                    'price': 'price-' + index,
+                    'discount': 'discount-' + index,
+                    'length': 'length-' + index,
+                    'width': 'width-' + index,
+                    'height': 'height-' + index,
+                    'density': 'density-' + index
+                };
+
+                return columnToFieldMap[columnName] || null;
+            },
+        };
+
+        // Initialize when DOM is ready AND jQuery + Select2 are loaded
+        function initWhenReady() {
+            if (typeof jQuery === 'undefined') {
+                setTimeout(initWhenReady, 100);
+                return;
+            }
+
+            if (typeof jQuery.fn.select2 === 'undefined') {
+                setTimeout(initWhenReady, 100);
+                return;
+            }
+
+            const recommendedContainer = document.getElementById('recommended-items-list');
+
+
+            InvoiceApp.init();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initWhenReady);
+        } else {
+            initWhenReady();
+        }
+
+        // Expose reload function
+        window.reloadSearchItems = () => InvoiceApp.loadItems();
+    </script>
 @endsection

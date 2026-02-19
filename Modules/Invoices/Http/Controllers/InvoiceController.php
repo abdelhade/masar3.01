@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Auth;
 use Modules\Accounts\Models\AccHead;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Invoices\Services\RecalculationServiceHelper;
+use Modules\Invoices\Services\SaveInvoiceService;
+use Modules\Invoices\Http\Requests\SaveInvoiceRequest;
 
 class InvoiceController extends Controller
 {
@@ -39,6 +41,10 @@ class InvoiceController extends Controller
         25 => 'Requisition',
         26 => 'Pricing Agreement',
     ];
+
+    public function __construct(
+        private SaveInvoiceService $saveInvoiceService
+    ) {}
 
     public function index(Request $request)
     {
@@ -102,6 +108,10 @@ class InvoiceController extends Controller
     /**
      * Show the form for creating a new resource.
      */
+    /**
+     * Show create invoice form
+     * Redirects to new InvoiceFormController
+     */
     public function create(Request $request)
     {
         $type = (int) $request->get('type');
@@ -109,11 +119,11 @@ class InvoiceController extends Controller
             abort(404, 'Unknown invoice type.');
         }
 
-        $permissionName = 'create ' . $this->titles[$type];
-        $user = Auth::user();
-        if (!($user instanceof User) || !$user->can($permissionName)) {
-            abort(403, 'You do not have permission to create ' . $this->titles[$type]);
-        }
+        // $permissionName = 'create ' . $this->titles[$type];
+        // $user = Auth::user();
+        // if (!($user instanceof User) || !$user->can($permissionName)) {
+        //     abort(403, 'You do not have permission to create ' . $this->titles[$type]);
+        // }
 
         $expectedHash = md5($type);
         $providedHash = $request->get('q');
@@ -122,13 +132,56 @@ class InvoiceController extends Controller
             abort(403, 'Untrusted request.');
         }
 
-        return view('invoices::invoices.create', [
+        // Redirect to new InvoiceFormController
+        return redirect()->route('invoices.form.create', [
             'type' => $type,
             'hash' => $expectedHash,
+            'branch_id' => $request->get('branch_id', auth()->user()->branch_id ?? null)
         ]);
     }
 
-    public function store(Request $request) {}
+    public function store(SaveInvoiceRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $validatedData = $request->validated();
+
+            $operationId = $this->saveInvoiceService->saveInvoice($validatedData);
+
+            if ($operationId) {
+                DB::commit();
+
+                $message = __('Invoices saved successfully.');
+
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $message,
+                        'operation_id' => $operationId,
+                        'print_url' => route('invoice.print', ['operation_id' => $operationId]),
+                        'redirect' => back()->with('success', $message)->getTargetUrl(),
+                    ]);
+                }
+
+                return redirect()->back()->with('success', $message);
+            }
+
+            throw new \Exception('Failed to save invoice result.');
+        } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
 
     public function show(string $id)
     {
@@ -160,6 +213,10 @@ class InvoiceController extends Controller
         return view('invoices::invoices.show', compact('invoice', 'type'));
     }
 
+    /**
+     * Show edit invoice form
+     * Redirects to new InvoiceFormController
+     */
     public function edit(OperHead $invoice)
     {
         if (! $invoice || ($invoice->isdeleted ?? false)) {
@@ -179,18 +236,54 @@ class InvoiceController extends Controller
 
         if ($invoice->is_posted ?? false) {
             Alert::toast('Cannot edit a posted invoice.', 'warning');
-
             return redirect()->route('invoices.index');
         }
 
-        $invoice->load(['operationItems.item.units', 'operationItems.item.prices', 'acc1Head', 'acc2Head', 'employee']);
-
-        return view('invoices::invoices.edit', compact('invoice'));
+        // Redirect to new InvoiceFormController
+        return redirect()->route('invoices.form.edit', ['invoiceId' => $invoice->id]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(SaveInvoiceRequest $request, string $id)
     {
-        abort(404, 'Updates are handled through the Livewire component');
+        try {
+            DB::beginTransaction();
+
+            $validatedData = $request->validated();
+            $validatedData['operationId'] = $id;
+
+            $operationId = $this->saveInvoiceService->saveInvoice($validatedData, true);
+
+            if ($operationId) {
+                DB::commit();
+
+                $message = __('Invoices updated successfully.');
+
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $message,
+                        'redirect' => route('invoices.show', $operationId),
+                    ]);
+                }
+
+                return redirect()->route('invoices.show', $operationId)->with('success', $message);
+            }
+
+            throw new \Exception('Failed to update invoice result.');
+        } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     public function destroy(string $id)
@@ -305,7 +398,7 @@ class InvoiceController extends Controller
      */
     public function print(Request $request, $operation_id)
     {
-        $operation = OperHead::with('operationItems')->findOrFail($operation_id);
+        $operation = OperHead::with(['operationItems.item.units', 'operationItems.unit'])->findOrFail($operation_id);
         $type = $operation->pro_type;
 
         if (! isset($this->titles[$type])) {
@@ -318,39 +411,116 @@ class InvoiceController extends Controller
             abort(403, 'You do not have permission to print this type.');
         }
 
-        $acc1List = AccHead::where('id', $operation->acc1)->get();
-        $acc2List = AccHead::where('id', 'like', $operation->acc2)->get();
-        $employees = Employee::where('id', $operation->emp_id)->get();
-        $items = Item::whereIn('id', $operation->operationItems->pluck('item_id'))->get();
+        // Get account details
+        $acc1 = AccHead::find($operation->acc1);
+        $acc2 = AccHead::find($operation->acc2);
+        $employee = Employee::find($operation->emp_id);
+        $delivery = Employee::find($operation->delivery_id);
 
-        $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22, 26]) ? 'Debitor' : (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'Creditor' : (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'Debitor' : 'Undefined'));
+        $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22, 26]) ? 'العميل' : 
+                    (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'المورد' : 
+                    (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'المخزن' : 'غير محدد'));
+
+        // Prepare invoice items with all details
+        $invoiceItems = $operation->operationItems->map(function ($item) {
+            $itemModel = Item::with('units')->find($item->item_id);
+            $unit = \App\Models\Unit::find($item->unit_id);
+            
+            // Get barcode for this item and unit
+            $barcode = DB::table('barcodes')
+                ->where('item_id', $item->item_id)
+                ->where('unit_id', $item->unit_id)
+                ->first();
+
+            $quantity = $item->qty_in ?: $item->qty_out;
+            $price = $item->item_price;
+            $discount = $item->item_discount;
+            
+            // Calculate sub_value: (quantity * price) - ((quantity * price * discount) / 100)
+            $subtotal = $quantity * $price;
+            $discountAmount = ($subtotal * $discount) / 100;
+            $sub_value = $subtotal - $discountAmount;
+
+            return [
+                'item_id' => $item->item_id,
+                'item_name' => $itemModel->name ?? 'غير محدد',
+                'item_code' => $itemModel->code ?? '',
+                'barcode' => $barcode->barcode ?? '',
+                'unit_id' => $item->unit_id,
+                'unit_name' => $unit->name ?? 'غير محدد',
+                'quantity' => $quantity,
+                'price' => $price,
+                'discount' => $discount,
+                'sub_value' => $sub_value,
+                'batch_number' => $item->batch_number ?? '',
+                'expiry_date' => $item->expiry_date ?? '',
+            ];
+        });
+
+        // Calculate totals
+        $subtotal = $invoiceItems->sum('sub_value');
+        
+        // Invoice level discount
+        $invoiceDiscountPercentage = $operation->discount_percentage ?? 0;
+        $invoiceDiscountValue = $operation->discount_value ?? 0;
+        if ($invoiceDiscountPercentage > 0) {
+            $invoiceDiscountValue = ($subtotal * $invoiceDiscountPercentage) / 100;
+        }
+        
+        $afterDiscount = $subtotal - $invoiceDiscountValue;
+        
+        // Additional
+        $additionalPercentage = $operation->additional_percentage ?? 0;
+        $additionalValue = $operation->additional_value ?? 0;
+        if ($additionalPercentage > 0) {
+            $additionalValue = ($afterDiscount * $additionalPercentage) / 100;
+        }
+        
+        $afterAdditional = $afterDiscount + $additionalValue;
+        
+        // VAT
+        $vatPercentage = $operation->vat_percentage ?? 0;
+        $vatValue = ($afterAdditional * $vatPercentage) / 100;
+        
+        // Withholding Tax
+        $withholdingTaxPercentage = $operation->withholding_tax_percentage ?? 0;
+        $withholdingTaxValue = ($afterAdditional * $withholdingTaxPercentage) / 100;
+        
+        // Total
+        $totalAfterAdditional = $afterAdditional + $vatValue - $withholdingTaxValue;
+        
+        // Paid and remaining
+        $paidFromClient = $operation->paid_from_client ?? 0;
+        $remaining = $totalAfterAdditional - $paidFromClient;
 
         return view('invoices::invoices.print-invoice-2', [
+            'operation' => $operation,
             'pro_id' => $operation->pro_id,
             'pro_date' => $operation->pro_date,
             'accural_date' => $operation->accural_date,
             'serial_number' => $operation->pro_serial,
-            'acc1_id' => $operation->acc1,
-            'acc2_id' => $operation->acc2,
-            'emp_id' => $operation->emp_id,
             'type' => $operation->pro_type,
             'titles' => $this->titles,
             'acc1Role' => $acc1Role,
-            'acc1List' => $acc1List,
-            'acc2List' => $acc2List,
-            'employees' => $employees,
-            'items' => $items,
-            'invoiceItems' => $operation->operationItems->map(function ($item) {
-                $unit = \App\Models\Unit::find($item->unit_id);
-
-                return [
-                    'item_id' => $item->item_id,
-                    'unit_id' => $item->unit_id,
-                    'quantity' => $item->qty_in ?: $item->qty_out,
-                    'price' => $item->item_price,
-                    'discount' => $item->item_discount,
-                ];
-            }),
+            'acc1' => $acc1,
+            'acc2' => $acc2,
+            'employee' => $employee,
+            'delivery' => $delivery,
+            'invoiceItems' => $invoiceItems,
+            // Totals
+            'subtotal' => $subtotal,
+            'discount_percentage' => $invoiceDiscountPercentage,
+            'discount_value' => $invoiceDiscountValue,
+            'additional_percentage' => $additionalPercentage,
+            'additional_value' => $additionalValue,
+            'vat_percentage' => $vatPercentage,
+            'vat_value' => $vatValue,
+            'withholding_tax_percentage' => $withholdingTaxPercentage,
+            'withholding_tax_value' => $withholdingTaxValue,
+            'total' => $totalAfterAdditional,
+            'paid_from_client' => $paidFromClient,
+            'remaining' => $remaining,
+            'notes' => $operation->notes ?? '',
         ]);
     }
 

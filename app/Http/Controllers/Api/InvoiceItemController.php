@@ -89,7 +89,7 @@ class InvoiceItemController extends Controller
         // إضافة صنف جديد
         $firstUnit = $item->units->first();
         $unitId = $firstUnit?->id;
-        
+
         // حساب السعر
         $price = $this->calculateItemPrice($item, $unitId, $priceTypeId, $type);
 

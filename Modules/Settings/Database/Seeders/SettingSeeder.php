@@ -352,5 +352,22 @@ class SettingSeeder extends Seeder
             'input_type' => 'boolean',
             'value' => '0',  // ❌ معطل
         ]);
+
+        // -------------------- إعدادات عرض الفواتير ---------------------------
+        PublicSetting::create([
+            'category_id' => $invoices->id,
+            'label' => 'إظهار تفاصيل الصنف في الفاتورة (المتاح بالمخزن، سعر الشراء الأخير، إلخ)',
+            'key' => 'invoice_show_item_details',
+            'input_type' => 'boolean',
+            'value' => '1',  // ✅ مُفعَّل
+        ]);
+
+        PublicSetting::create([
+            'category_id' => $invoices->id,
+            'label' => 'إظهار الأصناف الموصى بها للعميل في الفاتورة',
+            'key' => 'invoice_show_recommended_items',
+            'input_type' => 'boolean',
+            'value' => '0',  // ❌ معطل
+        ]);
     }
 }
