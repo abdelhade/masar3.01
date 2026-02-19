@@ -34,6 +34,26 @@
 
     {{-- Masar theme switcher (classic, mint-green, dark, monokai) --}}
     <link href="{{ asset('css/themes/masar-themes.css') }}" rel="stylesheet" type="text/css" />
+    
+    {{-- Early theme initialization to prevent flash --}}
+    <script>
+        (function() {
+            var STORAGE_KEY = 'masar_theme';
+            var VALID_THEMES = ['classic', 'mint-green', 'dark', 'monokai'];
+            var DEFAULT_THEME = 'classic';
+            
+            try {
+                var stored = localStorage.getItem(STORAGE_KEY);
+                var theme = (stored && VALID_THEMES.indexOf(stored) !== -1) ? stored : DEFAULT_THEME;
+                document.documentElement.className = 'theme-' + theme;
+                if (document.body) {
+                    document.body.className = 'theme-' + theme;
+                }
+            } catch (e) {
+                document.documentElement.className = 'theme-' + DEFAULT_THEME;
+            }
+        })();
+    </script>
 
     <!-- Alpine.js is included with Livewire 3, no need to load separately -->
     {{-- <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.0/dist/cdn.min.js"></script> --}}

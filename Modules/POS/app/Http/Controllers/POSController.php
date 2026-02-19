@@ -415,6 +415,58 @@ class POSController extends Controller
     }
 
     /**
+     * جلب كافة الأصناف (AJAX) - لتحديث البيانات محلياً
+     */
+    public function getAllItemsDetails()
+    {
+        $items = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])
+            ->where('is_active', 1)
+            ->get();
+
+        // جلب الباركودات
+        $itemIds = $items->pluck('id');
+        $barcodes = Barcode::whereIn('item_id', $itemIds)
+            ->where('isdeleted', 0)
+            ->select('item_id', 'unit_id', 'barcode')
+            ->get()
+            ->groupBy('item_id');
+
+        $itemsData = $items->map(function ($item) use ($barcodes) {
+            $itemBarcodes = $barcodes->get($item->id, collect());
+
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'code' => $item->code,
+                'is_weight_scale' => $item->is_weight_scale ?? false,
+                'scale_plu_code' => $item->scale_plu_code ?? null,
+                'barcodes' => $itemBarcodes->map(function ($barcode) {
+                    return [
+                        'barcode' => $barcode->barcode,
+                        'unit_id' => $barcode->unit_id,
+                    ];
+                })->toArray(),
+                'units' => $item->units->map(function ($unit) {
+                    return [
+                        'id' => $unit->id,
+                        'name' => $unit->name,
+                        'value' => $unit->pivot->u_val ?? 1,
+                    ];
+                })->toArray(),
+                'prices' => $item->prices->map(function ($price) {
+                    return [
+                        'id' => $price->id,
+                        'name' => $price->name,
+                        'value' => $price->pivot->price ?? 0,
+                    ];
+                })->toArray(),
+            ];
+        })->keyBy('id');
+
+        return response()->json(['items' => $itemsData]);
+    }
+
+    /**
      * جلب أصناف التصنيف (AJAX)
      */
     public function getCategoryItems($categoryId)
@@ -606,7 +658,7 @@ class POSController extends Controller
             if ($paidAmount > 0) {
                 if ($paymentMethod === 'mixed' && $cashAmount > 0 && $cardAmount > 0) {
                     // الدفع المختلط - قيدين منفصلين
-                    
+
                     // قيد الدفع النقدي
                     $cashJournalId = $salesJournalId + 1;
                     JournalHead::create([
@@ -696,7 +748,7 @@ class POSController extends Controller
                     // دفع واحد (نقدي أو بطاقة)
                     $paymentAccountId = null;
                     $paymentAmount = 0;
-                    
+
                     if ($paymentMethod === 'cash' || ($paymentMethod === 'mixed' && $cashAmount > 0)) {
                         $paymentAccountId = $cashAccountId ?? $storeId;
                         $paymentAmount = $cashAmount > 0 ? $cashAmount : $paidAmount;
@@ -781,6 +833,9 @@ class POSController extends Controller
             ]);
 
             DB::commit();
+
+            // إطلاق حدث الطباعة للمطبخ
+            event(new \Modules\POS\app\Events\TransactionSaved($cashierTransaction));
 
             return response()->json([
                 'success' => true,
@@ -2179,7 +2234,7 @@ class POSController extends Controller
 
                 if ($returnPaymentMethod === 'mixed' && $returnCashAmount > 0 && $returnCardAmount > 0) {
                     // استرجاع دفع مختلط - قيدين منفصلين
-                    
+
                     // قيد استرجاع الدفع النقدي
                     $returnCashJournalId = $returnSalesJournalId + 1;
                     JournalHead::create([
@@ -2269,7 +2324,7 @@ class POSController extends Controller
                     // استرجاع دفع واحد (نقدي أو بطاقة)
                     $returnPaymentAccountId = null;
                     $returnPaymentAmount = 0;
-                    
+
                     if ($returnPaymentMethod === 'cash' || ($returnPaymentMethod === 'mixed' && $returnCashAmount > 0)) {
                         $returnPaymentAccountId = $cashAccountId ?? $originalInvoice->acc2;
                         $returnPaymentAmount = $returnCashAmount > 0 ? $returnCashAmount : $totalReturnAmount;

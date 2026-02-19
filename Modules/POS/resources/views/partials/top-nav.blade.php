@@ -77,6 +77,13 @@
                 <i class="fas fa-search-dollar me-1"></i> فحص السعر
             </a>
             <button type="button" 
+                    id="refreshItemsBtn"
+                    class="btn btn-link text-success" 
+                    style="text-decoration: none;"
+                    title="تحديث الأصناف من السيرفر">
+                <i class="fas fa-sync-alt me-1"></i> تحديث الأصناف
+            </button>
+            <button type="button" 
                     id="registerBtn"
                     class="btn btn-primary"
                     style="border-radius: 25px; padding: 0.5rem 1.5rem;">

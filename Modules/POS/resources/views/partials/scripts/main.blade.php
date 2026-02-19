@@ -166,6 +166,7 @@ window.showToast = window.msg;
             @include('pos::partials.scripts.recent-transactions')
             @include('pos::partials.scripts.held-orders')
             @include('pos::partials.scripts.helpers')
+            @include('pos::partials.scripts.items-management')
         });
     }
     

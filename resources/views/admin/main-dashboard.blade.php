@@ -153,12 +153,12 @@
                 <h1 class="title text-white text-page-title">Massar ERP</h1>
                 <div class="user-section">
                     <i data-lucide="user" class="user-icon"></i>
-                    <span class="user-name">{{ auth()->user()->name ?? __('User') }}</span>
+                    <span class="user-name">{{ auth()->user()->name ?? __('general.user') }}</span>
                     <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="display: inline;">
                         @csrf
-                        <button type="submit" class="logout-btn" :title="__('Logout')">
+                        <button type="submit" class="logout-btn" :title="__('general.logout')">
                             <i data-lucide="log-out" class="logout-icon"></i>
-                            <span class="logout-text">{{ __('Logout') }}</span>
+                            <span class="logout-text">{{ __('general.logout') }}</span>
                         </button>
                     </form>
                 </div>
@@ -170,8 +170,8 @@
                 </div>
                 {{-- Theme switcher --}}
                 <div class="ms-3 d-flex align-items-center gap-2">
-                    <label for="masar-theme-select" class="mb-0 small fw-bold text-white">{{ __('Theme') }}:</label>
-                    <select id="masar-theme-select" class="form-select form-select-sm shadow-sm" :title="__('Change Theme')"
+                    <label for="masar-theme-select" class="mb-0 small fw-bold text-white">{{ __('general.theme') }}:</label>
+                    <select id="masar-theme-select" class="form-select form-select-sm shadow-sm" :title="__('general.change_theme')"
                         style="min-width: 140px; border-radius: 8px; font-weight: 600;">
                         <option value="classic">{{ __('Classic (Blue)') }}</option>
                         <option value="mint-green">{{ __('Mint Green') }}</option>
@@ -181,8 +181,8 @@
                 </div>
                 {{-- Language switcher --}}
                 <div class="ms-3 d-flex align-items-center gap-2">
-                    <label for="language-select" class="mb-0 small fw-bold text-white">{{ __('Language') }}:</label>
-                    <select id="language-select" class="form-select form-select-sm shadow-sm" :title="__('Change Language')"
+                    <label for="language-select" class="mb-0 small fw-bold text-white">{{ __('language.language') }}:</label>
+                    <select id="language-select" class="form-select form-select-sm shadow-sm" :title="__('language.change_language')"
                         style="min-width: 120px; border-radius: 8px; font-weight: 600;">
                         <option value="ar" {{ app()->getLocale() == 'ar' ? 'selected' : '' }}>العربية</option>
                         <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
@@ -342,11 +342,11 @@
                             check-portfolios-incoming',
                             'view basicData-statistics',
                             ])
-                            <a href="{{ route('accounts.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('accounts.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="chart-bar-increasing"></i>
                                 </div>
-                                <p>{{ __('Basic Data') }}</p>
+                                <p>{{ __('general.basic_data') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -362,11 +362,11 @@
                             'view
                             varibalsValues',
                             ])
-                            <a href="{{ route('items.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('items.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="boxes"></i>
                                 </div>
-                                <p>{{ __('Items') }}</p>
+                                <p>{{ __('items.items') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -382,11 +382,11 @@
                             active-sessions',
                             'view activity-logs',
                             ])
-                            <a href="{{ route('users.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('users.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="key"></i>
                                 </div>
-                                <p>{{ __('Permissions') }}</p>
+                                <p>{{ __('general.permissions') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -394,11 +394,11 @@
                     {{-- الاعدادات --}}
                     <div class="app-icon-group">
                         @can('view settings')
-                            <a href="{{ route('mysettings.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('mysettings.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="settings"></i>
                                 </div>
-                                <p>{{ __('Settings') }}</p>
+                                <p>{{ __('general.settings') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -417,11 +417,11 @@
                             'view
                             Expenses-Reports',
                             ])
-                            <a href="{{ route('reports.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('reports.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="file-bar-chart"></i>
                                 </div>
-                                <p>{{ __('Reports') }}</p>
+                                <p>{{ __('reports.reports') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -429,7 +429,7 @@
                     {{-- crm --}}
                     <div class="app-icon-group">
                         @canany(['view CRM', 'view CRM Statistics'])
-                            <a href="{{ route('statistics.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('statistics.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="user-cog"></i>
                                 </div>
@@ -441,11 +441,11 @@
                     {{-- المبيعات --}}
                     <div class="app-icon-group">
                         @can('view Sales Invoice')
-                            <a href="{{ route('invoices.index', ['type' => 10]) }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('invoices.index', ['type' => 10]) }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="trending-up"></i>
                                 </div>
-                                <p>{{ __("Sales") }}</p>
+                                <p>{{ __('general.sales') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -453,11 +453,11 @@
                     {{-- pos --}}
                     <div class="app-icon-group">
                         @can('view POS System')
-                            <a href="{{ route('pos.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('pos.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="shopping-cart"></i>
                                 </div>
-                                <p>{{ __("POS") }}</p>
+                                <p>{{ __('general.pos') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -465,11 +465,11 @@
                     {{-- ادارة المستأجرات --}}
                     <div class="app-icon-group">
                         @can('view Buildings')
-                            <a href="{{ route('rentals.buildings.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('rentals.buildings.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="building"></i>
                                 </div>
-                                <p>{{ __("Rental Management") }}</p>
+                                <p>{{ __('general.rental_management') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -478,11 +478,11 @@
                     <div class="app-icon-group">
                         @can('view journals')
                             <a href="{{ route('journals.index', ['type' => 'basic_journal']) }}"
-                                class="app-icon-large icon-bg-green">
+                                target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="file-text"></i>
                                 </div>
-                                <p>{{ __("Accounts Management") }}</p>
+                                <p>{{ __('general.accounts_management') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -490,11 +490,11 @@
                     {{-- ادارة المصروفات --}}
                     <div class="app-icon-group">
                         @can('view Expenses-Management')
-                            <a href="{{ route('expenses.dashboard') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('expenses.dashboard') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="credit-card"></i>
                                 </div>
-                                <p>{{ __("Expenses Management") }}</p>
+                                <p>{{ __('general.expenses_management') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -502,11 +502,11 @@
                     {{-- السندات الماليه --}}
                     <div class="app-icon-group">
                         @canany(['view receipt vouchers', 'view payment vouchers', 'view exp-payment'])
-                            <a href="{{ route('vouchers.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('vouchers.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="receipt"></i>
                                 </div>
-                                <p>{{ __("Financial Vouchers") }}</p>
+                                <p>{{ __('general.financial_vouchers') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -514,11 +514,11 @@
                     {{-- التحويلات النقديه --}}
                     <div class="app-icon-group">
                         @can('view transfers')
-                            <a href="{{ route('transfers.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('transfers.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="arrow-left-right"></i>
                                 </div>
-                                <p>{{ __("Cash Transfers") }}</p>
+                                <p>{{ __('general.cash_transfers') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -526,11 +526,11 @@
                     {{-- ادارة الدفعات --}}
                     <div class="app-icon-group">
                         @can('view Installment Plans')
-                            <a href="{{ route('installments.plans.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('installments.plans.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="tag"></i>
                                 </div>
-                                <p>{{ __("Installments Management") }}</p>
+                                <p>{{ __('general.installments_management') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -538,14 +538,14 @@
                     {{-- ادارة الشيكات --}}
                     <div class="app-icon-group">
                         @can('view Checks')
-                            <a href="{{ route('checks.incoming') }}" class="app-icon-large icon-bg-green"
+                            <a href="{{ route('checks.incoming') }}" target="_blank" class="app-icon-large icon-bg-green"
                                 style="position: relative;">
                                 <span
                                     style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">{{ __("New") }}</span>
                                 <div class="icon-wrapper">
                                     <i data-lucide="file-check-2"></i>
                                 </div>
-                                <p>{{ __("Checks Management") }}</p>
+                                <p>{{ __('general.checks_management') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -560,11 +560,11 @@
                             Addition Order',
                             'view Store-to-Store Transfer',
                             ])
-                            <a href="{{ route('invoices.index', ['type' => 18]) }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('invoices.index', ['type' => 18]) }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="package"></i>
                                 </div>
-                                <p>{{ __("Inventory Management") }}</p>
+                                <p>{{ __('general.inventory_management') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -572,11 +572,11 @@
                     {{-- التصنيع --}}
                     <div class="app-icon-group">
                         @can('view Manufacturing Invoices')
-                            <a href="{{ route('manufacturing.create') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('manufacturing.create') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="factory"></i>
                                 </div>
-                                <p>{{ __("Manufacturing") }}</p>
+                                <p>{{ __('general.manufacturing') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -595,11 +595,11 @@
                             'view certificates',
                             'view audits',
                             ])
-                            <a href="{{ route('quality.dashboard') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('quality.dashboard') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="award"></i>
                                 </div>
-                                <p>{{ __("Quality Management") }}</p>
+                                <p>{{ __('general.quality_management') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -607,11 +607,11 @@
                     {{-- المشتريات --}}
                     <div class="app-icon-group">
                         @can('view Purchase Invoice')
-                            <a href="{{ route('invoices.index', ['type' => 11]) }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('invoices.index', ['type' => 11]) }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="shopping-bag"></i>
                                 </div>
-                                <p>{{ __("Purchases") }}</p>
+                                <p>{{ __('general.purchases') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -625,11 +625,11 @@
                             'view
                             Maintenance',
                             ])
-                            <a href="{{ route('service.types.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('service.types.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="package"></i>
                                 </div>
-                                <p>{{ __("Maintenance") }}</p>
+                                <p>{{ __('general.maintenance') }}</p>
                             </a>
                         @endcanany
                     </div>
@@ -637,14 +637,14 @@
                     {{-- إدارة الأسطول --}}
                     <div class="app-icon-group">
                         @can('view Fleet Dashboard')
-                            <a href="{{ route('fleet.dashboard.index') }}?sidebar=fleet" class="app-icon-large icon-bg-green"
+                            <a href="{{ route('fleet.dashboard.index') }}?sidebar=fleet" target="_blank" class="app-icon-large icon-bg-green"
                                 style="position: relative;">
                                 <span
                                     style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">{{ __("New") }}</span>
                                 <div class="icon-wrapper">
                                     <i data-lucide="truck"></i>
                                 </div>
-                                <p>{{ __("Fleet Management") }}</p>
+                                <p>{{ __('general.fleet_management') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -653,11 +653,11 @@
                     <div class="app-icon-group">
                         @can('view Projects')
                             @if (Route::has('progress.projects.index'))
-                                <a href="{{ route('progress.projects.index') }}" class="app-icon-large icon-bg-green">
+                                <a href="{{ route('progress.projects.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                     <div class="icon-wrapper">
                                         <i data-lucide="kanban"></i>
                                     </div>
-                                    <p>{{ __("Projects") }}</p>
+                                    <p>{{ __('general.projects') }}</p>
                                 </a>
                             @endif
                         @endcan
@@ -681,11 +681,11 @@
                             'view progress-dashboard',
                             ])
                             @if (Route::has('progress.dashboard'))
-                                <a href="{{ route('progress.dashboard') }}" class="app-icon-large icon-bg-green">
+                                <a href="{{ route('progress.dashboard') }}" target="_blank" class="app-icon-large icon-bg-green">
                                     <div class="icon-wrapper">
                                         <i data-lucide="bar-chart-3"></i>
                                     </div>
-                                    <p>{{ __("Daily Progress") }}</p>
+                                    <p>{{ __('general.daily_progress') }}</p>
                                 </a>
                             @endif
                         @endcanany
@@ -693,22 +693,22 @@
 
                     {{-- عمليات الاصول --}}
                     <div class="app-icon-group">
-                        <a href="{{ route('depreciation.index') }}" class="app-icon-large icon-bg-green">
+                        <a href="{{ route('depreciation.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
                                 <i data-lucide="building"></i>
                             </div>
-                            <p>{{ __("Assets Operations") }}</p>
+                            <p>{{ __('general.assets_operations') }}</p>
                         </a>
                     </div>
 
                     {{-- ادارة الموارد --}}
                     <div class="app-icon-group">
                         @can('view MyResources')
-                            <a href="{{ route('myresources.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('myresources.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="cog"></i>
                                 </div>
-                                <p>{{ __("Resources Management") }}</p>
+                                <p>{{ __('general.resources_management') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -716,11 +716,11 @@
                     {{-- الموارد البشريه --}}
                     <div class="app-icon-group">
                         @can('view Employees')
-                            <a href="{{ route('employees.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('employees.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="users"></i>
                                 </div>
-                                <p>{{ __("Human Resources") }}</p>
+                                <p>{{ __('general.human_resources') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -728,11 +728,11 @@
                     {{-- بصمة الموبايل --}}
                     <div class="app-icon-group">
                         @can('view Mobile-fingerprint')
-                            <a href="{{ route('mobile.employee-login') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('mobile.employee-login') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="fingerprint"></i>
                                 </div>
-                                <p>{{ __("Mobile Fingerprint") }}</p>
+                                <p>{{ __('general.mobile_fingerprint') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -740,11 +740,11 @@
                     {{-- أدارة الشحن --}}
                     <div class="app-icon-group">
                         @can('view Orders')
-                            <a href="{{ route('orders.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('orders.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="truck"></i>
                                 </div>
-                                <p>{{ __("Shipping Management") }}</p>
+                                <p>{{ __('general.shipping_management') }}</p>
                             </a>
                         @endcan
                     </div>
@@ -752,7 +752,7 @@
                     {{-- Inquiries --}}
                     <div class="app-icon-group">
                         @can('view Inquiries')
-                            <a href="{{ route('inquiries.index') }}" class="app-icon-large icon-bg-green">
+                            <a href="{{ route('inquiries.index') }}" target="_blank" class="app-icon-large icon-bg-green">
                                 <div class="icon-wrapper">
                                     <i data-lucide="layers"></i>
                                 </div>
@@ -774,7 +774,7 @@
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="wallet"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                {{ __("Last 5 Accounts") }}
+                                {{ __('general.last_5_accounts') }}
                             </h5>
                         </div>
                         <div class="card-body" style="padding: 0;">
@@ -782,9 +782,9 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th>{{ __("Code") }}</th>
-                                            <th>{{ __("Name") }}</th>
-                                            <th>{{ __("Number") }}</th>
+                                            <th>{{ __('general.code') }}</th>
+                                            <th>{{ __('general.name') }}</th>
+                                            <th>{{ __('general.number') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -814,7 +814,7 @@
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="log-in"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                {{ __("Last 5 Login Operations") }}
+                                {{ __('general.last_5_logins') }}
                             </h5>
                         </div>
                         <div class="card-body" style="padding: 0;">
@@ -822,9 +822,9 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th>{{ __("User") }}</th>
+                                            <th>{{ __('general.user') }}</th>
                                             <th>IP</th>
-                                            <th>{{ __("Date") }}</th>
+                                            <th>{{ __('general.date') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -856,31 +856,31 @@
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="trending-up"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                {{ __("Sales Statistics") }}
+                                {{ __('general.sales_statistics') }}
                             </h5>
                         </div>
                         <div class="card-body">
                             <div class="d-flex flex-column gap-3">
                                 <div class="sales-stats-item d-flex justify-content-between align-items-center">
-                                    <span class="sales-stats-label">{{ __("Last Invoice") }}</span>
+                                    <span class="sales-stats-label">{{ __('general.last_invoice') }}</span>
                                     <span class="sales-stats-value">
                                         {{ $salesStats['last_invoice'] ? '#' . $salesStats['last_invoice']->pro_id . ' - ' . number_format($salesStats['last_invoice']->fat_net ?? 0, 2) . ' ر.س' : '-' }}
                                     </span>
                                 </div>
                                 <div class="sales-stats-item d-flex justify-content-between align-items-center">
-                                    <span class="sales-stats-label">{{ __("Today") }}</span>
+                                    <span class="sales-stats-label">{{ __('general.today') }}</span>
                                     <span class="sales-stats-value">
                                         {{ number_format($salesStats['today'] ?? 0, 2) }} ر.س
                                     </span>
                                 </div>
                                 <div class="sales-stats-item d-flex justify-content-between align-items-center">
-                                    <span class="sales-stats-label">{{ __("Last Week") }}</span>
+                                    <span class="sales-stats-label">{{ __('general.last_week') }}</span>
                                     <span class="sales-stats-value">
                                         {{ number_format($salesStats['last_week'] ?? 0, 2) }} ر.س
                                     </span>
                                 </div>
                                 <div class="sales-stats-item d-flex justify-content-between align-items-center">
-                                    <span class="sales-stats-label">{{ __("Last Month") }}</span>
+                                    <span class="sales-stats-label">{{ __('general.last_month') }}</span>
                                     <span class="sales-stats-value">
                                         {{ number_format($salesStats['last_month'] ?? 0, 2) }} ر.س
                                     </span>
@@ -897,7 +897,7 @@
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="package"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                {{ __("Last 5 Items") }}
+                                {{ __('general.last_5_items') }}
                             </h5>
                         </div>
                         <div class="card-body" style="padding: 0;">
@@ -905,9 +905,9 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th>{{ __("Code") }}</th>
-                                            <th>{{ __("Name") }}</th>
-                                            <th>{{ __("Date") }}</th>
+                                            <th>{{ __('general.code') }}</th>
+                                            <th>{{ __('general.name') }}</th>
+                                            <th>{{ __('general.date') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -921,7 +921,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5">{{ __("No data available") }}
+                                                <td colspan="3" class="text-center text-muted py-5">{{ __('general.no_data') }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -939,7 +939,7 @@
                             <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="file-text"
                                     style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
-                                {{ __("Last 5 Operations") }}
+                                {{ __('general.last_5_operations') }}
                             </h5>
                         </div>
                         <div class="card-body" style="padding: 0;">
@@ -947,9 +947,9 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th>{{ __("Number") }}</th>
-                                            <th>{{ __("Client") }}</th>
-                                            <th>{{ __("Amount") }}</th>
+                                            <th>{{ __('general.number') }}</th>
+                                            <th>{{ __('general.client') }}</th>
+                                            <th>{{ __('general.amount') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -963,7 +963,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5">{{ __("No data available") }}
+                                                <td colspan="3" class="text-center text-muted py-5">{{ __('general.no_data') }}
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -1074,7 +1074,7 @@
                 // Update search count
                 if (searchCount) {
                     if (searchTerm !== '') {
-                        searchCount.textContent = visibleCount + ' {{ __("result") }}';
+                        searchCount.textContent = visibleCount + ' {{ __("general.result") }}';
                         searchCount.style.display = 'block';
                     } else {
                         searchCount.style.display = 'none';

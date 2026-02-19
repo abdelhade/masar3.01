@@ -40,7 +40,11 @@
 {{-- Masar theme switcher --}}
 <script src="{{ asset('js/theme-switcher.js') }}"></script>
 <script>
-(function(){ if (typeof MasarThemeSwitcher !== 'undefined') { MasarThemeSwitcher.bindDropdown('[data-masar-theme-dropdown]'); } })();
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof MasarThemeSwitcher !== 'undefined') {
+        MasarThemeSwitcher.bindDropdown('[data-masar-theme-dropdown]');
+    }
+});
 </script>
 
 {{-- Stack for additional scripts from components --}}

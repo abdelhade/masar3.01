@@ -15,5 +15,15 @@ Route::middleware(['web', 'auth'])->group(function () {
 Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/invoice/items/get-item', [InvoiceItemController::class, 'getItemForInvoice'])->name('api.invoice.items.get-item');
     Route::get('/invoice/items/{id}/details', [InvoiceItemController::class, 'getItemDetails'])->name('api.invoice.items.details');
-    // ✅ Items lite routes moved to Modules/Invoices/routes/api.php
-});
+
+    // ✅ New Client-Side Search API
+    Route::get('/items/lite', [App\Http\Controllers\Api\ItemsApiController::class, 'lite'])->name('api.items.lite');
+    Route::get('/items/{id}/lite-details', [App\Http\Controllers\Api\ItemsApiController::class, 'details'])->name('api.items.lite-details');
+    
+    // Theme Switcher API
+    Route::post('/set-theme', function () {
+        $theme = request()->input('theme', 'default');
+        session(['theme' => $theme]);
+        return response()->json(['success' => true, 'theme' => $theme]);
+    })->name('api.set-theme');
+
