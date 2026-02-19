@@ -57,10 +57,6 @@ class ItemSearchApiController extends Controller
 
             return response()->json($result);
         } catch (\Exception $e) {
-            \Log::error('❌ getItemDetails exception', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return response()->json([
                 'success' => false,
@@ -93,8 +89,20 @@ class ItemSearchApiController extends Controller
      */
     public function getLiteItems(Request $request): JsonResponse
     {
-        $branchId = $request->query('branch_id') ? (int) $request->query('branch_id') : null;
-        $type = $request->query('type') ? (int) $request->query('type') : null;
+        // Handle branch_id properly - convert "null" string to actual null
+        $branchIdParam = $request->query('branch_id');
+        $branchId = null;
+
+        if ($branchIdParam !== null && $branchIdParam !== 'null' && $branchIdParam !== '') {
+            $branchId = (int) $branchIdParam;
+        }
+
+        $typeParam = $request->query('type');
+        $type = null;
+
+        if ($typeParam !== null && $typeParam !== 'null' && $typeParam !== '') {
+            $type = (int) $typeParam;
+        }
 
         $result = $this->itemSearchService->getAllItemsLite($branchId, $type);
 
@@ -156,12 +164,6 @@ class ItemSearchApiController extends Controller
             $result = $this->itemSearchService->getItemPriceForPriceList($itemId, $priceListId, $unitId);
             return response()->json($result);
         } catch (\Exception $e) {
-            \Log::error('❌ getItemPrice exception', [
-                'error' => $e->getMessage(),
-                'item_id' => $itemId,
-                'price_list_id' => $priceListId,
-                'unit_id' => $unitId
-            ]);
 
             return response()->json([
                 'success' => false,

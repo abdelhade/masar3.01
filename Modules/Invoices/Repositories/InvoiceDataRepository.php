@@ -218,7 +218,7 @@ class InvoiceDataRepository
      */
     public function getInvoiceForEdit(int $invoiceId): array
     {
-        $invoice = DB::table('oper_head')
+        $invoice = DB::table('operhead')
             ->where('id', $invoiceId)
             ->first();
 
@@ -229,7 +229,7 @@ class InvoiceDataRepository
         $items = DB::table('operation_items as oi')
             ->join('items as i', 'oi.item_id', '=', 'i.id')
             ->join('units as u', 'oi.unit_id', '=', 'u.id')
-            ->where('oi.oper_id', $invoiceId)
+            ->where('oi.pro_id', $invoiceId)
             ->select(
                 'oi.*',
                 'i.name as item_name',

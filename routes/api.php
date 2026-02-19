@@ -16,7 +16,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/invoice/items/{id}/details', [InvoiceItemController::class, 'getItemDetails'])->name('api.invoice.items.details');
 
     // ✅ New Client-Side Search API
-    Route::get('/items/lite', [App\Http\Controllers\Api\ItemsApiController::class, 'lite'])->name('api.items.lite');
+    // Route::get('/items/lite', [App\Http\Controllers\Api\ItemsApiController::class, 'lite'])->name('api.items.lite');
     Route::get('/items/{id}/lite-details', [App\Http\Controllers\Api\ItemsApiController::class, 'details'])->name('api.items.lite-details');
 
     // Theme Switcher API
