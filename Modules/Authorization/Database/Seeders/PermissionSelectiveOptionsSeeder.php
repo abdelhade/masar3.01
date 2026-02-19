@@ -36,7 +36,6 @@ class PermissionSelectiveOptionsSeeder extends Seeder
             ],
         ];
 
-
         foreach ($permissionGroups as $category => $permissions) {
             foreach ($permissions as $name => $description) {
                 $data = ['category' => $category];

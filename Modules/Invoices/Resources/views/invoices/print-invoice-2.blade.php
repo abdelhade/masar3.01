@@ -259,7 +259,7 @@
                 <div class="info-row">
                     <span class="info-label">رقم الفاتورة:</span>
                     <span class="info-value">
-                        <span>{{ $pro_id ?? 'غير محدد' }}</span>
+                        <span>{{ $pro_id && $pro_id > 0 ? $pro_id : ($operation->id ?? 'غير محدد') }}</span>
                     </span>
                 </div>
                 <div class="info-row">
@@ -277,7 +277,13 @@
                 <div class="info-row">
                     <span class="info-label">الموظف:</span>
                     <span class="info-value">
-                        {{ $employees->first()->aname ?? 'غير محدد' }}
+                        {{ $employee->aname ?? 'غير محدد' }}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">مندوب التوصيل:</span>
+                    <span class="info-value">
+                        {{ $delivery->aname ?? 'غير محدد' }}
                     </span>
                 </div>
             </div>
@@ -294,7 +300,7 @@
                         @endif
                     </span>
                     <span class="info-value">
-                        <span>{{ $acc1List->first()->aname ?? 'غير محدد' }}</span>
+                        <span>{{ $acc1->aname ?? 'غير محدد' }}</span>
                     </span>
                 </div>
                 <div class="info-row">
@@ -308,7 +314,7 @@
                         @endif
                     </span>
                     <span class="info-value">
-                        <span>{{ $acc2List->first()->aname ?? 'غير محدد' }}</span>
+                        <span>{{ $acc2->aname ?? 'غير محدد' }}</span>
                     </span>
                 </div>
                 <div class="info-row">
@@ -322,7 +328,7 @@
                         @endif
                     </span>
                     <span class="info-value">
-                        <span>{{ number_format($received_from_client ?? 0, 2) }} جنيه</span>
+                        <span>{{ number_format($paid_from_client ?? 0, 2) }} جنيه</span>
                     </span>
                 </div>
             </div>
@@ -344,30 +350,19 @@
             </thead>
             <tbody>
                 @forelse($invoiceItems as $index => $item)
-                    @php
-                        $itemData = $items->firstWhere('id', $item['item_id']);
-                        $unitData = isset($item['available_units']) ? $item['available_units']->first() : null;
-                        // Get barcode for this item and unit
-                        $barcode = null;
-                        if ($itemData) {
-                            $barcode = \App\Models\Barcode::where('item_id', $item['item_id'])
-                                ->where('unit_id', $item['unit_id'])
-                                ->first();
-                        }
-                    @endphp
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td style="text-align: right;">
-                            <strong>{{ $itemData->name ?? 'غير محدد' }}</strong>
-                            @if ($itemData && $itemData->code)
-                                <br><small>كود: {{ $itemData->code }}</small>
+                            <strong>{{ $item['item_name'] ?? 'غير محدد' }}</strong>
+                            @if (!empty($item['item_code']))
+                                <br><small>كود: {{ $item['item_code'] }}</small>
                             @endif
                         </td>
                         <td>
-                            <code>{{ $barcode->barcode ?? 'غير محدد' }}</code>
+                            <code>{{ $item['barcode'] ?? 'غير محدد' }}</code>
                         </td>
                         <td>
-                            <span>{{ $unitData->name ?? 'غير محدد' }}</span>
+                            <span>{{ $item['unit_name'] ?? 'غير محدد' }}</span>
                         </td>
                         <td>
                             <span>{{ number_format($item['quantity']) }}</span>
@@ -379,12 +374,12 @@
                         </td>
                         <td>
                             <span>
-                                {{ number_format($item['discount'], 2) }} جنيه
+                                {{ number_format($item['discount'], 2) }}%
                             </span>
                         </td>
                         <td>
                             <strong>
-                                {{ number_format($item['sub_value'] ?? (($item['quantity'] * $item['price']) - ($item['discount'] ?? 0)), 2) }} جنيه
+                                {{ number_format($item['sub_value'], 2) }} جنيه
                             </strong>
                         </td>
                     </tr>
@@ -416,21 +411,37 @@
                             + {{ number_format($additional_value ?? 0, 2) }} جنيه
                         </span>
                     </div>
+                    @if(isVatEnabled())
+                    <div class="total-row">
+                        <span class="total-label">ضريبة القيمة المضافة ({{ setting('default_vat_percentage', 0) }}%):</span>
+                        <span class="total-value">
+                            + {{ number_format($vat_value ?? 0, 2) }} جنيه
+                        </span>
+                    </div>
+                    @endif
+                    @if(isWithholdingTaxEnabled())
+                    <div class="total-row">
+                        <span class="total-label">الخصم من المنبع ({{ setting('default_withholding_tax_percentage', 0) }}%):</span>
+                        <span class="total-value">
+                            - {{ number_format($withholding_tax_value ?? 0, 2) }} جنيه
+                        </span>
+                    </div>
+                    @endif
                 </div>
 
                 <div class="right-totals">
                     <div class="total-row net-total">
                         <span class="total-label">الإجمالي النهائي:</span>
-                        <span class="total-value">{{ number_format($total_after_additional ?? 0, 2) }} جنيه</span>
+                        <span class="total-value">{{ number_format($total ?? 0, 2) }} جنيه</span>
                     </div>
                     <div class="total-row">
                         <span class="total-label">المدفوع:</span>
-                        <span class="total-value">{{ number_format($received_from_client ?? 0, 2) }} جنيه</span>
+                        <span class="total-value">{{ number_format($paid_from_client ?? 0, 2) }} جنيه</span>
                     </div>
                     <div class="total-row">
                         <span class="total-label">الباقي:</span>
                         <span class="total-value">
-                            {{ number_format(max(($total_after_additional ?? 0) - ($received_from_client ?? 0), 0), 2) }}
+                            {{ number_format($remaining ?? 0, 2) }}
                             جنيه
                         </span>
                     </div>

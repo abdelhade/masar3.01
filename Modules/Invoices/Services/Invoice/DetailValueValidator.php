@@ -90,7 +90,8 @@ class DetailValueValidator
         switch ($level) {
             case 'disabled':
                 if ($itemValue > 0 || $invoiceValue > 0) {
-                    throw new InvalidArgumentException("إعداد {$label} معطل، ولكن تم إرسال قيم. (صنف: {$itemValue}، فاتورة: {$invoiceValue})");
+                    // Log a warning instead of throwing an exception to avoid breaking the user's flow
+                    \Log::warning("DetailValueValidator: إعداد {$label} معطل، ولكن تم إرسال قيم. (صنف: {$itemValue}، فاتورة: {$invoiceValue})");
                 }
                 break;
             case 'item_level':

@@ -185,7 +185,13 @@ class ItemDataTransformer
     {
         return $item->notes
             ->mapWithKeys(function ($note) {
-                return [$note->id => $note->pivot->note_detail_name];
+                // Ensure we always return a string, not an array or object
+                $noteDetailName = $note->pivot->note_detail_name ?? '';
+                // If it's an array or object, convert to string
+                if (is_array($noteDetailName) || is_object($noteDetailName)) {
+                    $noteDetailName = json_encode($noteDetailName);
+                }
+                return [$note->id => (string) $noteDetailName];
             })
             ->all();
     }
