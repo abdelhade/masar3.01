@@ -334,6 +334,7 @@
             invoiceItems: [],
             allItems: [],
             fuse: null,
+            isSaved: false, // ✅ Track if invoice is saved
 
             // Totals
             subtotal: 0,
@@ -2102,6 +2103,9 @@
 
                 console.log('✅ Form filled, submitting...');
 
+                // ✅ Mark as saved to prevent beforeunload warning
+                this.isSaved = true;
+
                 // If print after save, submit via AJAX
                 if (printAfterSave) {
                     this.submitFormAjax();
@@ -2453,6 +2457,17 @@
 
 
             InvoiceApp.init();
+
+            // ✅ Add beforeunload event to warn user before closing page with unsaved data
+            window.addEventListener('beforeunload', function(e) {
+                // Check if there are items in the invoice AND it's not saved yet
+                if (InvoiceApp.invoiceItems && InvoiceApp.invoiceItems.length > 0 && !InvoiceApp.isSaved) {
+                    // Standard way to show confirmation dialog
+                    e.preventDefault();
+                    e.returnValue = ''; // Chrome requires returnValue to be set
+                    return ''; // Some browsers show this message
+                }
+            });
         }
 
         if (document.readyState === 'loading') {
