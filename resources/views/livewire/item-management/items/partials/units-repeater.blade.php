@@ -1,7 +1,7 @@
 @if(!$hasVaribals)
 <fieldset class="shadow-sm mt-2">
     <div class="col-md-12 p-2">
-        @if ($creating)
+        {{-- @if ($creating) --}}
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="d-flex align-items-center gap-2">
                     <h6 class="font-hold fw-bold mb-0">وحدات الصنف</h6>
@@ -17,7 +17,7 @@
                     <i class="las la-plus"></i> إضافة وحدة للصنف
                 </button>
             </div>
-        @endif
+        {{-- @endif --}}
         <div class="table-responsive" style="overflow-x: auto;">
             <table class="table table-striped mb-0" style="min-width: 1200px;">
                 <thead class="table-light text-center align-middle">
@@ -37,7 +37,7 @@
                         <tr>
                             <td class="font-hold fw-bold font-14 text-center">
                                 <select wire:model.live="unitRows.{{ $index }}.unit_id"
-                                    @if (!$creating) disabled readonly @endif
+                                    {{-- @if (!$creating) disabled readonly @endif --}}
                                     class="form-select font-hold fw-bold font-14"
                                     style="min-width: 100px; height: 50px;">
                                     <option class="font-hold fw-bold" value="">
@@ -55,7 +55,7 @@
                             </td>
                             <td class="text-center">
                                 <input type="number" onclick="this.select()"
-                                    @if (!$creating) disabled readonly @endif
+                                    {{-- @if (!$creating) disabled readonly @endif --}}
                                     wire:model="unitRows.{{ $index }}.u_val"
                                     onkeyup="window.updateUnitsCostAndPrices({{ $index }})"
                                     class="form-control font-hold fw-bold" min="1"

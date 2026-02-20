@@ -483,10 +483,6 @@ new class extends Component
         ]);
     }
 
-    public function edit($itemId)
-    {
-        //
-    }
 
     public function addAdditionalBarcode($unitRowIndex)
     {
@@ -566,6 +562,7 @@ new class extends Component
         $this->resetForm();
         $this->resetValidation();
         $this->item['code'] = Item::max('code') + 1 ?? 1;
+        $this->item['type'] = 1;
         $this->creating = true;
         $this->activeTab = 'basic';
         $this->dispatch('auto-focus', 'item-name');
