@@ -7,7 +7,6 @@ namespace Modules\Invoices\Repositories;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Modules\Accounts\Models\AccHead;
-use Modules\Invoices\Models\InvoiceTemplate;
 
 /**
  * Repository for fetching initial invoice data
@@ -18,9 +17,8 @@ class InvoiceDataRepository
     /**
      * Get all initial data needed for invoice form
      *
-     * @param int $type Invoice type
-     * @param int|null $branchId Branch ID
-     * @return array
+     * @param  int  $type  Invoice type
+     * @param  int|null  $branchId  Branch ID
      */
     public function getInitialData(int $type, ?int $branchId = null): array
     {
@@ -36,9 +34,6 @@ class InvoiceDataRepository
 
     /**
      * Get invoice templates for specific type
-     *
-     * @param int $type
-     * @return array
      */
     private function getTemplates(int $type): array
     {
@@ -48,10 +43,6 @@ class InvoiceDataRepository
 
     /**
      * Get accounts based on invoice type with balance and credit limit
-     *
-     * @param int $type
-     * @param int|null $branchId
-     * @return array
      */
     private function getAccounts(int $type, ?int $branchId = null): array
     {
@@ -83,14 +74,10 @@ class InvoiceDataRepository
 
     /**
      * Get accounts by code with balance calculation
-     *
-     * @param string $code
-     * @param int|null $branchId
-     * @return array
      */
     private function getAccountsByCode(string $code, ?int $branchId = null): array
     {
-        $query = AccHead::where('code', 'like', $code . '%')
+        $query = AccHead::where('code', 'like', $code.'%')
             ->select('id', 'aname', 'code', 'currency_id', 'debit_limit');
 
         if ($branchId) {
@@ -105,7 +92,7 @@ class InvoiceDataRepository
         // Calculate balance for each account
         return $accounts->map(function ($account) {
             $balance = $this->calculateAccountBalance($account->id);
-            
+
             return [
                 'id' => $account->id,
                 'name' => $account->name,
@@ -119,9 +106,6 @@ class InvoiceDataRepository
 
     /**
      * Calculate account balance
-     *
-     * @param int $accountId
-     * @return float
      */
     private function calculateAccountBalance(int $accountId): float
     {
@@ -135,8 +119,6 @@ class InvoiceDataRepository
 
     /**
      * Get system settings
-     *
-     * @return array
      */
     private function getSettings(): array
     {
@@ -155,8 +137,6 @@ class InvoiceDataRepository
 
     /**
      * Get branches
-     *
-     * @return array
      */
     private function getBranches(): array
     {
@@ -165,15 +145,13 @@ class InvoiceDataRepository
             $branches = DB::table('branches')
                 ->select('id', 'name')
                 ->get();
-            
-            return $branches->map(fn($b) => (array) $b)->toArray();
+
+            return $branches->map(fn ($b) => (array) $b)->toArray();
         });
     }
 
     /**
      * Get price types
-     *
-     * @return array
      */
     private function getPriceTypes(): array
     {
@@ -190,8 +168,6 @@ class InvoiceDataRepository
 
     /**
      * Get units
-     *
-     * @return array
      */
     private function getUnits(): array
     {
@@ -201,8 +177,6 @@ class InvoiceDataRepository
 
     /**
      * Get currencies
-     *
-     * @return array
      */
     private function getCurrencies(): array
     {
@@ -212,9 +186,6 @@ class InvoiceDataRepository
 
     /**
      * Get invoice data for editing
-     *
-     * @param int $invoiceId
-     * @return array
      */
     public function getInvoiceForEdit(int $invoiceId): array
     {
@@ -222,26 +193,106 @@ class InvoiceDataRepository
             ->where('id', $invoiceId)
             ->first();
 
-        if (!$invoice) {
+        if (! $invoice) {
             return [];
         }
 
+        // Get invoice items with all details
         $items = DB::table('operation_items as oi')
             ->join('items as i', 'oi.item_id', '=', 'i.id')
-            ->join('units as u', 'oi.unit_id', '=', 'u.id')
+            ->leftJoin('units as u', 'oi.unit_id', '=', 'u.id')
             ->where('oi.pro_id', $invoiceId)
             ->select(
-                'oi.*',
+                'oi.id as operation_item_id',
+                'oi.item_id',
                 'i.name as item_name',
                 'i.code as item_code',
-                'u.name as unit_name'
+                'oi.unit_id',
+                'u.name as unit_name',
+                'oi.fat_quantity as quantity',
+                'oi.fat_price as price',
+                'oi.item_discount as discount',
+                'oi.item_discount_pre as discount_percentage',
+                'oi.detail_value as sub_value',
+                'oi.batch_number',
+                'oi.expiry_date',
+                'oi.notes',
+                'oi.cost_price',
+                'oi.profit'
             )
-            ->get()
-            ->toArray();
+            ->get();
+
+        // Get available units for each item
+        $itemsWithUnits = $items->map(function ($item) {
+            $availableUnits = DB::table('item_units as iu')
+                ->join('units as u', 'iu.unit_id', '=', 'u.id')
+                ->where('iu.item_id', $item->item_id)
+                ->select(
+                    'u.id',
+                    'u.name',
+                    'iu.u_val',
+                    'iu.price1',
+                    'iu.price2',
+                    'iu.price3',
+                    'iu.price4',
+                    'iu.price5'
+                )
+                ->get()
+                ->toArray();
+
+            return [
+                'operation_item_id' => $item->operation_item_id,
+                'item_id' => $item->item_id,
+                'item_name' => $item->item_name,
+                'item_code' => $item->item_code,
+                'unit_id' => $item->unit_id,
+                'unit_name' => $item->unit_name,
+                'quantity' => (float) $item->quantity,
+                'price' => (float) $item->price,
+                'discount' => (float) ($item->discount ?? 0),
+                'discount_percentage' => (float) ($item->discount_percentage ?? 0),
+                'sub_value' => (float) $item->sub_value,
+                'batch_number' => $item->batch_number,
+                'expiry_date' => $item->expiry_date,
+                'notes' => $item->notes,
+                'cost_price' => (float) $item->cost_price,
+                'profit' => (float) $item->profit,
+                'available_units' => $availableUnits,
+            ];
+        })->toArray();
 
         return [
-            'invoice' => (array) $invoice,
-            'items' => $items,
+            'invoice' => [
+                'id' => $invoice->id,
+                'type' => $invoice->pro_type,
+                'pro_id' => $invoice->pro_id,
+                'branch_id' => $invoice->branch_id,
+                'acc1_id' => $invoice->acc1,
+                'acc2_id' => $invoice->acc2,
+                'emp_id' => $invoice->emp_id,
+                'delivery_id' => $invoice->emp2_id,
+                'pro_date' => $invoice->pro_date,
+                'accural_date' => $invoice->accural_date,
+                'serial_number' => $invoice->pro_serial,
+                'cash_box_id' => $invoice->acc_fund,
+                'notes' => $invoice->info,
+                'currency_id' => $invoice->currency_id ?? 1,
+                'currency_rate' => (float) ($invoice->currency_rate ?? 1),
+                'template_id' => $invoice->template_id,
+                'discount_percentage' => (float) ($invoice->fat_disc_per ?? 0),
+                'discount_value' => (float) ($invoice->fat_disc ?? 0),
+                'additional_percentage' => (float) ($invoice->fat_plus_per ?? 0),
+                'additional_value' => (float) ($invoice->fat_plus ?? 0),
+                'vat_percentage' => (float) ($invoice->vat_percentage ?? 0),
+                'vat_value' => (float) ($invoice->vat_value ?? 0),
+                'withholding_tax_percentage' => (float) ($invoice->withholding_tax_percentage ?? 0),
+                'withholding_tax_value' => (float) ($invoice->withholding_tax_value ?? 0),
+                'subtotal' => (float) ($invoice->fat_total ?? 0),
+                'total_after_additional' => (float) ($invoice->pro_value ?? 0),
+                'received_from_client' => (float) ($invoice->paid_from_client ?? 0),
+                'is_posted' => (bool) ($invoice->is_posted ?? false),
+            ],
+            'items' => $itemsWithUnits,
         ];
     }
 }

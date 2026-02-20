@@ -31,118 +31,132 @@
             document.body.classList.add('theme-' + t);
         })();
     </script>
+    <!-- Animated Particles Background -->
+    <div class="particles-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
     <!-- Animated Doodles Background - Geometric Shapes, Currency & ERP Icons -->
     <div class="doodles-container">
         <!-- Dollar Sign Icon -->
         <svg class="doodle doodle-1" width="80" height="80" viewBox="0 0 80 80"
             xmlns="http://www.w3.org/2000/svg">
             <circle cx="40" cy="40" r="30" stroke="#239d77" stroke-width="2.5" fill="none"
-                opacity="0.25" />
+                opacity="0.3" />
             <text x="40" y="50" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#239d77"
-                opacity="0.3" text-anchor="middle">$</text>
+                opacity="0.4" text-anchor="middle">$</text>
         </svg>
 
         <!-- Chart/Graph Icon -->
         <svg class="doodle doodle-2" width="100" height="100" viewBox="0 0 100 100"
             xmlns="http://www.w3.org/2000/svg">
-            <rect x="20" y="60" width="15" height="30" fill="#34d3a3" opacity="0.25" />
-            <rect x="40" y="40" width="15" height="50" fill="#239d77" opacity="0.25" />
-            <rect x="60" y="30" width="15" height="60" fill="#2ba88a" opacity="0.25" />
+            <rect x="20" y="60" width="15" height="30" fill="#34d3a3" opacity="0.3" />
+            <rect x="40" y="40" width="15" height="50" fill="#239d77" opacity="0.3" />
+            <rect x="60" y="30" width="15" height="60" fill="#2ba88a" opacity="0.3" />
             <line x1="15" y1="80" x2="85" y2="80" stroke="#239d77" stroke-width="2"
-                opacity="0.2" />
+                opacity="0.25" />
             <line x1="15" y1="80" x2="15" y2="15" stroke="#239d77" stroke-width="2"
-                opacity="0.2" />
+                opacity="0.25" />
         </svg>
 
         <!-- Box/Inventory Icon -->
         <svg class="doodle doodle-3" width="90" height="90" viewBox="0 0 90 90"
             xmlns="http://www.w3.org/2000/svg">
             <rect x="25" y="25" width="40" height="40" stroke="#34d3a3" stroke-width="2.5" fill="none"
-                opacity="0.25" />
+                opacity="0.3" />
             <rect x="30" y="30" width="30" height="30" stroke="#239d77" stroke-width="2" fill="none"
-                opacity="0.2" />
+                opacity="0.25" />
             <line x1="25" y1="25" x2="35" y2="15" stroke="#239d77" stroke-width="2"
-                opacity="0.2" />
+                opacity="0.25" />
             <line x1="65" y1="25" x2="75" y2="15" stroke="#239d77" stroke-width="2"
-                opacity="0.2" />
+                opacity="0.25" />
             <line x1="35" y1="15" x2="75" y2="15" stroke="#239d77" stroke-width="2"
-                opacity="0.2" />
+                opacity="0.25" />
         </svg>
 
         <!-- Euro Sign -->
         <svg class="doodle doodle-4" width="70" height="70" viewBox="0 0 70 70"
             xmlns="http://www.w3.org/2000/svg">
             <circle cx="35" cy="35" r="25" stroke="#2ba88a" stroke-width="2.5" fill="none"
-                opacity="0.25" />
+                opacity="0.3" />
             <text x="35" y="45" font-family="Arial, sans-serif" font-size="35" font-weight="bold" fill="#2ba88a"
-                opacity="0.3" text-anchor="middle">€</text>
+                opacity="0.4" text-anchor="middle">€</text>
         </svg>
 
         <!-- Database Icon -->
         <svg class="doodle doodle-5" width="110" height="110" viewBox="0 0 110 110"
             xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="55" cy="30" rx="35" ry="12" stroke="#34d3a3"
-                stroke-width="2.5" fill="none" opacity="0.25" />
+                stroke-width="2.5" fill="none" opacity="0.3" />
             <ellipse cx="55" cy="55" rx="35" ry="12" stroke="#239d77"
-                stroke-width="2.5" fill="none" opacity="0.25" />
+                stroke-width="2.5" fill="none" opacity="0.3" />
             <ellipse cx="55" cy="80" rx="35" ry="12" stroke="#2ba88a"
-                stroke-width="2.5" fill="none" opacity="0.25" />
+                stroke-width="2.5" fill="none" opacity="0.3" />
             <line x1="20" y1="30" x2="20" y2="80" stroke="#239d77" stroke-width="2.5"
-                opacity="0.2" />
+                opacity="0.25" />
             <line x1="90" y1="30" x2="90" y2="80" stroke="#239d77" stroke-width="2.5"
-                opacity="0.2" />
+                opacity="0.25" />
         </svg>
 
         <!-- File/Document Icon -->
         <svg class="doodle doodle-6" width="85" height="85" viewBox="0 0 85 85"
             xmlns="http://www.w3.org/2000/svg">
             <path d="M25 20 L25 65 L60 65 L60 35 L45 35 L45 20 Z" stroke="#239d77" stroke-width="2.5" fill="none"
-                opacity="0.25" />
+                opacity="0.3" />
             <line x1="45" y1="20" x2="60" y2="35" stroke="#239d77" stroke-width="2.5"
-                opacity="0.25" />
+                opacity="0.3" />
             <line x1="30" y1="40" x2="55" y2="40" stroke="#34d3a3" stroke-width="2"
-                opacity="0.2" />
+                opacity="0.25" />
             <line x1="30" y1="50" x2="55" y2="50" stroke="#34d3a3" stroke-width="2"
-                opacity="0.2" />
+                opacity="0.25" />
         </svg>
 
         <!-- Geometric Shapes: Triangle -->
         <svg class="doodle doodle-7" width="75" height="75" viewBox="0 0 75 75"
             xmlns="http://www.w3.org/2000/svg">
             <polygon points="37.5,15 60,55 15,55" stroke="#34d3a3" stroke-width="2.5" fill="none"
-                opacity="0.25" />
-            <circle cx="37.5" cy="40" r="8" fill="#239d77" opacity="0.2" />
+                opacity="0.3" />
+            <circle cx="37.5" cy="40" r="8" fill="#239d77" opacity="0.25" />
         </svg>
 
         <!-- Geometric Shapes: Hexagon -->
         <svg class="doodle doodle-8" width="95" height="95" viewBox="0 0 95 95"
             xmlns="http://www.w3.org/2000/svg">
             <polygon points="47.5,15 70,30 70,55 47.5,70 25,55 25,30" stroke="#2ba88a" stroke-width="2.5"
-                fill="none" opacity="0.25" />
+                fill="none" opacity="0.3" />
             <circle cx="47.5" cy="42.5" r="12" stroke="#239d77" stroke-width="2" fill="none"
-                opacity="0.2" />
+                opacity="0.25" />
         </svg>
 
         <!-- Coin/Circle with $ -->
         <svg class="doodle doodle-9" width="65" height="65" viewBox="0 0 65 65"
             xmlns="http://www.w3.org/2000/svg">
             <circle cx="32.5" cy="32.5" r="25" stroke="#239d77" stroke-width="2.5" fill="#239d77"
-                opacity="0.15" />
+                opacity="0.2" />
             <text x="32.5" y="42" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="#239d77"
-                opacity="0.4" text-anchor="middle">$</text>
+                opacity="0.5" text-anchor="middle">$</text>
         </svg>
 
         <!-- Square Grid -->
         <svg class="doodle doodle-10" width="100" height="100" viewBox="0 0 100 100"
             xmlns="http://www.w3.org/2000/svg">
             <rect x="20" y="20" width="20" height="20" stroke="#34d3a3" stroke-width="2" fill="none"
-                opacity="0.25" />
+                opacity="0.3" />
             <rect x="50" y="20" width="20" height="20" stroke="#239d77" stroke-width="2" fill="none"
-                opacity="0.25" />
+                opacity="0.3" />
             <rect x="20" y="50" width="20" height="20" stroke="#2ba88a" stroke-width="2" fill="none"
-                opacity="0.25" />
+                opacity="0.3" />
             <rect x="50" y="50" width="20" height="20" stroke="#34d3a3" stroke-width="2" fill="none"
-                opacity="0.25" />
+                opacity="0.3" />
         </svg>
     </div>
 
@@ -1112,6 +1126,64 @@
                 const event = new Event('input');
                 searchInput.dispatchEvent(event);
             }
+        });
+
+        // Enhanced Particles Animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const particlesContainer = document.querySelector('.particles-container');
+            if (particlesContainer) {
+                const particles = particlesContainer.querySelectorAll('.particle');
+                particles.forEach((particle, index) => {
+                    // Random starting position
+                    particle.style.bottom = Math.random() * 100 + '%';
+                    
+                    // Random size variation
+                    const size = 3 + Math.random() * 3;
+                    particle.style.width = size + 'px';
+                    particle.style.height = size + 'px';
+                    
+                    // Random horizontal movement
+                    const moveX = (Math.random() - 0.5) * 100;
+                    particle.style.setProperty('--move-x', moveX + 'px');
+                });
+            }
+
+            // Add hover effect to doodles
+            const doodles = document.querySelectorAll('.doodle');
+            doodles.forEach(doodle => {
+                doodle.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.2) rotate(10deg)';
+                    this.style.opacity = '0.4';
+                });
+                
+                doodle.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                    this.style.opacity = '';
+                });
+            });
+
+            // Smooth scroll reveal for cards
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all cards and icons
+            document.querySelectorAll('.stats-card, .app-icon-large, .card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
         });
     </script>
 </body>
