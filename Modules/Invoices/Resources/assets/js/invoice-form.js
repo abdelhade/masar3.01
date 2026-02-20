@@ -210,13 +210,37 @@ document.addEventListener('alpine:init', () => {
                 if (result.success) {
                     // Load invoice data
                     Object.assign(this.invoice, result.data.invoice);
-                    this.invoiceItems = result.data.items;
+                    
+                    // Load items with operation_item_id for sync
+                    this.invoiceItems = result.data.items.map(item => ({
+                        ...item,
+                        // Ensure operation_item_id is preserved for sync
+                        operation_item_id: item.operation_item_id,
+                        // Ensure all numeric fields are numbers
+                        quantity: parseFloat(item.quantity) || 0,
+                        price: parseFloat(item.price) || 0,
+                        discount: parseFloat(item.discount) || 0,
+                        sub_value: parseFloat(item.sub_value) || 0,
+                    }));
+                    
+                    // Load calculations from invoice
+                    this.calculations.discount_percentage = this.invoice.discount_percentage || 0;
+                    this.calculations.discount_value = this.invoice.discount_value || 0;
+                    this.calculations.additional_percentage = this.invoice.additional_percentage || 0;
+                    this.calculations.additional_value = this.invoice.additional_value || 0;
+                    this.calculations.vat_percentage = this.invoice.vat_percentage || 0;
+                    this.calculations.vat_value = this.invoice.vat_value || 0;
+                    this.calculations.withholding_tax_percentage = this.invoice.withholding_tax_percentage || 0;
+                    this.calculations.withholding_tax_value = this.invoice.withholding_tax_value || 0;
+                    this.calculations.received_from_client = this.invoice.received_from_client || 0;
                     
                     // Recalculate totals
                     this.calculateTotals();
                     
                     // Load account data
-                    this.onAccountChange(this.invoice.acc1_id);
+                    if (this.invoice.acc1_id) {
+                        this.onAccountChange(this.invoice.acc1_id);
+                    }
                 }
                 
             } catch (error) {
@@ -588,11 +612,14 @@ document.addEventListener('alpine:init', () => {
                     ...this.invoice,
                     ...this.calculations,
                     items: this.invoiceItems.map(item => ({
+                        operation_item_id: item.operation_item_id || null, // ✅ Critical for sync
                         item_id: item.item_id,
                         unit_id: item.unit_id,
                         quantity: item.quantity,
                         price: item.price,
                         discount: item.discount || 0,
+                        discount_percentage: item.discount_percentage || 0,
+                        discount_value: item.discount || 0, // Use discount as discount_value
                         additional: item.additional || 0,
                         sub_value: item.sub_value,
                         batch_number: item.batch_number || null,
@@ -628,12 +655,12 @@ document.addEventListener('alpine:init', () => {
                     
                     // Redirect or print
                     if (andPrint) {
-                        window.open(`/invoices/${result.invoice.id}/print`, '_blank');
+                        window.open(`/invoice/print/${result.invoice.id}`, '_blank');
                     }
                     
                     // Redirect to invoice list or details
                     setTimeout(() => {
-                        window.location.href = `/invoices/${result.invoice.id}`;
+                        window.location.href = `/invoices?type=${this.invoice.type}`;
                     }, 1000);
                     
                 } else {
