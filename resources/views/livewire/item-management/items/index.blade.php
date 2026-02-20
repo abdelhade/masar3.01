@@ -99,9 +99,7 @@ new class extends Component {
             return Note::all()->pluck('name', 'id');
         });
 
-        $this->warehouses = Cache::remember('warehouses_1104', 3600, function () {
-            return AccHead::where('code', 'like', '1104%')->where('is_basic', 0)->orderBy('id')->get();
-        });
+        $this->warehouses = AccHead::where('code', 'like', '1104%')->where('is_basic', 0)->orderBy('id')->get();
 
         $this->groups = Cache::remember('note_groups', 3600, function () {
             return NoteDetails::where('note_id', 1)->orderBy('id')->pluck('name', 'id');
