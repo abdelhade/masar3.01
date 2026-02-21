@@ -20,6 +20,8 @@ new class extends Component
     //
     public $creating = true;
 
+    public $lastCreatedItemId = null;
+
     // Image properties
     public $itemThumbnail = null;
 
@@ -112,7 +114,7 @@ new class extends Component
             'item.type' => 'required|in:'.implode(',', array_column(ItemType::cases(), 'value')),
             'item.*.notes.*' => 'nullable|exists:note_details,id',
             'unitRows.*.barcodes.*' => 'nullable|unique:barcodes,barcode|string|distinct|max:25',
-            'unitRows.*.cost' => 'required|numeric|min:0|distinct',
+            'unitRows.*.cost' => 'required|numeric|min:0',
             'unitRows.0.u_val' => [
                 'required',
                 'numeric',
@@ -153,7 +155,6 @@ new class extends Component
             'unitRows.*.cost.required' => __('items.cost_required'),
             'unitRows.*.cost.numeric' => __('items.cost_must_be_numeric'),
             'unitRows.*.cost.min' => __('items.cost_min_value'),
-            'unitRows.*.cost.distinct' => __('items.cost_already_used'),
             'unitRows.*.u_val.required' => __('items.conversion_factor_required'),
             'unitRows.*.u_val.numeric' => __('items.conversion_factor_must_be_numeric'),
             'unitRows.*.u_val.min' => __('items.conversion_factor_min_value'),
@@ -459,6 +460,10 @@ new class extends Component
     {
         // Transaction committed successfully
         $this->creating = false;
+        
+        // Get the last created item ID
+        $this->lastCreatedItemId = Item::latest('id')->first()->id;
+        
         $this->dispatch('success-swal', [
             'title' => __('general.success'),
             'text' => __('items.item_created_successfully'),
@@ -1133,6 +1138,12 @@ new class extends Component
                                 onclick="window.location.href='{{ route('items.index') }}'">
                                 {{ __('common.back') }}
                             </button>
+                            @can('edit items')
+                                <button type="button" class="btn btn-lg btn-primary font-hold fw-bold"
+                                    onclick="window.location.href='{{ route('items.edit', $lastCreatedItemId) }}'">
+                                    <i class="fas fa-edit"></i> {{ __('common.edit') }}
+                                </button>
+                            @endcan
                             <button type="button" class="btn btn-lg btn-main font-hold fw-bold"
                                 wire:click="createNew">{{ __('common.new') }}</button>
                             <button type="button" class="btn btn-lg btn-main font-hold fw-bold"

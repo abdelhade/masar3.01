@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\CostCenter;
@@ -17,606 +19,399 @@ use Modules\Settings\Models\Currency;
 
 class VoucherController extends Controller
 {
+    // Constants for voucher types (من ProTypesSeeder)
+    private const TYPE_RECEIPT = 1;              // سند قبض
+    private const TYPE_PAYMENT = 2;              // سند دفع
+    private const TYPE_EXP_PAYMENT = 101;        // سند دفع مصروفات
+    private const TYPE_MULTI_RECEIPT = 32;       // سند قبض متعدد
+    private const TYPE_MULTI_PAYMENT = 33;       // سند دفع متعدد
+    
+    // Permission mapping
+    private const PERMISSION_MAP = [
+        'receipt' => 'view recipt',
+        'payment' => 'view payment',
+        'exp-payment' => 'view exp-payment',
+        'multi_payment' => 'view multi-payment',
+        'multi_receipt' => 'view multi-receipt',
+    ];
+    
+    private const CREATE_PERMISSION_MAP = [
+        'receipt' => 'create recipt',
+        'payment' => 'create payment',
+        'exp-payment' => 'create exp-payment',
+        'multi_payment' => 'create multi-payment',
+        'multi_receipt' => 'create multi-receipt',
+    ];
+    
+    private const EDIT_PERMISSION_MAP = [
+        self::TYPE_RECEIPT => 'edit recipt',
+        self::TYPE_PAYMENT => 'edit payment',
+        self::TYPE_EXP_PAYMENT => 'edit exp-payment',
+    ];
+    
+    private const DELETE_PERMISSION_MAP = [
+        self::TYPE_RECEIPT => 'delete recipt',
+        self::TYPE_PAYMENT => 'delete payment',
+        self::TYPE_EXP_PAYMENT => 'delete exp-payment',
+    ];
+
     public function __construct()
     {
+        // Middleware for index - view permissions
         $this->middleware(function ($request, $next) {
-            $type = $request->get('type', 'all'); // جلب النوع من URL
+            $this->checkViewPermission($request->get('type', 'all'));
+            return $next($request);
+        })->only(['index']);
 
-            // ✅ حالة 1: إذا طلب عرض "جميع السندات"
-            if ($type === 'all') {
-                // تحقق: هل عنده أي صلاحية من الثلاثة؟
-                if (
-                    ! Auth::user()->can('view recipt') &&
-                    ! Auth::user()->can('view payment') &&
-                    ! Auth::user()->can('view exp-payment') &&
-                    ! Auth::user()->can('view multi-payment') &&
-                    ! Auth::user()->can('view multi-receipt')
-                ) {
-
-                    abort(403, 'غير مصرح لك بعرض أي سندات');
-                }
-            } else {
-                // ✅ حالة 2: إذا طلب نوع محدد (receipt, payment, exp-payment)
-                // ربط كل نوع بصلاحيته المطلوبة
-                $permissionMap = [
-                    'receipt' => 'view recipt',           // سندات القبض
-                    'payment' => 'view payment',           // سندات الدفع
-                    'exp-payment' => 'view exp-payment',   // سندات المصاريف
-                    'multi_payment' => 'view multi-payment',     // سندات دفع متعددة
-                    'multi_receipt' => 'view multi-receipt',     // سندات قبض متعددة
-                ];
-
-                // تحقق: هل عنده صلاحية النوع المطلوب؟
-                if (isset($permissionMap[$type]) && ! Auth::user()->can($permissionMap[$type])) {
-                    abort(403, 'غير مصرح لك بعرض هذا النوع من السندات');
-                }
-            }
-
-            return $next($request); // السماح بالمرور
-        })->only(['index']); // تطبيق الحماية على index فقط
+        // Middleware for create/store - create permissions
         $this->middleware(function ($request, $next) {
-            $type = $request->get('type'); // نوع السند المطلوب إنشاؤه
-
-            // ربط كل نوع بصلاحيته المطلوبة للإنشاء
-            $permissionMap = [
-                'receipt' => 'create recipt',
-                'payment' => 'create payment',
-                'exp-payment' => 'create exp-payment',
-                'multi_payment' => 'create multi-payment',
-                'multi_receipt' => 'create multi-receipt',
-            ];
-
-            // تحقق: هل عنده صلاحية إنشاء هذا النوع؟
-            if (isset($permissionMap[$type]) && ! Auth::user()->can($permissionMap[$type])) {
-                abort(403, 'غير مصرح لك بإنشاء هذا النوع من السندات');
-            }
-
-            // إذا لم يتم تحديد نوع، التحقق من وجود أي صلاحية إنشاء
-            if (! $type) {
-                $hasAnyCreatePermission = Auth::user()->can('create recipt') ||
-                    Auth::user()->can('create payment') ||
-                    Auth::user()->can('create exp-payment') ||
-                    Auth::user()->can('create multi-payment') ||
-                    Auth::user()->can('create multi-receipt');
-
-                if (! $hasAnyCreatePermission) {
-                    abort(403, 'غير مصرح لك بإنشاء أي نوع من السندات');
-                }
-            }
-
+            $this->checkCreatePermission($request->get('type'));
             return $next($request);
         })->only(['create', 'store']);
 
+        // Middleware for edit/update - edit permissions
         $this->middleware(function ($request, $next) {
             $voucherId = $request->route('voucher');
             $voucher = Voucher::find($voucherId);
-
+            
             if ($voucher) {
-                // ربط كل pro_type بصلاحية التعديل المطلوبة
-                $typePermissionMap = [
-                    1 => 'edit recipt',      // سندات قبض
-                    2 => 'edit payment',      // سندات دفع
-                    101 => 'edit payment',      // سندات دفع
-                    3 => 'edit exp-payment',  // سندات مصاريف
-                    // بالنسبة للسندات المتعددة، نستخدم نفس الصلاحيات أو نخصصها
-                ];
-
-                // تحديد نوع السند من الـ pro_type
-                $proType = $voucher->pro_type;
-
-                // للسندات المتعددة، نتحقق من الـ pname
-                $pname = \App\Models\ProType::find($proType)?->pname;
-                if ($pname === 'multi_payment') {
-                    $requiredPermission = 'edit multi-payment';
-                } elseif ($pname === 'multi_receipt') {
-                    $requiredPermission = 'edit multi-receipt';
-                } else {
-                    $requiredPermission = $typePermissionMap[$proType] ?? null;
-                }
-
-                // تحقق: هل عنده الصلاحية المطلوبة؟
-                if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
-                    abort(403, 'غير مصرح لك بتعديل هذا السند');
-                }
+                $this->checkEditPermission($voucher);
             }
-
+            
             return $next($request);
         })->only(['edit', 'update']);
 
+        // Middleware for destroy - delete permissions
         $this->middleware(function ($request, $next) {
             $voucherId = $request->route('voucher');
             $voucher = Voucher::find($voucherId);
-
+            
             if ($voucher) {
-                // ربط كل pro_type بصلاحية الحذف المطلوبة
-                $typePermissionMap = [
-                    1 => 'delete recipt',      // سندات قبض
-                    2 => 'delete payment',      // سندات دفع
-                    101 => 'delete payment',      // سندات دفع
-                    3 => 'delete exp-payment',  // سندات مصاريف
-                    // بالنسبة للسندات المتعددة، نستخدم نفس الصلاحيات أو نخصصها
-                ];
-
-                // تحديد نوع السند من الـ pro_type
-                $proType = $voucher->pro_type;
-
-                // للسندات المتعددة، نتحقق من الـ pname
-                $pname = \App\Models\ProType::find($proType)?->pname;
-                if ($pname === 'multi_payment') {
-                    $requiredPermission = 'delete multi-payment';
-                } elseif ($pname === 'multi_receipt') {
-                    $requiredPermission = 'delete multi-receipt';
-                } else {
-                    $requiredPermission = $typePermissionMap[$proType] ?? null;
-                }
-
-                // تحقق: هل عنده الصلاحية المطلوبة؟
-                if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
-                    abort(403, 'غير مصرح لك بحذف هذا السند');
-                }
-
-                // تحقق إضافي: يمكن للمستخدم حذف السندات التي قام بإنشائها فقط
-                if (Auth::user()->can('delete own vouchers only') && $voucher->user != Auth::id()) {
-                    abort(403, 'يمكنك حذف السندات التي قمت بإنشائها فقط');
-                }
+                $this->checkDeletePermission($voucher);
             }
-
+            
             return $next($request);
         })->only(['destroy']);
     }
 
-    public function index(Request $request)
+    /**
+     * Check view permission based on voucher type
+     */
+    private function checkViewPermission(string $type): void
     {
-        $type = $request->get('type', 'all'); // افتراضي: عرض الكل
-
-        $typeMapping = [
-            'receipt' => 1,
-            'payment' => 101,
-            'exp-payment' => 3,
-        ];
-
-        $query = Voucher::where('isdeleted', 0)
-            ->with('currency') // Eager load currency to prevent N+1 queries
-            ->orderByDesc('pro_date');
-
-        if ($type !== 'all') {
-            if (in_array($type, ['multi_payment', 'multi_receipt'])) {
-                // find all ProType ids that match this pname (covers multiple pro_type ids)
-                $proTypeIds = \App\Models\ProType::where('pname', $type)->pluck('id')->toArray();
-                if (! empty($proTypeIds)) {
-                    $query->whereIn('pro_type', $proTypeIds);
-                } else {
-                    // fallback to an impossible id to return empty
-                    $query->where('pro_type', 0);
-                }
-            } else {
-                $proType = $typeMapping[$type] ?? null;
-                if ($proType) {
-                    $query->where('pro_type', $proType);
-                }
+        if ($type === 'all') {
+            // للعرض الكامل، يجب أن يكون لديه صلاحية واحدة على الأقل
+            $hasAnyPermission = Auth::user()->can('view recipt') || 
+                              Auth::user()->can('view payment');
+            
+            if (!$hasAnyPermission) {
+                abort(403, __('غير مصرح لك بعرض السندات'));
+            }
+        } else {
+            // للأنواع المحددة
+            $permission = self::PERMISSION_MAP[$type] ?? null;
+            
+            if ($permission && !Auth::user()->can($permission)) {
+                abort(403, __('غير مصرح لك بعرض هذا النوع من السندات'));
             }
         }
+    }
 
+    /**
+     * Check create permission based on voucher type
+     */
+    private function checkCreatePermission(?string $type): void
+    {
+        if (!$type) {
+            $hasAnyPermission = Auth::user()->can('create recipt') ||
+                              Auth::user()->can('create payment') ||
+                              Auth::user()->can('create exp-payment');
+            
+            if (!$hasAnyPermission) {
+                abort(403, __('غير مصرح لك بإنشاء أي نوع من السندات'));
+            }
+            return;
+        }
+        
+        $permission = self::CREATE_PERMISSION_MAP[$type] ?? null;
+        
+        if ($permission && !Auth::user()->can($permission)) {
+            abort(403, __('غير مصرح لك بإنشاء هذا النوع من السندات'));
+        }
+    }
+
+    /**
+     * Check edit permission for a voucher
+     */
+    private function checkEditPermission(Voucher $voucher): void
+    {
+        $pname = \App\Models\ProType::find($voucher->pro_type)?->pname;
+        
+        if ($pname === 'multi_payment') {
+            $permission = 'edit multi-payment';
+        } elseif ($pname === 'multi_receipt') {
+            $permission = 'edit multi-receipt';
+        } else {
+            $permission = self::EDIT_PERMISSION_MAP[$voucher->pro_type] ?? null;
+        }
+        
+        if ($permission && !Auth::user()->can($permission)) {
+            abort(403, __('غير مصرح لك بتعديل هذا السند'));
+        }
+    }
+
+    /**
+     * Check delete permission for a voucher
+     */
+    private function checkDeletePermission(Voucher $voucher): void
+    {
+        $pname = \App\Models\ProType::find($voucher->pro_type)?->pname;
+        
+        if ($pname === 'multi_payment') {
+            $permission = 'delete multi-payment';
+        } elseif ($pname === 'multi_receipt') {
+            $permission = 'delete multi-receipt';
+        } else {
+            $permission = self::DELETE_PERMISSION_MAP[$voucher->pro_type] ?? null;
+        }
+        
+        if ($permission && !Auth::user()->can($permission)) {
+            abort(403, __('غير مصرح لك بحذف هذا السند'));
+        }
+        
+        // تحقق إضافي: المستخدم يمكنه حذف سنداته فقط
+        if (Auth::user()->can('delete own vouchers only') && $voucher->user != Auth::id()) {
+            abort(403, __('يمكنك حذف السندات التي قمت بإنشائها فقط'));
+        }
+    }
+
+    /**
+     * Display a listing of vouchers
+     */
+    public function index(Request $request)
+    {
+        $type = $request->get('type', 'all');
+        
+        $query = Voucher::query()
+            ->where('isdeleted', 0)
+            ->with(['currency', 'type', 'account1', 'account2', 'emp1', 'user_id'])
+            ->orderByDesc('pro_date');
+        
+        // تطبيق الفلتر حسب النوع
+        $this->applyTypeFilter($query, $type);
+        
         $vouchers = $query->get();
+        $currentTypeInfo = $this->getTypeInfo($type);
+        
+        return view('vouchers.index', compact('vouchers', 'type', 'currentTypeInfo'));
+    }
 
-        // معلومات النوع لعرضها في الصفحة
+    /**
+     * Apply type filter to query
+     */
+    private function applyTypeFilter($query, string $type): void
+    {
+        if ($type === 'all') {
+            // عرض سندات القبض والدفع فقط (استبعاد المصاريف والسندات المتعددة)
+            $query->whereIn('pro_type', [self::TYPE_RECEIPT, self::TYPE_PAYMENT]);
+        } elseif (in_array($type, ['multi_payment', 'multi_receipt'])) {
+            $proTypeIds = \App\Models\ProType::where('pname', $type)->pluck('id')->toArray();
+            
+            if (!empty($proTypeIds)) {
+                $query->whereIn('pro_type', $proTypeIds);
+            } else {
+                $query->where('pro_type', 0); // لا توجد نتائج
+            }
+        } else {
+            $typeMapping = [
+                'receipt' => self::TYPE_RECEIPT,
+                'payment' => self::TYPE_PAYMENT,
+                'exp-payment' => self::TYPE_EXP_PAYMENT,
+            ];
+            
+            $proType = $typeMapping[$type] ?? null;
+            if ($proType) {
+                $query->where('pro_type', $proType);
+            }
+        }
+    }
+
+    /**
+     * Get type information for display
+     */
+    private function getTypeInfo(string $type): array
+    {
         $typeInfo = [
             'receipt' => [
-                'title' => 'سندات القبض العام',
-                'create_text' => 'إضافة سند قبض عام',
+                'title' => __('سندات القبض العام'),
+                'create_text' => __('إضافة سند قبض عام'),
                 'icon' => 'fa-plus-circle',
                 'color' => 'success',
             ],
             'payment' => [
-                'title' => 'سندات الدفع العام',
-                'create_text' => 'إضافة سند دفع عام',
+                'title' => __('سندات الدفع العام'),
+                'create_text' => __('إضافة سند دفع عام'),
                 'icon' => 'fa-minus-circle',
                 'color' => 'danger',
             ],
             'exp-payment' => [
-                'title' => 'سندات دفع المصاريف',
-                'create_text' => 'إضافة سند دفع مصاريف',
+                'title' => __('سندات دفع المصاريف'),
+                'create_text' => __('إضافة سند دفع مصاريف'),
                 'icon' => 'fa-credit-card',
                 'color' => 'warning',
             ],
             'multi_payment' => [
-                'title' => 'سندات الدفع متعددة',
-                'create_text' => 'إضافة سند دفع متعدد',
+                'title' => __('سندات الدفع متعددة'),
+                'create_text' => __('إضافة سند دفع متعدد'),
                 'icon' => 'fa-list-alt',
                 'color' => 'info',
             ],
             'multi_receipt' => [
-                'title' => 'سندات القبض متعددة',
-                'create_text' => 'إضافة سند قبض متعدد',
+                'title' => __('سندات القبض متعددة'),
+                'create_text' => __('إضافة سند قبض متعدد'),
                 'icon' => 'fa-list-ul',
                 'color' => 'primary',
             ],
             'all' => [
-                'title' => 'جميع السندات',
-                'create_text' => 'إضافة سند جديد',
+                'title' => __('سندات القبض والدفع'),
+                'create_text' => __('إضافة سند جديد'),
                 'icon' => 'fa-plus',
                 'color' => 'primary',
                 'show_dropdown' => true,
             ],
         ];
-
-        $currentTypeInfo = $typeInfo[$type] ?? $typeInfo['all'];
-
-        return view('vouchers.index', compact('vouchers', 'type', 'currentTypeInfo'));
+        
+        return $typeInfo[$type] ?? $typeInfo['all'];
     }
 
+    /**
+     * Show the form for creating a new voucher
+     */
     public function create(Request $request)
     {
         $type = $request->get('type');
-
-        $permissionMap = [
-            'receipt' => 'create recipt',
-            'payment' => 'create payment',
-            'exp-payment' => 'create exp-payment',
-            'multi_payment' => 'create multi-payment',
-            'multi_receipt' => 'create multi-receipt',
-        ];
-
-        if (isset($permissionMap[$type]) && ! Auth::user()->can($permissionMap[$type])) {
-            abort(403, 'غير مصرح لك بإنشاء هذا النوع من السندات');
-        }
-        // Map request type to pro_type used in operhead
+        $this->checkCreatePermission($type);
+        
         $proTypeMap = [
-            'receipt' => 1,
-            'payment' => 101,
-            // exp-payment is a separate type (3) in the UI
-            'exp-payment' => 3,
+            'receipt' => self::TYPE_RECEIPT,
+            'payment' => self::TYPE_PAYMENT,
+            'exp-payment' => self::TYPE_EXP_PAYMENT,
         ];
-
+        
         $pro_type = $proTypeMap[$type] ?? null;
+        
+        if (!$pro_type) {
+            abort(404, __('نوع السند غير صحيح'));
+        }
+        
+        // جلب البيانات المطلوبة
         $branches = userBranches();
         $allCurrencies = Currency::active()->with('latestRate')->get();
-
-        // Determine next pro_id for the given pro_type
-        $lastProId = OperHead::where('pro_type', $pro_type)->max('pro_id') ?? 0;
-        $newProId = $lastProId + 1;
-
-        // حسابات الصندوق
-        $cashAccounts = AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('acc_type', '3')
-            ->orwhere('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('acc_type', '4')
-            ->with('currency:id,name')
-            ->select('id', 'aname', 'balance', 'currency_id')
-            ->get();
-
-        // حسابات البنوك
-        $bankAccounts = AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('acc_type', '4')
-            ->with('currency:id,name')
-            ->select('id', 'aname', 'balance', 'currency_id')
-            ->get();
-
-        // حسابات الموظفين
-        $employeeAccounts = AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('code', 'like', '2102%') // غيّر الكود حسب النظام عندك
-            ->with('currency:id,name')
-            ->select('id', 'aname', 'balance', 'currency_id')
-            ->get();
-
-        // حسابات المصاريف (لـ exp-payment)
-        $expensesAccounts = AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('code', 'like', '57%') // غيّر الكود حسب النظام عندك
-            ->with('currency:id,name')
-            ->select('id', 'aname', 'balance', 'code', 'currency_id')
-            ->orderBy('code')
-            ->get();
-
-        // حسابات المصروفات (acc_type = 7) للـ payment
-        $paymentExpensesAccounts = AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('acc_type', '7') // expenses
-            ->with('currency:id,name')
-            ->select('id', 'aname', 'balance', 'code', 'currency_id')
-            ->orderBy('code')
-            ->get();
-
-        // المشاريع
-        $projects = Project::all();
-
-        // باقي الحسابات
-        $otherAccounts = AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('is_fund', '!=', 1)
-            ->where('is_stock', '!=', 1)
-            ->with('currency:id,name')
-            ->select('id', 'aname', 'code', 'balance', 'currency_id')
-            ->orderBy('code')
-            ->get();
-
+        $newProId = $this->getNextProId($pro_type);
+        
+        // جلب الحسابات
+        $cashAccounts = $this->getCashAccounts();
+        $bankAccounts = $this->getBankAccounts();
+        $employeeAccounts = $this->getEmployeeAccounts();
+        $expensesAccounts = $this->getExpensesAccounts();
+        $paymentExpensesAccounts = $this->getPaymentExpensesAccounts();
+        $otherAccounts = $this->getOtherAccounts();
+        
         if ($expensesAccounts->isEmpty()) {
             $expensesAccounts = $otherAccounts;
         }
-
-        $costCenters = CostCenter::where('deleted', 0)
-            ->get();
-
-        return view(
-            'vouchers.create',
-            get_defined_vars()
-
-        );
+        
+        $projects = Project::all();
+        $costCenters = CostCenter::where('deleted', 0)->get();
+        
+        return view('vouchers.create', get_defined_vars());
     }
 
-    public function store(Request $request)
+    /**
+     * Get next pro_id for a given pro_type
+     */
+    private function getNextProId(int $proType): int
     {
-        $type = $request->get('pro_type');
-        $permissionMap = [
-            1 => 'create recipt',
-            2 => 'create payment',
-            101 => 'create payment',
-            3 => 'create exp-payment',
-        ];
-
-        $requiredPermission = $permissionMap[$type] ?? null;
-        if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
-            abort(403, 'غير مصرح لك بإنشاء هذا النوع من السندات');
-        }
-
-        $validated = $request->validate([
-            'pro_id' => 'required|integer',
-            'pro_date' => 'required|date',
-            'acc1' => 'required|integer|exists:acc_head,id',
-            'acc2' => 'required|integer|exists:acc_head,id',
-            'emp_id' => 'nullable|integer|exists:acc_head,id',
-            'emp2_id' => 'nullable|integer|exists:acc_head,id',
-            'pro_value' => 'required|numeric',
-            'project_id' => 'nullable|integer|exists:projects,id',
-            'details' => 'nullable|string',
-            'pro_serial' => 'nullable|string',
-            'pro_num' => 'nullable|string',
-            'cost_center' => 'nullable|integer|exists:cost_centers,id',
-            'branch_id' => 'required|exists:branches,id',
-            'currency_id' => 'nullable|integer',
-            'currency_rate' => 'nullable|numeric',
-        ]);
-
-        // التحقق من تطابق العملات في حالة تفعيل تعدد العملات
-        if (isMultiCurrencyEnabled()) {
-            $acc1 = AccHead::find($validated['acc1']);
-            $acc2 = AccHead::find($validated['acc2']);
-
-            if ($acc1 && $acc2 && $acc1->currency_id != $acc2->currency_id) {
-                return back()->withErrors(['currency_mismatch' => 'عذراً، يجب أن يكون للحسابين نفس العملة لإتمام السند.'])->withInput();
-            }
-        }
-
-        // تحديد العملة وسعر الصرف - القيم الافتراضية id=1 و rate=1
-        $currencyId = (int) ($request->get('currency_id') ?? 1);
-        $currencyRate = (float) ($request->get('currency_rate') ?? 1);
-
-        // التأكد من أن القيم صحيحة
-        if ($currencyId <= 0) $currencyId = 1;
-        if ($currencyRate <= 0) $currencyRate = 1;
-
-        // ضرب القيمة في سعر الصرف للحفظ والقيود
-        // pro_value المدخلة هي القيمة الأصلية (مثلاً 1000 دولار)
-        // baseValue هي القيمة الأساسية بعد الضرب (مثلاً 1000 * 47 = 47000)
-        $baseValue = (float) $validated['pro_value'] * $currencyRate;
-        // dd($request->all());
-
-        try {
-            DB::beginTransaction();
-
-            // تحديد رقم العملية الجديد بناءً على pro_type
-            $pro_type = $request->get('pro_type');
-            if (! $pro_type) {
-                throw new \Exception('نوع العملية غير محدد.');
-            }
-            $lastProId = OperHead::where('pro_type', $pro_type)->max('pro_id') ?? 0;
-            $newProId = $lastProId + 1;
-
-            // إنشاء سجل جديد في جدول operhead
-            $oper = OperHead::create([
-                'pro_id' => $newProId,
-                'pro_date' => $validated['pro_date'],
-                'pro_type' => $pro_type,
-                'acc1' => $validated['acc1'],
-                'acc2' => $validated['acc2'],
-                'pro_value' => $baseValue,
-                'currency_id' => $currencyId,
-                'currency_rate' => $currencyRate,
-                'details' => $request['details'] ?? null,
-                'pro_serial' => $request['pro_serial'] ?? null,
-                'pro_num' => $request['pro_num'] ?? null,
-                'isdeleted' => 0,
-                'tenant' => 0,
-                'branch' => 1,
-                'is_finance' => 1,
-                'is_journal' => 1,
-                'journal_type' => 2,
-                'emp_id' => $validated['emp_id'],
-                'emp2_id' => $validated['emp2_id'] ?? null,
-                'acc1_before' => 0,
-                'acc1_after' => 0,
-                'acc2_before' => 0,
-                'acc2_after' => 0,
-                'cost_center' => $validated['cost_center'] ?? null,
-                'user' => Auth::id(),
-                'project_id' => $validated['project_id'] ?? null,
-                'branch_id' => $validated['branch_id'],
-
-            ]);
-
-            // إنشاء رأس القيد (JournalHead)
-            $lastJournalId = JournalHead::max('journal_id') ?? 0;
-            $newJournalId = $lastJournalId + 1;
-            $journalHead = JournalHead::create([
-                'journal_id' => $newJournalId,
-                'total' => $baseValue,
-                'date' => $validated['pro_date'],
-                'op_id' => $oper->id,
-                'pro_type' => $pro_type,
-                'details' => $request['details'] ?? null,
-                'user' => Auth::id(),
-                'branch_id' => $validated['branch_id'],
-            ]);
-
-            // إنشاء تفاصيل القيد (مدين)
-            JournalDetail::create([
-                'journal_id' => $journalHead->journal_id,
-                'account_id' => $validated['acc1'],
-                'debit' => $baseValue,
-                'credit' => 0,
-                'type' => 0,
-                'info' => $request['details'] ?? null,
-                'op_id' => $oper->id,
-                'isdeleted' => 0,
-                'branch_id' => $validated['branch_id'],
-            ]);
-            // إنشاء تفاصيل القيد (دائن)
-            JournalDetail::create([
-                'journal_id' => $journalHead->journal_id,
-                'account_id' => $validated['acc2'],
-                'debit' => 0,
-                'credit' => $baseValue,
-                'type' => 1,
-                'info' => $request['details'] ?? null,
-                'op_id' => $oper->id,
-                'isdeleted' => 0,
-                'branch_id' => $validated['branch_id'],
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('vouchers.index')->with('success', 'تم حفظ السند والقيد المحاسبي بنجاح.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحفظ: ' . $e->getMessage()])->withInput();
-        }
+        $lastProId = OperHead::where('pro_type', $proType)->max('pro_id') ?? 0;
+        return $lastProId + 1;
     }
 
-    public function show($id)
+    /**
+     * Get cash accounts
+     */
+    private function getCashAccounts()
     {
-        $voucher = Voucher::with([
-            'journalHead.journalDetails.accountHead',
-            'acc1Head',
-            'acc2Head',
-            'employee',
-            'type',
-            'user',
-        ])->findOrFail($id);
-
-        // التحقق من الصلاحية
-        $typePermissionMap = [
-            1 => 'view recipt',
-            2 => 'view payment',
-            101 => 'view payment',
-            3 => 'view exp-payment',
-        ];
-
-        $requiredPermission = $typePermissionMap[$voucher->pro_type] ?? null;
-        if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
-            abort(403, 'غير مصرح لك بعرض هذا السند');
-        }
-
-        // تحديد نوع السند
-        $typeMap = [
-            1 => 'receipt',
-            101 => 'payment',
-            3 => 'exp-payment',
-        ];
-        $type = $typeMap[$voucher->pro_type] ?? 'receipt';
-
-        return view('vouchers.show', compact('voucher', 'type'));
-    }
-
-    public function edit($id)
-    {
-        $voucher = Voucher::findOrFail($id);
-        // التحقق من الصلاحية قبل التعديل
-        $typePermissionMap = [
-            1 => 'edit recipt',
-            2 => 'edit payment',
-            101 => 'edit payment',
-            3 => 'edit exp-payment',
-        ];
-
-        $requiredPermission = $typePermissionMap[$voucher->pro_type] ?? null;
-        if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
-            abort(403, 'غير مصرح لك بتعديل هذا السند');
-        }
-        // If this operation is a multi-voucher type, redirect to the MultiVoucher edit form
-        $pname = \App\Models\ProType::find($voucher->pro_type)?->pname;
-        if (in_array($pname, ['multi_payment', 'multi_receipt'])) {
-            return redirect()->route('multi-vouchers.edit', $id);
-        }
-
-        // تحديد نوع السند من pro_type
-        $typeMap = [
-            1 => 'receipt',
-            101 => 'payment',
-            3 => 'exp-payment',
-        ];
-        $type = $typeMap[$voucher->pro_type] ?? 'receipt';
-
-        // ملاحظة: لا نقوم بتحويل pro_value هنا لأن القيمة المخزنة هي القيمة الأساسية
-        // التحويل يتم في الـ view للعرض فقط
-
-        $branches = userBranches();
-        $allCurrencies = Currency::active()->with('latestRate')->get();
-
-        // حسابات الصندوق
-        $cashAccounts = AccHead::where('isdeleted', 0)
+        return AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('acc_type', '3')
-            ->orwhere('isdeleted', 0)
+            ->where(function($q) {
+                $q->where('acc_type', '3')
+                  ->orWhere('acc_type', '4');
+            })
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'balance', 'currency_id')
+            ->get();
+    }
+
+    /**
+     * Get bank accounts
+     */
+    private function getBankAccounts()
+    {
+        return AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', '4')
             ->with('currency:id,name')
             ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
+    }
 
-        // حسابات البنوك
-        $bankAccounts = AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('acc_type', '4')
-            ->with('currency:id,name')
-            ->select('id', 'aname', 'balance', 'currency_id')
-            ->get();
-
-        // حسابات الموظفين
-        $employeeAccounts = AccHead::where('isdeleted', 0)
+    /**
+     * Get employee accounts
+     */
+    private function getEmployeeAccounts()
+    {
+        return AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2102%')
             ->with('currency:id,name')
             ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
+    }
 
-        // حسابات المصاريف (لـ exp-payment)
-        $expensesAccounts = AccHead::where('isdeleted', 0)
+    /**
+     * Get expenses accounts
+     */
+    private function getExpensesAccounts()
+    {
+        return AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '57%')
             ->with('currency:id,name')
             ->select('id', 'aname', 'balance', 'code', 'currency_id')
             ->orderBy('code')
             ->get();
+    }
 
-        // حسابات المصروفات (acc_type = 7) للـ payment
-        $paymentExpensesAccounts = AccHead::where('isdeleted', 0)
+    /**
+     * Get payment expenses accounts
+     */
+    private function getPaymentExpensesAccounts()
+    {
+        return AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', '7')
             ->with('currency:id,name')
             ->select('id', 'aname', 'balance', 'code', 'currency_id')
             ->orderBy('code')
             ->get();
+    }
 
-        // المشاريع
-        $projects = Project::all();
-
-        // باقي الحسابات
-        $otherAccounts = AccHead::where('isdeleted', 0)
+    /**
+     * Get other accounts
+     */
+    private function getOtherAccounts()
+    {
+        return AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('is_fund', '!=', 1)
             ->where('is_stock', '!=', 1)
@@ -624,14 +419,287 @@ class VoucherController extends Controller
             ->select('id', 'aname', 'code', 'balance', 'currency_id')
             ->orderBy('code')
             ->get();
+    }
 
+    /**
+     * Store a newly created voucher
+     */
+    public function store(Request $request)
+    {
+        $proType = (int) $request->get('pro_type');
+        $this->checkStorePermission($proType);
+        
+        $validated = $this->validateVoucherData($request);
+        
+        // التحقق من تطابق العملات
+        if (isMultiCurrencyEnabled()) {
+            $this->validateCurrencyMatch($validated['acc1'], $validated['acc2']);
+        }
+        
+        $currencyData = $this->prepareCurrencyData($request);
+        $baseValue = (float) $validated['pro_value'] * $currencyData['rate'];
+        
+        try {
+            DB::beginTransaction();
+            
+            $newProId = $this->getNextProId($proType);
+            
+            // إنشاء السند
+            $oper = $this->createOperHead($validated, $proType, $newProId, $baseValue, $currencyData);
+            
+            // إنشاء القيد المحاسبي
+            $this->createJournalEntries($oper, $validated, $baseValue);
+            
+            DB::commit();
+            
+            return redirect()
+                ->route('vouchers.index')
+                ->with('success', __('تم حفظ السند والقيد المحاسبي بنجاح'));
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()
+                ->back()
+                ->withErrors(['error' => __('حدث خطأ أثناء الحفظ') . ': ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Check store permission
+     */
+    private function checkStorePermission(int $proType): void
+    {
+        $permissionMap = [
+            self::TYPE_RECEIPT => 'create recipt',
+            self::TYPE_PAYMENT => 'create payment',
+            self::TYPE_EXP_PAYMENT => 'create exp-payment',
+        ];
+        
+        $permission = $permissionMap[$proType] ?? null;
+        
+        if ($permission && !Auth::user()->can($permission)) {
+            abort(403, __('غير مصرح لك بإنشاء هذا النوع من السندات'));
+        }
+    }
+
+    /**
+     * Validate voucher data
+     */
+    private function validateVoucherData(Request $request): array
+    {
+        return $request->validate([
+            'pro_id' => 'required|integer',
+            'pro_date' => 'required|date',
+            'acc1' => 'required|integer|exists:acc_head,id',
+            'acc2' => 'required|integer|exists:acc_head,id',
+            'emp_id' => 'nullable|integer|exists:acc_head,id',
+            'emp2_id' => 'nullable|integer|exists:acc_head,id',
+            'pro_value' => 'required|numeric|min:0.01',
+            'project_id' => 'nullable|integer|exists:projects,id',
+            'details' => 'nullable|string|max:500',
+            'pro_serial' => 'nullable|string|max:50',
+            'pro_num' => 'nullable|string|max:50',
+            'cost_center' => 'nullable|integer|exists:cost_centers,id',
+            'branch_id' => 'required|exists:branches,id',
+            'currency_id' => 'nullable|integer',
+            'currency_rate' => 'nullable|numeric|min:0.01',
+        ]);
+    }
+
+    /**
+     * Validate currency match between accounts
+     */
+    private function validateCurrencyMatch(int $acc1Id, int $acc2Id): void
+    {
+        $acc1 = AccHead::find($acc1Id);
+        $acc2 = AccHead::find($acc2Id);
+        
+        if ($acc1 && $acc2 && $acc1->currency_id != $acc2->currency_id) {
+            throw new \Exception(__('عذراً، يجب أن يكون للحسابين نفس العملة لإتمام السند'));
+        }
+    }
+
+    /**
+     * Prepare currency data
+     */
+    private function prepareCurrencyData(Request $request): array
+    {
+        $currencyId = (int) ($request->get('currency_id') ?? 1);
+        $currencyRate = (float) ($request->get('currency_rate') ?? 1);
+        
+        return [
+            'id' => max($currencyId, 1),
+            'rate' => max($currencyRate, 1),
+        ];
+    }
+
+    /**
+     * Create OperHead record
+     */
+    private function createOperHead(array $validated, int $proType, int $newProId, float $baseValue, array $currencyData): OperHead
+    {
+        return OperHead::create([
+            'pro_id' => $newProId,
+            'pro_date' => $validated['pro_date'],
+            'pro_type' => $proType,
+            'acc1' => $validated['acc1'],
+            'acc2' => $validated['acc2'],
+            'pro_value' => $baseValue,
+            'currency_id' => $currencyData['id'],
+            'currency_rate' => $currencyData['rate'],
+            'details' => $validated['details'] ?? null,
+            'pro_serial' => $validated['pro_serial'] ?? null,
+            'pro_num' => $validated['pro_num'] ?? null,
+            'isdeleted' => 0,
+            'tenant' => 0,
+            'branch' => 1,
+            'is_finance' => 1,
+            'is_journal' => 1,
+            'journal_type' => 2,
+            'emp_id' => $validated['emp_id'] ?? null,
+            'emp2_id' => $validated['emp2_id'] ?? null,
+            'acc1_before' => 0,
+            'acc1_after' => 0,
+            'acc2_before' => 0,
+            'acc2_after' => 0,
+            'cost_center' => $validated['cost_center'] ?? null,
+            'user' => Auth::id(),
+            'project_id' => $validated['project_id'] ?? null,
+            'branch_id' => $validated['branch_id'],
+        ]);
+    }
+
+    /**
+     * Create journal entries
+     */
+    private function createJournalEntries(OperHead $oper, array $validated, float $baseValue): void
+    {
+        $lastJournalId = JournalHead::max('journal_id') ?? 0;
+        $newJournalId = $lastJournalId + 1;
+        
+        $journalHead = JournalHead::create([
+            'journal_id' => $newJournalId,
+            'total' => $baseValue,
+            'date' => $validated['pro_date'],
+            'op_id' => $oper->id,
+            'pro_type' => $oper->pro_type,
+            'details' => $validated['details'] ?? null,
+            'user' => Auth::id(),
+            'branch_id' => $validated['branch_id'],
+        ]);
+        
+        // قيد مدين
+        JournalDetail::create([
+            'journal_id' => $journalHead->journal_id,
+            'account_id' => $validated['acc1'],
+            'debit' => $baseValue,
+            'credit' => 0,
+            'type' => 0,
+            'info' => $validated['details'] ?? null,
+            'op_id' => $oper->id,
+            'isdeleted' => 0,
+            'branch_id' => $validated['branch_id'],
+        ]);
+        
+        // قيد دائن
+        JournalDetail::create([
+            'journal_id' => $journalHead->journal_id,
+            'account_id' => $validated['acc2'],
+            'debit' => 0,
+            'credit' => $baseValue,
+            'type' => 1,
+            'info' => $validated['details'] ?? null,
+            'op_id' => $oper->id,
+            'isdeleted' => 0,
+            'branch_id' => $validated['branch_id'],
+        ]);
+    }
+
+    /**
+     * Display the specified voucher
+     */
+    public function show(int $id)
+    {
+        $voucher = Voucher::with([
+            'type',
+            'account1',
+            'account2',
+            'emp1',
+            'user_id',
+            'currency',
+        ])->findOrFail($id);
+        
+        $this->checkShowPermission($voucher);
+        
+        $typeMap = [
+            self::TYPE_RECEIPT => 'receipt',
+            self::TYPE_PAYMENT => 'payment',
+            self::TYPE_EXP_PAYMENT => 'exp-payment',
+        ];
+        
+        $type = $typeMap[$voucher->pro_type] ?? 'receipt';
+        
+        return view('vouchers.show', compact('voucher', 'type'));
+    }
+
+    /**
+     * Check show permission
+     */
+    private function checkShowPermission(Voucher $voucher): void
+    {
+        $permissionMap = [
+            self::TYPE_RECEIPT => 'view recipt',
+            self::TYPE_PAYMENT => 'view payment',
+            self::TYPE_EXP_PAYMENT => 'view exp-payment',
+        ];
+        
+        $permission = $permissionMap[$voucher->pro_type] ?? null;
+        
+        if ($permission && !Auth::user()->can($permission)) {
+            abort(403, __('غير مصرح لك بعرض هذا السند'));
+        }
+    }
+
+    /**
+     * Show the form for editing the specified voucher
+     */
+    public function edit(int $id)
+    {
+        $voucher = Voucher::findOrFail($id);
+        $this->checkEditPermission($voucher);
+        
+        // إذا كان سند متعدد، توجيه للـ controller المناسب
+        $pname = \App\Models\ProType::find($voucher->pro_type)?->pname;
+        if (in_array($pname, ['multi_payment', 'multi_receipt'])) {
+            return redirect()->route('multi-vouchers.edit', $id);
+        }
+        
+        $typeMap = [
+            self::TYPE_RECEIPT => 'receipt',
+            self::TYPE_PAYMENT => 'payment',
+            self::TYPE_EXP_PAYMENT => 'exp-payment',
+        ];
+        
+        $type = $typeMap[$voucher->pro_type] ?? 'receipt';
+        
+        // جلب البيانات المطلوبة
+        $branches = userBranches();
+        $allCurrencies = Currency::active()->with('latestRate')->get();
+        $cashAccounts = $this->getCashAccounts();
+        $bankAccounts = $this->getBankAccounts();
+        $employeeAccounts = $this->getEmployeeAccounts();
+        $expensesAccounts = $this->getExpensesAccounts();
+        $paymentExpensesAccounts = $this->getPaymentExpensesAccounts();
+        $otherAccounts = $this->getOtherAccounts();
+        
         if ($expensesAccounts->isEmpty()) {
             $expensesAccounts = $otherAccounts;
         }
-
-        $costCenters = CostCenter::where('deleted', 0)
-            ->get();
-
+        
+        $projects = Project::all();
+        $costCenters = CostCenter::where('deleted', 0)->get();
+        
         return view('vouchers.edit', compact(
             'voucher',
             'type',
@@ -648,214 +716,196 @@ class VoucherController extends Controller
         ));
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Update the specified voucher
+     */
+    public function update(Request $request, int $id)
     {
         $voucher = Voucher::findOrFail($id);
-
-        // التحقق من الصلاحية قبل التحديث
-        $typePermissionMap = [
-            1 => 'edit recipt',
-            2 => 'edit payment',
-            101 => 'edit payment',
-            3 => 'edit exp-payment',
-        ];
-
-        $requiredPermission = $typePermissionMap[$voucher->pro_type] ?? null;
-        if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
-            abort(403, 'غير مصرح لك بتعديل هذا السند');
-        }
+        $this->checkEditPermission($voucher);
+        
         $validated = $request->validate([
             'pro_type' => 'required|integer',
             'pro_date' => 'required|date',
-            'pro_num' => 'nullable|string',
-            'pro_serial' => 'nullable|string',
+            'pro_num' => 'nullable|string|max:50',
+            'pro_serial' => 'nullable|string|max:50',
             'emp_id' => 'nullable|integer',
             'emp2_id' => 'nullable|integer',
             'acc1' => 'required|integer|exists:acc_head,id',
             'acc2' => 'required|integer|exists:acc_head,id',
-            'pro_value' => 'required|numeric',
-            'details' => 'nullable|string',
-            'info' => 'nullable|string',
-            'info2' => 'nullable|string',
-            'info3' => 'nullable|string',
+            'pro_value' => 'required|numeric|min:0.01',
+            'details' => 'nullable|string|max:500',
+            'info' => 'nullable|string|max:500',
+            'info2' => 'nullable|string|max:500',
+            'info3' => 'nullable|string|max:500',
             'cost_center' => 'nullable|integer',
             'project_id' => 'nullable|integer',
             'branch_id' => 'required|exists:branches,id',
             'currency_id' => 'nullable|integer|exists:currencies,id',
-            'currency_rate' => 'nullable|numeric',
+            'currency_rate' => 'nullable|numeric|min:0.01',
         ]);
-
-        // التحقق من تطابق العملات في حالة تفعيل تعدد العملات
+        
+        // التحقق من تطابق العملات
         if (isMultiCurrencyEnabled()) {
-            $acc1 = AccHead::find($validated['acc1']);
-            $acc2 = AccHead::find($validated['acc2']);
-
-            if ($acc1 && $acc2 && $acc1->currency_id != $acc2->currency_id) {
-                return back()->withErrors(['currency_mismatch' => 'عذراً، يجب أن يكون للحسابين نفس العملة لإتمام السند.'])->withInput();
-            }
+            $this->validateCurrencyMatch($validated['acc1'], $validated['acc2']);
         }
-
-        // تحديد العملة وسعر الصرف - القيم الافتراضية id=1 و rate=1
-        $currencyId = (int) ($request->get('currency_id') ?? 1);
-        $currencyRate = (float) ($request->get('currency_rate') ?? 1);
-
-        // التأكد من أن القيم صحيحة
-        if ($currencyId <= 0) $currencyId = 1;
-        if ($currencyRate <= 0) $currencyRate = 1;
-
-        // ضرب القيمة في سعر الصرف للحفظ والقيود
-        // pro_value المدخلة هي القيمة الأصلية (مثلاً 1000 دولار)
-        // baseValue هي القيمة الأساسية بعد الضرب (مثلاً 1000 * 47 = 47000)
-        $baseValue = (float) $validated['pro_value'] * $currencyRate;
-
+        
+        $currencyData = $this->prepareCurrencyData($request);
+        $baseValue = (float) $validated['pro_value'] * $currencyData['rate'];
+        
         try {
             DB::beginTransaction();
-
-            // تحديث operhead
-            $oper = OperHead::findOrFail($id);
-            $oper->update([
-                'pro_date' => $validated['pro_date'],
-                'pro_num' => $validated['pro_num'] ?? null,
-                'pro_serial' => $validated['pro_serial'] ?? null,
-                'acc1' => $validated['acc1'],
-                'acc2' => $validated['acc2'],
-                'pro_value' => $baseValue,
-                'currency_id' => $currencyId,
-                'currency_rate' => $currencyRate,
-                'details' => $validated['details'] ?? null,
-                'emp_id' => $validated['emp_id'],
-                'emp2_id' => $validated['emp2_id'] ?? null,
-                'acc1_before' => 0,
-                'acc1_after' => 0,
-                'acc2_before' => 0,
-                'acc2_after' => 0,
-                'cost_center' => $validated['cost_center'] ?? null,
-                'user' => Auth::id(),
-                'info' => $validated['info'] ?? null,
-                'info2' => $validated['info2'] ?? null,
-                'info3' => $validated['info3'] ?? null,
-                'project_id' => $validated['project_id'] ?? null,
-                'branch_id' => $validated['branch_id'],
-            ]);
-
-            // تحديث journal_head
-            $journalHead = JournalHead::where('op_id', $oper->id)->first();
-            if ($journalHead) {
-                $journalHead->update([
-                    'total' => $baseValue,
-                    'date' => $validated['pro_date'],
-                    'pro_type' => $validated['pro_type'],
-                    'details' => $validated['details'] ?? null,
-                    'user' => Auth::id(),
-                ]);
-
-                $journalId = $journalHead->journal_id;
-
-                // حذف التفاصيل القديمة
-                JournalDetail::where('journal_id', $journalId)->delete();
-
-                // تحديث branch_id في journal_head
-                $journalHead->update([
-                    'branch_id' => $validated['branch_id'],
-                ]);
-
-                // إنشاء تفاصيل جديدة (مدين)
-                JournalDetail::create([
-                    'journal_id' => $journalId,
-                    'account_id' => $validated['acc1'],
-                    'debit' => $baseValue,
-                    'credit' => 0,
-                    'type' => 0,
-                    'info' => $validated['info'] ?? null,
-                    'op_id' => $oper->id,
-                    'isdeleted' => 0,
-                    'branch_id' => $validated['branch_id'],
-                ]);
-
-                // إنشاء تفاصيل جديدة (دائن)
-                JournalDetail::create([
-                    'journal_id' => $journalId,
-                    'account_id' => $validated['acc2'],
-                    'debit' => 0,
-                    'credit' => $baseValue,
-                    'type' => 1,
-                    'info' => $validated['info'] ?? null,
-                    'op_id' => $oper->id,
-                    'isdeleted' => 0,
-                    'branch_id' => $validated['branch_id'],
-                ]);
-            }
-
+            
+            $this->updateOperHead($voucher, $validated, $baseValue, $currencyData);
+            $this->updateJournalEntries($voucher, $validated, $baseValue);
+            
             DB::commit();
-
-            return redirect()->route('vouchers.index')->with('success', 'تم تعديل السند بنجاح.');
+            
+            return redirect()
+                ->route('vouchers.index')
+                ->with('success', __('تم تعديل السند بنجاح'));
+                
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ: ' . $e->getMessage()])->withInput();
+            return redirect()
+                ->back()
+                ->withErrors(['error' => __('حدث خطأ') . ': ' . $e->getMessage()])
+                ->withInput();
         }
     }
 
-    public function destroy(string $id)
+    /**
+     * Update OperHead record
+     */
+    private function updateOperHead(Voucher $voucher, array $validated, float $baseValue, array $currencyData): void
+    {
+        $oper = OperHead::findOrFail($voucher->id);
+        
+        $oper->update([
+            'pro_date' => $validated['pro_date'],
+            'pro_num' => $validated['pro_num'] ?? null,
+            'pro_serial' => $validated['pro_serial'] ?? null,
+            'acc1' => $validated['acc1'],
+            'acc2' => $validated['acc2'],
+            'pro_value' => $baseValue,
+            'currency_id' => $currencyData['id'],
+            'currency_rate' => $currencyData['rate'],
+            'details' => $validated['details'] ?? null,
+            'emp_id' => $validated['emp_id'] ?? null,
+            'emp2_id' => $validated['emp2_id'] ?? null,
+            'cost_center' => $validated['cost_center'] ?? null,
+            'user' => Auth::id(),
+            'info' => $validated['info'] ?? null,
+            'info2' => $validated['info2'] ?? null,
+            'info3' => $validated['info3'] ?? null,
+            'project_id' => $validated['project_id'] ?? null,
+            'branch_id' => $validated['branch_id'],
+        ]);
+    }
+
+    /**
+     * Update journal entries
+     */
+    private function updateJournalEntries(Voucher $voucher, array $validated, float $baseValue): void
+    {
+        $journalHead = JournalHead::where('op_id', $voucher->id)->first();
+        
+        if (!$journalHead) {
+            return;
+        }
+        
+        $journalHead->update([
+            'total' => $baseValue,
+            'date' => $validated['pro_date'],
+            'pro_type' => $validated['pro_type'],
+            'details' => $validated['details'] ?? null,
+            'user' => Auth::id(),
+            'branch_id' => $validated['branch_id'],
+        ]);
+        
+        // حذف التفاصيل القديمة
+        JournalDetail::where('journal_id', $journalHead->journal_id)->delete();
+        
+        // إنشاء تفاصيل جديدة (مدين)
+        JournalDetail::create([
+            'journal_id' => $journalHead->journal_id,
+            'account_id' => $validated['acc1'],
+            'debit' => $baseValue,
+            'credit' => 0,
+            'type' => 0,
+            'info' => $validated['info'] ?? null,
+            'op_id' => $voucher->id,
+            'isdeleted' => 0,
+            'branch_id' => $validated['branch_id'],
+        ]);
+        
+        // إنشاء تفاصيل جديدة (دائن)
+        JournalDetail::create([
+            'journal_id' => $journalHead->journal_id,
+            'account_id' => $validated['acc2'],
+            'debit' => 0,
+            'credit' => $baseValue,
+            'type' => 1,
+            'info' => $validated['info'] ?? null,
+            'op_id' => $voucher->id,
+            'isdeleted' => 0,
+            'branch_id' => $validated['branch_id'],
+        ]);
+    }
+
+    /**
+     * Remove the specified voucher
+     */
+    public function destroy(int $id)
     {
         $voucher = Voucher::findOrFail($id);
-
-        // التحقق من الصلاحية قبل الحذف
-        $typePermissionMap = [
-            1 => 'delete recipt',
-            2 => 'delete payment',
-            101 => 'delete payment',
-            3 => 'delete exp-payment',
-        ];
-
-        $requiredPermission = $typePermissionMap[$voucher->pro_type] ?? null;
-        if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
-            abort(403, 'غير مصرح لك بحذف هذا السند');
-        }
+        $this->checkDeletePermission($voucher);
+        
         try {
             DB::beginTransaction();
-
-            $voucher = OperHead::findOrFail($id);
-
-            // حذف journal_head المرتبط
-            $journalHead = JournalHead::where('op_id', $voucher->id)->first();
-
+            
+            $oper = OperHead::findOrFail($id);
+            
+            // حذف القيود المحاسبية المرتبطة
+            $journalHead = JournalHead::where('op_id', $oper->id)->first();
+            
             if ($journalHead) {
-                // حذف تفاصيل اليومية
                 JournalDetail::where('journal_id', $journalHead->journal_id)->delete();
-
-                // حذف رأس اليومية
                 $journalHead->delete();
             }
-
+            
             // حذف السند
-            $voucher->delete();
-
+            $oper->delete();
+            
             DB::commit();
-
-            return redirect()->route('vouchers.index')->with('success', 'تم حذف السند والقيد بنجاح.');
+            
+            return redirect()
+                ->route('vouchers.index')
+                ->with('success', __('تم حذف السند والقيد بنجاح'));
+                
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()]);
+            return redirect()
+                ->back()
+                ->withErrors(['error' => __('حدث خطأ أثناء الحذف') . ': ' . $e->getMessage()]);
         }
     }
 
+    /**
+     * Display vouchers statistics
+     */
     public function statistics(Request $request)
     {
-        if (! Auth::user()->can('view vouchers-statistics')) {
-            abort(403, 'غير مصرح لك بعرض إحصائيات السندات المتعددة');
+        if (!Auth::user()->can('view vouchers-statistics')) {
+            abort(403, __('غير مصرح لك بعرض إحصائيات السندات'));
         }
-        // تحديد الأنواع
+        
         $proTypeMapping = [
-            1 => 'سندات القبض العام',
-            2 => 'سندات الدفع العام',
-            3 => 'سندات دفع المصاريف',
-            4 => 'سندات الدفع متعددة',
-            5 => 'سندات القبض متعددة',
+            self::TYPE_RECEIPT => __('سندات القبض العام'),
+            self::TYPE_PAYMENT => __('سندات الدفع العام'),
+            self::TYPE_EXP_PAYMENT => __('سندات دفع المصاريف'),
         ];
-
-        // جلب الإحصائيات: عدد وإجمالي القيمة لكل نوع سند
+        
         $statistics = OperHead::where('isdeleted', 0)
             ->whereIn('pro_type', array_keys($proTypeMapping))
             ->groupBy('pro_type')
@@ -873,8 +923,7 @@ class VoucherController extends Controller
                     'value' => $item->total_value,
                 ];
             });
-
-        // جلب إجمالي جميع السندات
+        
         $overallTotal = OperHead::where('isdeleted', 0)
             ->whereIn('pro_type', array_keys($proTypeMapping))
             ->select(
@@ -882,10 +931,10 @@ class VoucherController extends Controller
                 DB::raw('SUM(pro_value) as overall_value')
             )
             ->first();
-
-        // لإضافة الأنواع التي لا تحتوي على سندات (لضمان ظهورها في الإحصائيات بقيمة صفر)
+        
+        // إضافة الأنواع التي لا تحتوي على سندات
         foreach ($proTypeMapping as $typeId => $title) {
-            if (! $statistics->has($typeId)) {
+            if (!$statistics->has($typeId)) {
                 $statistics->put($typeId, [
                     'title' => $title,
                     'count' => 0,
@@ -893,10 +942,9 @@ class VoucherController extends Controller
                 ]);
             }
         }
-
-        // إعادة ترتيب البيانات حسب الـ pro_type
+        
         $sortedStatistics = $statistics->sortKeys();
-
+        
         return view('vouchers.statistics', compact('sortedStatistics', 'overallTotal'));
     }
 }
