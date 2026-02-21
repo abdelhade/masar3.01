@@ -160,6 +160,15 @@
             #search-results-dropdown>div {
                 display: flex !important;
             }
+
+            /* Invoice item row hover effect */
+            .invoice-item-row {
+                transition: background-color 0.2s ease;
+            }
+
+            .invoice-item-row:hover {
+                background-color: rgba(255, 235, 59, 0.3) !important; /* أصفر شفاف */
+            }
         </style>
     @endpush
     {{-- Pure HTML - No Alpine --}}
@@ -946,7 +955,7 @@
                         // Hover effects
                         resultDiv.onmouseenter = function() {
                             if (index !== InvoiceApp.selectedIndex) {
-                                this.style.background = '#f5f5f5 !important';
+                                this.style.background = 'rgba(255, 235, 59, 0.3) !important'; // أصفر شفاف
                             }
                         };
                         resultDiv.onmouseleave = function() {
@@ -1212,7 +1221,7 @@
             // Render single item row
             renderItemRow(item, index) {
                 let html =
-                    `<tr data-index="${index}" onclick="InvoiceApp.showItemDetails(${index})" style="cursor: pointer;">`;
+                    `<tr data-index="${index}" onclick="InvoiceApp.showItemDetails(${index})" style="cursor: pointer;" class="invoice-item-row">`;
 
                 // Render columns based on visible columns
                 this.visibleColumns.forEach(col => {

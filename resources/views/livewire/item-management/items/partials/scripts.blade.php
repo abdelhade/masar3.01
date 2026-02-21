@@ -96,7 +96,12 @@
                     title: d.title || '{{ __('general.error') }}',
                     text: d.text || '{{ __('messages.unexpected_error') }}',
                     icon: d.icon || 'error',
-                    confirmButtonText: '{{ __('common.ok') }}'
+                    confirmButtonText: '{{ __('common.ok') }}',
+                    iconColor: '#dc3545',
+                    customClass: {
+                        title: 'text-danger',
+                        htmlContainer: 'text-danger'
+                    }
                 });
             });
         });

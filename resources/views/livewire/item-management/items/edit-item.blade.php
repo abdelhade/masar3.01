@@ -52,6 +52,7 @@ new class extends Component {
 
     public function mount(Item $itemModel)
     {
+        $this->creating = true; // Start in editing mode
         $this->itemModel = $itemModel->load('units', 'prices', 'notes', 'barcodes');
         $this->units = Unit::all();
         $this->prices = Price::all();
@@ -359,8 +360,16 @@ new class extends Component {
     private function handleSuccess()
     {
         Log::info('Transaction committed successfully');
-        session()->flash('success', 'تم تحديث الصنف بنجاح!');
-        return redirect()->route('items.index')->with('success', 'تم تحديث الصنف بنجاح!');
+        
+        // Change to non-creating mode to show action buttons
+        $this->creating = false;
+        
+        $this->dispatch('success-swal', [
+            'title' => __('general.success'),
+            'text' => 'تم تحديث الصنف بنجاح!',
+            'icon' => 'success',
+            'reload' => false,
+        ]);
     }
 
     private function handleError(\Exception $e)
@@ -557,10 +566,27 @@ new class extends Component {
                 <!-- Action Buttons at the top -->
                 <div class="container-fluid mb-3">
                     <div class="d-flex justify-content-center gap-2 flex-wrap">
-                        <button type="button" class="btn btn-lg btn-outline-secondary font-hold fw-bold"
-                            onclick="window.history.back()">{{ __('common.back') }} ( {{ __('common.cancel') }} )</button>
-                        <button type="submit" class="btn btn-lg btn-main font-hold fw-bold"
-                            wire:loading.attr="disabled" wire:target="update">{{ __('common.update') }}</button>
+                        @if($creating)
+                            <button type="button" class="btn btn-lg btn-outline-secondary font-hold fw-bold"
+                                onclick="window.history.back()">{{ __('common.back') }} ( {{ __('common.cancel') }} )</button>
+                            <button type="submit" class="btn btn-lg btn-main font-hold fw-bold"
+                                wire:loading.attr="disabled" wire:target="update">{{ __('common.update') }}</button>
+                        @else
+                            <button type="button" class="btn btn-lg btn-outline-secondary font-hold fw-bold"
+                                onclick="window.location.href='{{ route('items.index') }}'">
+                                {{ __('common.back') }}
+                            </button>
+                            @can('edit items')
+                                <button type="button" class="btn btn-lg btn-primary font-hold fw-bold"
+                                    onclick="window.location.href='{{ route('items.edit', $itemModel->id) }}'">
+                                    <i class="fas fa-edit"></i> {{ __('common.edit') }}
+                                </button>
+                            @endcan
+                            <button type="button" class="btn btn-lg btn-main font-hold fw-bold"
+                                onclick="window.location.href='{{ route('items.create') }}'">{{ __('common.new') }}</button>
+                            <button type="button" class="btn btn-lg btn-main font-hold fw-bold"
+                                onclick="window.location.href='{{ route('items.create') }}'">{{ __('items.new_from_current_item') }}</button>
+                        @endif
                     </div>
                 </div>
                 
@@ -641,6 +667,8 @@ new class extends Component {
                     </div>
                 </fieldset>
 
+                @include('livewire.item-management.items.partials.units-repeater')
+
                 <!-- Image Upload Section -->
                 <fieldset class="shadow-sm mt-3">
                     <legend class="p-3 mb-0">
@@ -650,8 +678,6 @@ new class extends Component {
                         @include('livewire.item-management.items.partials.image-upload')
                     </div>
                 </fieldset>
-
-                @include('livewire.item-management.items.partials.units-repeater')
             </form>
         </div>
     </div>

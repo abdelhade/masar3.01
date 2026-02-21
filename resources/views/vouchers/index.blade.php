@@ -113,8 +113,33 @@
         </div>
 
         <div class="card-body">
+            {{-- فلتر البحث --}}
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="{{ __('Search by number, description, account...') }}">
+                </div>
+                <div class="col-md-2">
+                    <select id="typeFilter" class="form-select">
+                        <option value="">{{ __('All Types') }}</option>
+                        <option value="1">{{ __('Receipt Voucher') }}</option>
+                        <option value="101">{{ __('Payment Voucher') }}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="dateFrom" class="form-control" placeholder="{{ __('From Date') }}">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="dateTo" class="form-control" placeholder="{{ __('To Date') }}">
+                </div>
+                <div class="col-md-3">
+                    <button type="button" id="resetFilter" class="btn btn-secondary w-100">
+                        <i class="fas fa-redo"></i> {{ __('Reset') }}
+                    </button>
+                </div>
+            </div>
+
             <div class="table-responsive" style="overflow-x: auto;">
-                <table class="table table-striped mb-0" style="min-width: 1200px;">
+                <table class="table table-striped mb-0" id="vouchersTable" style="min-width: 1200px;">
                     <thead class="table-light text-center align-middle">
                         <tr>
                             <th>{{ __('#') }}</th>
@@ -172,7 +197,7 @@
 
                                 $hasAnyActionPermission = $canEdit || $canDelete;
                             @endphp
-                            <tr>
+                            <tr data-pro-type="{{ $voucher->pro_type }}">
                                 <td>{{ $x++ }}</td>
                                 <td>{{ $voucher->pro_date }}</td>
                                 <td>{{ $voucher->pro_id }}</td>
@@ -300,16 +325,127 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tableRows = document.querySelectorAll('tbody tr');
+        (function() {
+            const searchInput = document.getElementById('searchInput');
+            const typeFilter = document.getElementById('typeFilter');
+            const dateFrom = document.getElementById('dateFrom');
+            const dateTo = document.getElementById('dateTo');
+            const resetBtn = document.getElementById('resetFilter');
+            const table = document.getElementById('vouchersTable');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => !row.querySelector('.alert'));
+
+            function filterTable() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const selectedType = typeFilter.value;
+                const fromDate = dateFrom.value;
+                const toDate = dateTo.value;
+                let visibleCount = 0;
+
+                rows.forEach((row, index) => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length === 0) return;
+
+                    const proType = row.getAttribute('data-pro-type');
+                    const rowDate = cells[1].textContent.trim();
+                    const proId = cells[2].textContent.toLowerCase();
+                    const description = cells[4].textContent.toLowerCase();
+                    const account1 = cells[7].textContent.toLowerCase();
+                    const account2 = cells[8].textContent.toLowerCase();
+                    const employee = cells[9].textContent.toLowerCase();
+                    const user = cells[10].textContent.toLowerCase();
+                    const notes = cells[12].textContent.toLowerCase();
+
+                    let matchSearch = true;
+                    let matchType = true;
+                    let matchDate = true;
+
+                    // فلتر البحث النصي
+                    if (searchTerm) {
+                        matchSearch = proId.includes(searchTerm) ||
+                                    description.includes(searchTerm) ||
+                                    account1.includes(searchTerm) ||
+                                    account2.includes(searchTerm) ||
+                                    employee.includes(searchTerm) ||
+                                    user.includes(searchTerm) ||
+                                    notes.includes(searchTerm);
+                    }
+
+                    // فلتر نوع العملية
+                    if (selectedType && proType !== selectedType) {
+                        matchType = false;
+                    }
+
+                    // فلتر التاريخ
+                    if (fromDate && rowDate < fromDate) {
+                        matchDate = false;
+                    }
+                    if (toDate && rowDate > toDate) {
+                        matchDate = false;
+                    }
+
+                    if (matchSearch && matchType && matchDate) {
+                        row.style.display = '';
+                        visibleCount++;
+                        cells[0].textContent = visibleCount;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                updateEmptyMessage(visibleCount);
+            }
+
+            function updateEmptyMessage(count) {
+                let emptyRow = tbody.querySelector('tr.empty-message');
+                
+                if (count === 0) {
+                    if (!emptyRow) {
+                        emptyRow = document.createElement('tr');
+                        emptyRow.className = 'empty-message';
+                        emptyRow.innerHTML = `
+                            <td colspan="14" class="text-center">
+                                <div class="alert alert-warning py-4 mb-0">
+                                    <i class="fas fa-search me-2"></i>
+                                    <strong>{{ __('No results found') }}</strong>
+                                    <br>
+                                    <small class="text-muted mt-2 d-block">{{ __('Try adjusting your search criteria') }}</small>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(emptyRow);
+                    }
+                    emptyRow.style.display = '';
+                } else if (emptyRow) {
+                    emptyRow.style.display = 'none';
+                }
+            }
+
+            function resetFilter() {
+                searchInput.value = '';
+                typeFilter.value = '';
+                dateFrom.value = '';
+                dateTo.value = '';
+                filterTable();
+            }
+
+            searchInput.addEventListener('input', filterTable);
+            typeFilter.addEventListener('change', filterTable);
+            dateFrom.addEventListener('change', filterTable);
+            dateTo.addEventListener('change', filterTable);
+            resetBtn.addEventListener('click', resetFilter);
+
+            const tableRows = tbody.querySelectorAll('tr');
             tableRows.forEach(row => {
                 row.addEventListener('mouseenter', function() {
-                    this.style.backgroundColor = '#f8f9fa';
+                    if (this.style.display !== 'none') {
+                        this.style.backgroundColor = '#f8f9fa';
+                    }
                 });
                 row.addEventListener('mouseleave', function() {
                     this.style.backgroundColor = '';
                 });
             });
-        });
+        })();
     </script>
 @endpush

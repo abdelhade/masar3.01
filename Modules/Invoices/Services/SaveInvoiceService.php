@@ -345,6 +345,28 @@ class SaveInvoiceService
                 );
             }
 
+            // ✅ إنشاء سند القبض/الدفع إذا كان هناك مبلغ مدفوع
+            $receivedFromClient = $data->received_from_client ?? 0;
+            $cashBoxId = $data->cash_box_id ?? null;
+            
+            logger()->info('Checking voucher creation conditions', [
+                'receivedFromClient' => $receivedFromClient,
+                'cashBoxId' => $cashBoxId,
+                'isReceipt' => $isReceipt,
+                'isPayment' => $isPayment,
+                'operation_type' => $data->type,
+            ]);
+            
+            if ($receivedFromClient > 0 && $cashBoxId) {
+                logger()->info('Creating voucher...');
+                $this->createVoucher($data, $operation, $isReceipt, $isPayment);
+            } else {
+                logger()->warning('Voucher not created - conditions not met', [
+                    'receivedFromClient' => $receivedFromClient,
+                    'cashBoxId' => $cashBoxId,
+                ]);
+            }
+
             // ✅ إعادة حساب average_cost والأرباح للعمليات اللاحقة (Ripple Effect)
             if ($isEdit && isset($oldItemIds) && isset($oldOperationDate)) {
                 try {
@@ -1217,13 +1239,28 @@ class SaveInvoiceService
 
     private function createVoucher($data, $operation, $isReceipt, $isPayment)
     {
-        $voucherValue = $data->received_from_client ?? $data->total_after_additional;
+        $voucherValue = $data->received_from_client ?? 0;
         $cashBoxId = is_numeric($data->cash_box_id) && $data->cash_box_id > 0
             ? (int) $data->cash_box_id
             : null;
 
+        // ✅ Logging للتأكد من القيم
+        logger()->info('createVoucher called', [
+            'voucherValue' => $voucherValue,
+            'cashBoxId' => $cashBoxId,
+            'isReceipt' => $isReceipt,
+            'isPayment' => $isPayment,
+            'operation_id' => $operation->id,
+        ]);
+
         if (! $cashBoxId) {
+            logger()->warning('createVoucher: No cash box ID provided');
             return; // لا يمكن إنشاء سند بدون صندوق
+        }
+
+        if ($voucherValue <= 0) {
+            logger()->warning('createVoucher: Voucher value is zero or negative', ['value' => $voucherValue]);
+            return; // لا يمكن إنشاء سند بقيمة صفر
         }
 
         if ($isReceipt) {
@@ -1237,6 +1274,7 @@ class SaveInvoiceService
             $creditAccount = $cashBoxId;
             $voucherType = 'دفع';
         } else {
+            logger()->warning('createVoucher: Neither receipt nor payment');
             return;
         }
 
@@ -1254,6 +1292,12 @@ class SaveInvoiceService
             'is_stock' => 0,
             'user' => Auth::id(),
             'branch_id' => $data->branch_id,
+        ]);
+
+        logger()->info('Voucher created successfully', [
+            'voucher_id' => $voucher->id,
+            'voucher_type' => $voucherType,
+            'value' => $voucherValue,
         ]);
 
         // إنشاء قيد السند
@@ -1294,6 +1338,105 @@ class SaveInvoiceService
             'isdeleted' => 0,
             'branch_id' => $data->branch_id,
         ]);
+
+        logger()->info('Voucher journal entries created successfully', [
+            'journal_id' => $voucherJournalId,
+            'debit_account' => $debitAccount,
+            'credit_account' => $creditAccount,
+        ]);
+    }
+
+    /**
+     * معالجة سند القبض/الدفع في حالة التعديل
+     */
+    private function syncVoucher($operation, $data)
+    {
+        $receivedFromClient = $data->received_from_client ?? 0;
+        $cashBoxId = $data->cash_box_id ?? null;
+        
+        // البحث عن السند المرتبط بالفاتورة
+        $existingVoucher = OperHead::where('op2', $operation->id)
+            ->whereIn('pro_type', [1, 2]) // سند قبض أو دفع
+            ->first();
+
+        // تحديد نوع السند
+        $isReceipt = in_array($data->type, [10, 22, 13]);
+        $isPayment = in_array($data->type, [11, 12]);
+
+        if ($receivedFromClient > 0 && $cashBoxId) {
+            // يجب إنشاء أو تحديث السند
+            if ($existingVoucher) {
+                // تحديث السند الموجود
+                $proType = $isReceipt ? 1 : 2;
+                $voucherType = $isReceipt ? 'قبض' : 'دفع';
+                
+                $existingVoucher->update([
+                    'pro_type' => $proType,
+                    'acc1' => $data->acc1_id,
+                    'acc2' => $cashBoxId,
+                    'pro_value' => $receivedFromClient,
+                    'pro_date' => $data->pro_date,
+                    'info' => 'سند '.$voucherType.' آلي مرتبط بعملية رقم '.$operation->id,
+                    'user' => Auth::id(),
+                    'branch_id' => $data->branch_id,
+                ]);
+
+                // تحديث قيد السند
+                $voucherJournalHead = JournalHead::where('op_id', $existingVoucher->id)->first();
+                if ($voucherJournalHead) {
+                    $voucherJournalHead->update([
+                        'total' => $receivedFromClient,
+                        'date' => $data->pro_date,
+                        'details' => 'قيد سند '.$voucherType.' آلي',
+                        'user' => Auth::id(),
+                        'branch_id' => $data->branch_id,
+                    ]);
+
+                    // حذف وإعادة إنشاء تفاصيل القيد
+                    JournalDetail::where('journal_id', $voucherJournalHead->journal_id)->delete();
+
+                    $debitAccount = $isReceipt ? $cashBoxId : $data->acc1_id;
+                    $creditAccount = $isReceipt ? $data->acc1_id : $cashBoxId;
+
+                    JournalDetail::create([
+                        'journal_id' => $voucherJournalHead->journal_id,
+                        'account_id' => $debitAccount,
+                        'debit' => $receivedFromClient,
+                        'credit' => 0,
+                        'type' => 1,
+                        'info' => 'سند '.$voucherType,
+                        'op_id' => $existingVoucher->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $data->branch_id,
+                    ]);
+
+                    JournalDetail::create([
+                        'journal_id' => $voucherJournalHead->journal_id,
+                        'account_id' => $creditAccount,
+                        'debit' => 0,
+                        'credit' => $receivedFromClient,
+                        'type' => 1,
+                        'info' => 'سند '.$voucherType,
+                        'op_id' => $existingVoucher->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $data->branch_id,
+                    ]);
+                }
+            } else {
+                // إنشاء سند جديد
+                $this->createVoucher($data, $operation, $isReceipt, $isPayment);
+            }
+        } else {
+            // حذف السند إذا كان موجوداً ولا يوجد مبلغ مدفوع
+            if ($existingVoucher) {
+                $voucherJournalIds = JournalHead::where('op_id', $existingVoucher->id)->pluck('journal_id');
+                if ($voucherJournalIds->count() > 0) {
+                    JournalDetail::whereIn('journal_id', $voucherJournalIds)->delete();
+                    JournalHead::where('op_id', $existingVoucher->id)->delete();
+                }
+                $existingVoucher->delete();
+            }
+        }
     }
 
     /**
@@ -1646,6 +1789,9 @@ class SaveInvoiceService
         } else {
             $this->createJournalEntries($data, $operation);
         }
+
+        // ✅ معالجة سند القبض/الدفع في حالة التعديل
+        $this->syncVoucher($operation, $data);
     }
 
     private function generateJournalDetails($journalId, $operation, $data)
