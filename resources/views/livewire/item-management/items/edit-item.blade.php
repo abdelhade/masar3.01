@@ -56,6 +56,7 @@ new class extends Component {
         $this->units = Unit::all();
         $this->prices = Price::all();
         $this->notes = Note::with('noteDetails')->get();
+        $this->item['type'] = 1;
 
         // Load existing images
         $this->existingThumbnail = $this->itemModel->getFirstMedia('item-thumbnail');
@@ -102,7 +103,6 @@ new class extends Component {
     {
         return [
             'item.name' => ['required', 'min:3', Rule::unique('items', 'name')->ignore($this->itemModel->id)],
-            'item.code' => ['nullable', 'string', 'max:255'],
             'item.type' => 'required|in:' . implode(',', array_column(ItemType::cases(), 'value')),
             'item.notes.*' => 'nullable',
             'unitRows.*.barcodes.*' => [
@@ -140,7 +140,6 @@ new class extends Component {
         'item.name.required' => 'اسم الصنف مطلوب.',
         'item.name.min' => 'اسم الصنف يجب أن يكون أطول من 3 أحرف.',
         'item.name.unique' => 'اسم الصنف مستخدم بالفعل.',
-        'item.code.max' => 'رقم الصنف يجب أن يكون أقصر من 255 حرف.',
         'item.type.required' => 'نوع الصنف مطلوب.',
         'item.type.in' => 'نوع الصنف غير موجود.',
         'unitRows.*.unit_id.exists' => 'الوحدة غير موجودة.',

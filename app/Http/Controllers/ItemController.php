@@ -106,6 +106,7 @@ class ItemController extends Controller
         return view('item-management.reports.item-movement-print', [
             'itemId' => $request->get('itemId', null),
             'warehouseId' => $request->get('warehouseId', 'all'),
+            'operationType' => $request->get('operationType', 'all'),
             'fromDate' => $request->get('fromDate', now()->startOfMonth()->toDateString()),
             'toDate' => $request->get('toDate', now()->endOfMonth()->toDateString()),
         ]);

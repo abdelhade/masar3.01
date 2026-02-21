@@ -152,7 +152,7 @@
 </div>
 
 {{-- Image Guidelines --}}
-<div class="row">
+{{-- <div class="row">
     <div class="col-12">
         <div class="alert alert-info">
             <i class="fas fa-info-circle"></i>
@@ -165,7 +165,7 @@
             </ul>
         </div>
     </div>
-</div>
+</div> --}}
 
 {{-- Alpine.js Component for Client-side Image Preview --}}
 <script>
