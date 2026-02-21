@@ -13,49 +13,78 @@ use Modules\Invoices\Http\Controllers\InvoiceController;
 |--------------------------------------------------------------------------
 | Invoice API Routes
 |--------------------------------------------------------------------------
+| Note: These routes use 'api' middleware from RouteServiceProvider
+| which adds 'api' prefix automatically
 */
 
-Route::middleware(['web', 'auth'])->prefix('invoices')->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
+    
+    // Items endpoints (will be /api/items/*)
+    Route::get('/items/lite', [ItemSearchApiController::class, 'getLiteItems'])
+        ->name('items.lite')
+        ->withoutMiddleware('auth:sanctum')
+        ->middleware('auth');
 
-    // Initial Data
-    Route::get('/initial-data', [InvoiceDataApiController::class, 'getInitialData'])
-        ->name('api.invoices.initial-data');
+    Route::post('/items/quick-create', [ItemSearchApiController::class, 'quickCreateItem'])
+        ->name('items.quick-create')
+        ->withoutMiddleware('auth:sanctum')
+        ->middleware('auth');
 
-    Route::get('/{invoiceId}/edit-data', [InvoiceDataApiController::class, 'getInvoiceForEdit'])
-        ->name('api.invoices.edit-data');
+    // Account balance endpoint
+    Route::get('/accounts/{accountId}/balance', [AccountBalanceApiController::class, 'getBalance'])
+        ->name('accounts.balance')
+        ->withoutMiddleware('auth:sanctum')
+        ->middleware('auth');
 
-    // Item Search
-    Route::get('/items/search', [ItemSearchApiController::class, 'searchItems'])
-        ->name('api.invoices.items.search');
+    // Invoice routes (will be /api/invoices/*)
+    Route::prefix('invoices')->group(function () {
 
-    Route::get('/items/{itemId}/details', [ItemSearchApiController::class, 'getItemDetails'])
-        ->name('api.invoices.items.details');
+        // Initial Data
+        Route::get('/initial-data', [InvoiceDataApiController::class, 'getInitialData'])
+            ->name('invoices.initial-data')
+            ->withoutMiddleware('auth:sanctum')
+            ->middleware('auth');
 
-    Route::get('/items/{itemId}/price', [ItemSearchApiController::class, 'getItemPrice'])
-        ->name('api.invoices.items.price');
+        Route::get('/{invoiceId}/edit-data', [InvoiceDataApiController::class, 'getInvoiceForEdit'])
+            ->name('invoices.edit-data')
+            ->withoutMiddleware('auth:sanctum')
+            ->middleware('auth');
 
-    Route::get('/customers/{customerId}/recommended-items', [ItemSearchApiController::class, 'getRecommendedItems'])
-        ->name('api.invoices.customers.recommended-items');
+        // Item Search
+        Route::get('/items/search', [ItemSearchApiController::class, 'searchItems'])
+            ->name('invoices.items.search')
+            ->withoutMiddleware('auth:sanctum')
+            ->middleware('auth');
 
-    // Invoice CRUD
-    Route::post('/', [InvoiceController::class, 'store'])
-        ->name('invoices.store');
+        Route::get('/items/{itemId}/details', [ItemSearchApiController::class, 'getItemDetails'])
+            ->name('invoices.items.details')
+            ->withoutMiddleware('auth:sanctum')
+            ->middleware('auth');
 
-    Route::put('/{invoiceId}', [InvoiceController::class, 'update'])
-        ->name('api.invoices.update');
+        Route::get('/items/{itemId}/price', [ItemSearchApiController::class, 'getItemPrice'])
+            ->name('invoices.items.price')
+            ->withoutMiddleware('auth:sanctum')
+            ->middleware('auth');
 
-    Route::delete('/{invoiceId}', [InvoiceApiController::class, 'destroy'])
-        ->name('api.invoices.destroy');
+        Route::get('/customers/{customerId}/recommended-items', [ItemSearchApiController::class, 'getRecommendedItems'])
+            ->name('invoices.customers.recommended-items')
+            ->withoutMiddleware('auth:sanctum')
+            ->middleware('auth');
+
+        // Invoice CRUD
+        Route::post('/', [InvoiceController::class, 'store'])
+            ->name('invoices.store')
+            ->withoutMiddleware('auth:sanctum')
+            ->middleware('auth');
+
+        Route::put('/{invoiceId}', [InvoiceController::class, 'update'])
+            ->name('invoices.update')
+            ->withoutMiddleware('auth:sanctum')
+            ->middleware('auth');
+
+        Route::delete('/{invoiceId}', [InvoiceApiController::class, 'destroy'])
+            ->name('invoices.destroy')
+            ->withoutMiddleware('auth:sanctum')
+            ->middleware('auth');
+    });
 });
-
-// Items Lite endpoint (outside invoices prefix for simpler URL)
-Route::middleware(['web', 'auth'])->get('/items/lite', [ItemSearchApiController::class, 'getLiteItems'])
-    ->name('api.items.lite');
-
-// Quick create item endpoint
-Route::middleware(['web', 'auth'])->post('/items/quick-create', [ItemSearchApiController::class, 'quickCreateItem'])
-    ->name('api.items.quick-create');
-
-// Account balance endpoint
-Route::middleware(['web', 'auth'])->get('/accounts/{accountId}/balance', [AccountBalanceApiController::class, 'getBalance'])
-    ->name('api.accounts.balance');

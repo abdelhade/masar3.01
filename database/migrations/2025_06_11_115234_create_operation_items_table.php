@@ -27,6 +27,7 @@ return new class extends Migration
             $table->decimal('cost_price', 12, 2)->default(0.00);
             $table->decimal('current_stock_value', 12, 2)->default(0.00);
             $table->decimal('item_discount', 10, 2)->default(0.00);
+            $table->decimal('item_discount_pre', 10, 2)->default(0.00);
             $table->decimal('additional', 10, 2)->default(0.00);
             $table->decimal('detail_value', 10, 2)->default(0.00);
             $table->decimal('profit', 10, 2)->default(0.00);

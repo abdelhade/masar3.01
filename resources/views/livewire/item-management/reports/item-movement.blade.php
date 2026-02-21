@@ -15,6 +15,7 @@ new class extends Component {
 
     public ?int $itemId = null;
     public $warehouseId = 'all';
+    public string $operationType = 'all';
     public ?string $fromDate = null;
     public ?string $toDate = null;
     public string $itemName = '';
@@ -43,6 +44,32 @@ new class extends Component {
         } else {
             $this->warehouseId = 'all';
         }
+    }
+
+    public function getOperationTypes(): array
+    {
+        return [
+            '10' => 'فاتورة مبيعات',
+            '11' => 'فاتورة مشتريات',
+            '12' => 'مردود مبيعات',
+            '13' => 'مردود مشتريات',
+            '14' => 'أمر بيع',
+            '15' => 'أمر شراء',
+            '16' => 'عرض سعر لعميل',
+            '17' => 'عرض سعر من مورد',
+            '18' => 'فاتورة تالف',
+            '19' => 'أمر صرف',
+            '20' => 'أمر إضافة',
+            '21' => 'تحويل من مخزن لمخزن',
+            '22' => 'أمر حجز',
+            '23' => 'تحويل بين فروع',
+            '35' => 'سند إتلاف مخزون',
+            '56' => 'نموذج تصنيع',
+            '57' => 'أمر تشغيل',
+            '58' => 'تصنيع معياري',
+            '59' => 'تصنيع حر',
+            '60' => 'تسجيل الأرصدة الافتتاحية للمخازن',
+        ];
     }
 
     public function updatedSearchTerm(): void
@@ -113,31 +140,7 @@ new class extends Component {
 
     public function getArabicReferenceName(int $referenceId): string
     {
-        $baseId = $referenceId;
-        $translations = [
-            '10' => 'فاتورة مبيعات',
-            '11' => 'فاتورة مشتريات',
-            '12' => 'مردود مبيعات',
-            '13' => 'مردود مشتريات',
-            '14' => 'أمر بيع',
-            '15' => 'أمر شراء',
-            '16' => 'عرض سعر لعميل',
-            '17' => 'عرض سعر من مورد',
-            '18' => 'فاتورة تالف',
-            '19' => 'أمر صرف',
-            '20' => 'أمر إضافة',
-            '21' => 'تحويل من مخزن لمخزن',
-            '22' => 'أمر حجز',
-            '23' => 'تحويل بين فروع',
-            '35' => 'سند إتلاف مخزون',
-            '56' => 'نموذج تصنيع',
-            '57' => 'أمر تشغيل',
-            '58' => 'تصنيع معياري',
-            '59' => 'تصنيع حر',
-            '60' => 'تسجيل الأرصدة الافتتاحية للمخازن',
-        ];
-
-        return $translations[$baseId] ?? 'N/A';
+        return $this->getOperationTypes()[(string)$referenceId] ?? 'N/A';
     }
 
     public function with(): array
@@ -157,6 +160,9 @@ new class extends Component {
             ->when($this->warehouseId !== 'all', function ($q) {
                 $q->where('detail_store', $this->warehouseId);
             })
+            ->when($this->operationType !== 'all', function ($q) {
+                $q->where('pro_tybe', $this->operationType);
+            })
             ->when($this->fromDate, function ($q) {
                 $q->whereDate('created_at', '>=', $this->fromDate);
             })
@@ -169,7 +175,7 @@ new class extends Component {
 
     public function updated($property): void
     {
-        if (in_array($property, ['itemId', 'warehouseId', 'fromDate', 'toDate'])) {
+        if (in_array($property, ['itemId', 'warehouseId', 'operationType', 'fromDate', 'toDate'])) {
             $this->resetPage();
         }
     }
@@ -217,6 +223,7 @@ new class extends Component {
                     <a href="{{ route('item-movement.print', [
                         'itemId' => $itemId,
                         'warehouseId' => $warehouseId,
+                        'operationType' => $operationType,
                         'fromDate' => $fromDate,
                         'toDate' => $toDate,
                     ]) }}"
@@ -225,6 +232,87 @@ new class extends Component {
                         {{ __('items.print_report') }}
                     </a>
                 @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- ✅ فلاتر البحث --}}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light py-2">
+            <h6 class="mb-0 font-family-cairo fw-bold text-primary">
+                <i class="las la-filter me-1"></i> {{ __('items.search_filters') }}
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                {{-- الصنف (البحث) --}}
+                <div class="col-md-4">
+                    <label class="form-label font-family-cairo fw-bold small">{{ __('items.item') }}</label>
+                    <div class="position-relative" x-data="{ showDropdown: @entangle('showDropdown') }" @click.away="showDropdown = false">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="las la-search text-muted"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control font-family-cairo border-start-0 ps-0" 
+                                   placeholder="{{ __('items.search_for_item') }}"
+                                   wire:model.live.debounce.300ms="searchTerm"
+                                   @focus="showDropdown = true"
+                                   wire:keydown.arrow-down="arrowDown"
+                                   wire:keydown.arrow-up="arrowUp"
+                                   wire:keydown.enter="selectHighlightedItem">
+                        </div>
+                        
+                        @if ($showDropdown && count($this->searchResults) > 0)
+                            <div class="position-absolute w-100 bg-white shadow-lg rounded border mt-1 overflow-hidden" style="z-index: 1050;">
+                                @foreach ($this->searchResults as $index => $result)
+                                    <div class="p-2 border-bottom cursor-pointer transition-base {{ $highlightedIndex === $index ? 'bg-primary text-white' : 'hover-bg-light' }}"
+                                         wire:click="selectItem({{ $result->id }}, '{{ $result->name }}')"
+                                         style="cursor: pointer;">
+                                        <div class="d-flex align-items-center">
+                                            <i class="las la-cube me-2 {{ $highlightedIndex === $index ? 'text-white' : 'text-primary' }}"></i>
+                                            <span>{{ $result->name }}</span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- المخزن --}}
+                <div class="col-md-2">
+                    <label class="form-label font-family-cairo fw-bold small">{{ __('items.warehouse') }}</label>
+                    <select class="form-select font-family-cairo" wire:model.live="warehouseId">
+                        <option value="all">{{ __('items.all_warehouses') }}</option>
+                        @foreach ($warehouses as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- نوع العملية --}}
+                <div class="col-md-2">
+                    <label class="form-label font-family-cairo fw-bold small">{{ __('items.movement_type') }}</label>
+                    <select class="form-select font-family-cairo" wire:model.live="operationType">
+                        <option value="all">كل العمليات</option>
+                        @foreach ($this->getOperationTypes() as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- من تاريخ --}}
+                <div class="col-md-2">
+                    <label class="form-label font-family-cairo fw-bold small">{{ __('items.from_date') }}</label>
+                    <input type="date" class="form-control font-family-cairo" wire:model.live="fromDate">
+                </div>
+
+                {{-- إلى تاريخ --}}
+                <div class="col-md-2">
+                    <label class="form-label font-family-cairo fw-bold small">{{ __('items.to_date') }}</label>
+                    <input type="date" class="form-control font-family-cairo" wire:model.live="toDate">
+                </div>
             </div>
         </div>
     </div>
@@ -375,7 +463,7 @@ new class extends Component {
         <small class="text-muted">#{{ $movement->pro_id }}</small>
     </td>
     <td class="font-family-cairo">
-        {{ optional(\Modules\Accounts\Models\AccHead::find($movement->detail_store))->aname ?? '—' }}
+        {{ optional(AccHead::find($movement->detail_store))->aname ?? '—' }}
     </td>
     <td class="font-family-cairo fw-bold text-success">
         {{ $movement->qty_in > 0 ? number_format($movement->qty_in, 2) : '—' }}

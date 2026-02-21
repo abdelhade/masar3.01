@@ -96,6 +96,10 @@ class InvoiceFormController extends Controller
                 ->get();
         }
 
+        // Generate next invoice number for this type
+        $nextProId = \App\Models\OperHead::where('pro_type', $type)->max('pro_id');
+        $nextProId = ($nextProId ?? 0) + 1;
+
         // Get invoice settings and user permissions
         $isSales = in_array($type, [10, 12, 14, 16, 19, 22]);
         $isPurchase = in_array($type, [11, 13, 15, 17, 20, 23, 24, 25]);
@@ -174,6 +178,7 @@ class InvoiceFormController extends Controller
             'type' => $type,
             'hash' => $hash,
             'branchId' => $branchId,
+            'nextProId' => $nextProId,
             'editableFieldsOrder' => $editableFieldsOrder,
             'branches' => $branches,
             'acc1Options' => $acc1Options,
