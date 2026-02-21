@@ -16,7 +16,6 @@
     
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/fontawesome.css') }}">
     
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- <link href="{{ asset('assets/css/bootstrap2025.css') }}" rel="stylesheet" type="text/css" /> -->

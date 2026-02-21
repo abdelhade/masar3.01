@@ -200,7 +200,7 @@ class VoucherController extends Controller
         // تطبيق الفلتر حسب النوع
         $this->applyTypeFilter($query, $type);
         
-        $vouchers = $query->get();
+        $vouchers = $query->paginate(15);
         $currentTypeInfo = $this->getTypeInfo($type);
         
         return view('vouchers.index', compact('vouchers', 'type', 'currentTypeInfo'));

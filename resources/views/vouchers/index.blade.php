@@ -18,6 +18,14 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h2>{{ $currentTypeInfo['title'] }}</h2>
 
+            {{-- Debug: Show current type and dropdown flag --}}
+            @if(config('app.debug'))
+                <small class="text-muted">
+                    Type: {{ $type }} | 
+                    Show Dropdown: {{ isset($currentTypeInfo['show_dropdown']) && $currentTypeInfo['show_dropdown'] ? 'Yes' : 'No' }}
+                </small>
+            @endif
+
             @php
                 // تحديد الصلاحيات المتاحة للإضافة
                 $canCreateReceipt = auth()->user()->can('create recipt');
@@ -33,11 +41,11 @@
             @if($hasAnyCreatePermission)
                 @if (isset($currentTypeInfo['show_dropdown']) && $currentTypeInfo['show_dropdown'])
                     <div class="dropdown">
-                        <button class="btn btn-main dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-main dropdown-toggle" type="button" id="addVoucherDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-plus me-2"></i>
                             {{ __('Add New Voucher') }}
                         </button>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu" aria-labelledby="addVoucherDropdown">
                             @if($canCreateReceipt)
                                 <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'receipt']) }}">
                                         <i class="fas fa-plus-circle text-success me-2"></i>{{ __('General Receipt Voucher') }}
@@ -325,17 +333,33 @@
 
 @push('scripts')
     <script>
+        // Vouchers filter script - v2.0
         (function() {
+            'use strict';
+            
             const searchInput = document.getElementById('searchInput');
             const typeFilter = document.getElementById('typeFilter');
             const dateFrom = document.getElementById('dateFrom');
             const dateTo = document.getElementById('dateTo');
             const resetBtn = document.getElementById('resetFilter');
             const table = document.getElementById('vouchersTable');
-            const tbody = table.querySelector('tbody');
+            const tbody = table?.querySelector('tbody');
+            
+            if (!tbody) {
+                console.error('Vouchers table body not found');
+                return;
+            }
+            
+            console.log('✅ Vouchers filter initialized successfully');
+            
             const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => !row.querySelector('.alert'));
 
             function filterTable() {
+                if (!searchInput || !typeFilter || !dateFrom || !dateTo) {
+                    console.warn('Filter elements not found');
+                    return;
+                }
+                
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 const selectedType = typeFilter.value;
                 const fromDate = dateFrom.value;
@@ -347,14 +371,19 @@
                     if (cells.length === 0) return;
 
                     const proType = row.getAttribute('data-pro-type');
-                    const rowDate = cells[1].textContent.trim();
-                    const proId = cells[2].textContent.toLowerCase();
-                    const description = cells[4].textContent.toLowerCase();
-                    const account1 = cells[7].textContent.toLowerCase();
-                    const account2 = cells[8].textContent.toLowerCase();
-                    const employee = cells[9].textContent.toLowerCase();
-                    const user = cells[10].textContent.toLowerCase();
-                    const notes = cells[12].textContent.toLowerCase();
+                    const rowDate = cells[1]?.textContent?.trim() || '';
+                    const proId = cells[2]?.textContent?.toLowerCase() || '';
+                    const description = cells[4]?.textContent?.toLowerCase() || '';
+                    
+                    // Handle multi-currency columns (columns shift based on isMultiCurrencyEnabled)
+                    const isMultiCurrency = cells.length > 14; // More columns if multi-currency
+                    const accountOffset = isMultiCurrency ? 1 : 0; // Offset for account columns
+                    
+                    const account1 = cells[7 + accountOffset]?.textContent?.toLowerCase() || '';
+                    const account2 = cells[8 + accountOffset]?.textContent?.toLowerCase() || '';
+                    const employee = cells[9 + accountOffset]?.textContent?.toLowerCase() || '';
+                    const user = cells[10 + accountOffset]?.textContent?.toLowerCase() || '';
+                    const notes = cells[12 + accountOffset]?.textContent?.toLowerCase() || '';
 
                     let matchSearch = true;
                     let matchType = true;
@@ -385,11 +414,17 @@
                     }
 
                     if (matchSearch && matchType && matchDate) {
-                        row.style.display = '';
+                        if (row && row.style) {
+                            row.style.display = '';
+                        }
                         visibleCount++;
-                        cells[0].textContent = visibleCount;
+                        if (cells[0]) {
+                            cells[0].textContent = visibleCount;
+                        }
                     } else {
-                        row.style.display = 'none';
+                        if (row && row.style) {
+                            row.style.display = 'none';
+                        }
                     }
                 });
 
@@ -415,35 +450,41 @@
                         `;
                         tbody.appendChild(emptyRow);
                     }
-                    emptyRow.style.display = '';
-                } else if (emptyRow) {
+                    if (emptyRow && emptyRow.style) {
+                        emptyRow.style.display = '';
+                    }
+                } else if (emptyRow && emptyRow.style) {
                     emptyRow.style.display = 'none';
                 }
             }
 
             function resetFilter() {
-                searchInput.value = '';
-                typeFilter.value = '';
-                dateFrom.value = '';
-                dateTo.value = '';
+                if (searchInput) searchInput.value = '';
+                if (typeFilter) typeFilter.value = '';
+                if (dateFrom) dateFrom.value = '';
+                if (dateTo) dateTo.value = '';
                 filterTable();
             }
 
-            searchInput.addEventListener('input', filterTable);
-            typeFilter.addEventListener('change', filterTable);
-            dateFrom.addEventListener('change', filterTable);
-            dateTo.addEventListener('change', filterTable);
-            resetBtn.addEventListener('click', resetFilter);
+            if (searchInput) searchInput.addEventListener('input', filterTable);
+            if (typeFilter) typeFilter.addEventListener('change', filterTable);
+            if (dateFrom) dateFrom.addEventListener('change', filterTable);
+            if (dateTo) dateTo.addEventListener('change', filterTable);
+            if (resetBtn) resetBtn.addEventListener('click', resetFilter);
 
             const tableRows = tbody.querySelectorAll('tr');
             tableRows.forEach(row => {
+                if (!row) return; // Skip if row is null
+                
                 row.addEventListener('mouseenter', function() {
-                    if (this.style.display !== 'none') {
+                    if (this && this.style && this.style.display !== 'none') {
                         this.style.backgroundColor = '#f8f9fa';
                     }
                 });
                 row.addEventListener('mouseleave', function() {
-                    this.style.backgroundColor = '';
+                    if (this && this.style) {
+                        this.style.backgroundColor = '';
+                    }
                 });
             });
         })();
