@@ -22,17 +22,52 @@
 <div class="card border-0 shadow-sm mb-3">
     <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
         <div class="row align-items-center">
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <h5 class="mb-0 fw-bold">
                     <i class="fas fa-file-invoice me-2"></i>
                     {{ $titles[$type] ?? 'فاتورة' }}
                 </h5>
             </div>
 
+            <div class="col-md-4">
+                <div class="d-flex gap-2">
+                    <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">
+                        {{ $acc1Role }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    <div style="flex: 1; min-width: 0;">
+
+                        <div class="d-flex gap-1 align-items-stretch">
+                            <select id="acc1-id" class="form-select form-select-sm" style="flex: 1; min-width: 0;">
+                                <option value="">{{ __('ابحث عن') }} {{ $acc1Role }}...</option>
+                                @foreach ($acc1Options as $option)
+                                    <option value="{{ $option->id }}">{{ $option->aname }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button"
+                                class="btn btn-sm btn-primary d-flex align-items-center justify-content-center"
+                                id="add-acc1-btn" style="padding: 0.375rem 0.5rem; flex-shrink: 0; height: 100%;"
+                                title="{{ __('إضافة') }} {{ $acc1Role }}">
+                                <i class="las la-plus" style="font-size: 1.2rem;"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ $acc2Role }}</label>
+                    {{-- المخزن --}}
+                    <div style="flex: 1; min-width: 0;">
+                        <select id="acc2-id" class="form-select form-select-sm"
+                            {{ !$canEditStore ? 'disabled' : '' }}>
+                            <option value="">{{ __('اختر') }} {{ $acc2Role }}</option>
+                            @foreach ($acc2List as $acc)
+                                <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="col-md-6 text-end">
                 @if ($type != 21 && $showBalance)
-
-
                     <small class="me-3">
                         <strong>{{ __('After Invoice:') }}</strong>
                         <span id="current-balance-header" class="badge bg-light text-dark">0.00</span>
@@ -83,6 +118,8 @@
             <input type="hidden" name="type" value="{{ $type }}">
 
             {{-- العميل/المورد - With Select2 Search + Add Button --}}
+
+            {{--
             <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">
                     {{ $acc1Role }}
@@ -95,18 +132,16 @@
                             <option value="{{ $option->id }}">{{ $option->aname }}</option>
                         @endforeach
                     </select>
-                    {{-- زر إضافة عميل/مورد --}}
-                    <button type="button" class="btn btn-sm btn-primary d-flex align-items-center justify-content-center"
-                            id="add-acc1-btn"
-                            style="padding: 0.375rem 0.5rem; flex-shrink: 0; height: 100%;"
-                            title="{{ __('إضافة') }} {{ $acc1Role }}">
-                        <i class="las la-plus" style="font-size: 1.2rem;"></i>
-                    </button>
-                </div>
-            </div>
+            <button type="button" class="btn btn-sm btn-primary d-flex align-items-center justify-content-center"
+                id="add-acc1-btn" style="padding: 0.375rem 0.5rem; flex-shrink: 0; height: 100%;"
+                title="{{ __('إضافة') }} {{ $acc1Role }}">
+                <i class="las la-plus" style="font-size: 1.2rem;"></i>
+            </button>
+           </div>
+         </div> --}}
 
             {{-- المخزن --}}
-            <div class="col-md-1">
+            {{-- <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ $acc2Role }}</label>
                 <select id="acc2-id" class="form-select form-select-sm" {{ !$canEditStore ? 'disabled' : '' }}>
                     <option value="">{{ __('اختر') }} {{ $acc2Role }}</option>
@@ -114,7 +149,7 @@
                         <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
                     @endforeach
                 </select>
-            </div>
+            </div> --}}
 
             {{-- الموظف --}}
             <div class="col-md-1">
@@ -179,13 +214,15 @@
             {{-- التاريخ --}}
             <div class="col-md-1">
                 <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('التاريخ') }}</label>
-                <input type="date" id="pro-date" class="form-control form-control-sm" value="{{ date('Y-m-d') }}"
+                <input type="date" id="pro-date" class="form-control form-control-sm"
+                    value="{{ date('Y-m-d') }}"
                     {{ !setting('allow_edit_transaction_date', true) ? 'readonly' : '' }}>
             </div>
 
             {{-- رقم الفاتورة --}}
             <div class="col-md-1">
-                <label class="form-label mb-1 fw-semibold" style="font-size: 0.85rem;">{{ __('رقم الفاتورة') }}</label>
+                <label class="form-label mb-1 fw-semibold"
+                    style="font-size: 0.85rem;">{{ __('رقم الفاتورة') }}</label>
                 <input type="text" id="pro-id" class="form-control form-control-sm" readonly
                     value="{{ $nextProId ?? '' }}">
             </div>
