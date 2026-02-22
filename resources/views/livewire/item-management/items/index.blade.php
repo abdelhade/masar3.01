@@ -193,6 +193,8 @@ new class extends Component {
     {
         $this->resetPage();
         $this->clearLazyLoadedData();
+        // Force component refresh to update Alpine.js data
+        $this->dispatch('$refresh');
     }
 
     public function updatedSelectedGroup()
@@ -222,6 +224,7 @@ new class extends Component {
         $this->loadedPriceData = [];
         $this->loadedNoteData = [];
         $this->baseQuantities = [];
+        $this->displayItemData = [];
     }
 
     public function clearFilters()
@@ -737,7 +740,7 @@ new class extends Component {
                                         $selectedUnitId = $this->selectedUnit[$item->id] ?? null;
                                     @endphp
                                     @if (!empty($itemData))
-                                        <tr wire:key="item-{{ $item->id }}-{{ $selectedUnitId ?? 'no-unit' }}"
+                                        <tr wire:key="item-{{ $item->id }}-{{ $selectedUnitId ?? 'no-unit' }}-warehouse-{{ $selectedWarehouse ?? 'all' }}"
                                             x-data="itemRow({{ json_encode($itemData) }}, {{ $selectedUnitId }})"
                                             x-transition:enter="transition ease-out duration-200"
                                             x-transition:enter-start="opacity-0 transform scale-95"
@@ -1350,7 +1353,10 @@ $previewUrl = $thumbnail->getUrl('preview');
             },
 
             updateWarehouse() {
-                this.$wire.set('selectedWarehouse', this.warehouseValue);
+                this.$wire.set('selectedWarehouse', this.warehouseValue).then(() => {
+                    // Force Livewire to refresh after warehouse change
+                    this.$wire.$refresh();
+                });
             },
 
             updateGroup() {

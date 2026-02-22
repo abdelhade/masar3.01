@@ -58,17 +58,7 @@ class ItemDataTransformer
             $query->where('detail_store', $warehouseId);
         }
 
-        $rows = $query->get();
-
-        $totalBaseQty = 0;
-        foreach ($rows as $row) {
-            $unit = $item->units->firstWhere('id', $row->unit_id);
-            $u_val = $unit && isset($unit->pivot) ? $unit->pivot->u_val : 1;
-            $qty = ($row->qty_in - $row->qty_out) * $u_val;
-            $totalBaseQty += $qty;
-        }
-
-        return $totalBaseQty;
+        return (float) $query->sum(DB::raw('(qty_in - qty_out) * unit_value'));
     }
 
     /**
