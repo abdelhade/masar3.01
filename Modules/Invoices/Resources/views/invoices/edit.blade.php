@@ -120,13 +120,36 @@
         }
 
         .search-result-item {
-            padding: 8px 12px;
+            padding: 10px 14px;
             cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
         .search-result-item:hover {
             background: #f8f9fa;
+            border-left: 3px solid #dee2e6;
+        }
+
+        .search-result-item strong {
+            color: #1a1a1a;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .search-result-item small {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #555;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-right: 6px;
         }
     </style>
 @endpush
@@ -252,7 +275,11 @@
                                         <template x-for="item in ui.searchResults" :key="item.id">
                                             <div @click="addItemFromSearch(item.id)" class="search-result-item">
                                                 <strong x-text="item.name"></strong>
-                                                <small class="text-muted d-block" x-text="'{{ __('invoices.code') }}: ' + item.code"></small>
+                                                <div style="display: flex; gap: 8px; align-items: center;">
+                                                    <small class="text-muted" x-text="'{{ __('invoices.code') }}: ' + item.code"></small>
+                                                    <small style="background: #e8f5e9; color: #2e7d32; padding: 3px 10px; border-radius: 4px; font-weight: 600;" 
+                                                           x-text="(parseFloat(item.price) || 0).toFixed(2) + ' {{ __('common.currency') }}'"></small>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>

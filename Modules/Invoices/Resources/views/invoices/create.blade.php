@@ -790,50 +790,50 @@
                 const items = dropdown.querySelectorAll('.search-result-item');
                 items.forEach((item, index) => {
                     if (index === this.selectedIndex) {
-                        // ✅ نفس اللون الأزرق الواضح
-                        item.style.background = '#5b6ef5 !important';
-                        item.style.borderLeft = '5px solid #4051d4';
-                        item.style.boxShadow = '0 2px 8px rgba(91, 110, 245, 0.4)';
+                        // ✅ تظليل بالـ gradient البنفسجي
+                        item.style.setProperty('background', 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 'important');
+                        item.style.setProperty('border-left', '4px solid #4051d4', 'important');
+                        item.style.setProperty('box-shadow', '0 3px 10px rgba(102, 126, 234, 0.3)', 'important');
+                        item.style.setProperty('transform', 'translateX(2px)', 'important');
 
-                        // ✅ خلي النصوص كلها بيضا
-                        const allDivs = item.querySelectorAll('div');
-                        allDivs.forEach(el => {
-                            el.style.color = 'white !important';
+                        // ✅ خلي كل النصوص بيضا
+                        const allElements = item.querySelectorAll('div, span');
+                        allElements.forEach(el => {
+                            el.style.setProperty('color', 'white', 'important');
+                            // لو badge، غير الخلفية
+                            if (el.tagName === 'SPAN') {
+                                el.style.setProperty('background', 'rgba(255, 255, 255, 0.25)', 'important');
+                            }
                         });
-
-                        // ✅ حتى الـ price badge يبقى أبيض
-                        const priceDiv = item.querySelector('div:last-child');
-                        if (priceDiv) {
-                            priceDiv.style.background = 'rgba(255, 255, 255, 0.2) !important';
-                            priceDiv.style.color = 'white !important';
-                            priceDiv.style.border = '1px solid white';
-                        }
 
                         item.scrollIntoView({
                             block: 'nearest',
                             behavior: 'smooth'
                         });
                     } else {
-                        item.style.background = 'white !important';
-                        item.style.borderLeft = 'none';
-                        item.style.boxShadow = 'none';
+                        // ✅ رجع للألوان الأصلية
+                        item.style.setProperty('background', 'white', 'important');
+                        item.style.setProperty('border-left', 'none', 'important');
+                        item.style.setProperty('box-shadow', 'none', 'important');
+                        item.style.setProperty('transform', 'none', 'important');
 
-                        // ✅ رجع الألوان الأصلية
-                        const leftDiv = item.querySelector('div:first-child');
-                        if (leftDiv) {
-                            const nameDiv = leftDiv.querySelector('div:first-child');
-                            const codeDiv = leftDiv.querySelector('div:last-child');
-                            if (nameDiv) nameDiv.style.color = '#000 !important';
-                            if (codeDiv) codeDiv.style.color = '#666 !important';
+                        // رجع ألوان النصوص
+                        const nameDiv = item.querySelector('div:first-child');
+                        if (nameDiv) {
+                            nameDiv.style.setProperty('color', '#1a1a1a', 'important');
                         }
 
-                        // ✅ رجع لون الـ price badge
-                        const priceDiv = item.querySelector('div:last-child');
-                        if (priceDiv) {
-                            priceDiv.style.background = '#667eea !important';
-                            priceDiv.style.color = 'white !important';
-                            priceDiv.style.border = 'none';
-                        }
+                        // رجع ألوان الـ badges
+                        const spans = item.querySelectorAll('span');
+                        spans.forEach((span, spanIndex) => {
+                            if (spanIndex === 0) { // الكود
+                                span.style.setProperty('background', '#f0f0f0', 'important');
+                                span.style.setProperty('color', '#555', 'important');
+                            } else { // السعر
+                                span.style.setProperty('background', '#e8f5e9', 'important');
+                                span.style.setProperty('color', '#2e7d32', 'important');
+                            }
+                        });
                     }
                 });
             },
@@ -883,85 +883,87 @@
                         resultDiv.className = 'search-result-item';
                         resultDiv.style.cssText = `
                 display: flex !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-                padding: 12px 15px !important;
+                flex-direction: column !important;
+                padding: 10px 14px !important;
                 cursor: pointer !important;
                 background: white !important;
                 border-bottom: 1px solid #e0e0e0 !important;
-                min-height: 60px !important;
+                transition: all 0.2s ease !important;
             `;
 
-                        // Left side
-                        const leftDiv = document.createElement('div');
-                        leftDiv.style.cssText = `
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 4px !important;
-                flex: 1 !important;
-            `;
-
+                        // اسم الصنف (العنوان الرئيسي)
                         const nameDiv = document.createElement('div');
                         nameDiv.style.cssText = `
-                color: #000 !important;
-                font-size: 16px !important;
-                font-weight: bold !important;
-                line-height: 1.4 !important;
+                color: #1a1a1a !important;
+                font-size: 14px !important;
+                font-weight: 600 !important;
+                line-height: 1.3 !important;
+                margin-bottom: 5px !important;
             `;
                         nameDiv.textContent = item.name || 'بدون اسم';
 
-                        const codeDiv = document.createElement('div');
-                        codeDiv.style.cssText = `
-                color: #666 !important;
-                font-size: 13px !important;
-                line-height: 1.4 !important;
+                        // الكود والسعر (معلومات ثانوية مظللة)
+                        const detailsDiv = document.createElement('div');
+                        detailsDiv.style.cssText = `
+                display: flex !important;
+                gap: 8px !important;
+                align-items: center !important;
             `;
-                        codeDiv.textContent = 'كود: ' + (item.code || '-');
 
-                        leftDiv.appendChild(nameDiv);
-                        leftDiv.appendChild(codeDiv);
-
-                        // Right side
-                        const priceDiv = document.createElement('div');
-                        priceDiv.style.cssText = `
-                background: #667eea !important;
-                color: white !important;
-                padding: 8px 15px !important;
-                border-radius: 5px !important;
-                font-size: 14px !important;
-                font-weight: bold !important;
-                white-space: nowrap !important;
-                margin-right: 10px !important;
+                        const codeSpan = document.createElement('span');
+                        codeSpan.style.cssText = `
+                background: #f0f0f0 !important;
+                color: #555 !important;
+                padding: 2px 8px !important;
+                border-radius: 3px !important;
+                font-size: 11px !important;
+                font-weight: 500 !important;
             `;
-                        priceDiv.textContent = (parseFloat(item.price) || 0).toFixed(2) + ' ج.م';
+                        codeSpan.textContent = 'كود: ' + (item.code || '-');
 
-                        resultDiv.appendChild(leftDiv);
-                        resultDiv.appendChild(priceDiv);
+                        const priceSpan = document.createElement('span');
+                        priceSpan.style.cssText = `
+                background: #e8f5e9 !important;
+                color: #2e7d32 !important;
+                padding: 2px 8px !important;
+                border-radius: 3px !important;
+                font-size: 11px !important;
+                font-weight: 600 !important;
+            `;
+                        priceSpan.textContent = (parseFloat(item.price) || 0).toFixed(2) + ' ج.م';
 
-                        // ✅ Highlight selected item
+                        detailsDiv.appendChild(codeSpan);
+                        detailsDiv.appendChild(priceSpan);
+
+                        resultDiv.appendChild(nameDiv);
+                        resultDiv.appendChild(detailsDiv);
+
+                        // ✅ تظليل العنصر المختار بالأسهم
                         if (index === this.selectedIndex) {
-                            resultDiv.style.background = '#5b6ef5 !important';
-                            resultDiv.style.borderLeft = '5px solid #4051d4';
-                            resultDiv.style.boxShadow = '0 2px 8px rgba(91, 110, 245, 0.4)';
+                            resultDiv.style.setProperty('background', 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 'important');
+                            resultDiv.style.setProperty('border-left', '4px solid #4051d4', 'important');
+                            resultDiv.style.setProperty('box-shadow', '0 3px 10px rgba(102, 126, 234, 0.3)', 'important');
+                            resultDiv.style.setProperty('transform', 'translateX(2px)', 'important');
 
-                            // ✅ خلي النصوص بيضا
-                            nameDiv.style.color = 'white !important';
-                            codeDiv.style.color = 'white !important';
-                            priceDiv.style.background = 'rgba(255, 255, 255, 0.2) !important';
-                            priceDiv.style.color = 'white !important';
-                            priceDiv.style.border = '1px solid white';
+                            // تغيير ألوان النصوص للأبيض
+                            nameDiv.style.setProperty('color', 'white', 'important');
+                            codeSpan.style.setProperty('background', 'rgba(255, 255, 255, 0.25)', 'important');
+                            codeSpan.style.setProperty('color', 'white', 'important');
+                            priceSpan.style.setProperty('background', 'rgba(255, 255, 255, 0.25)', 'important');
+                            priceSpan.style.setProperty('color', 'white', 'important');
                         }
 
                         // Hover effects
                         resultDiv.onmouseenter = function() {
                             if (index !== InvoiceApp.selectedIndex) {
-                                this.style.background = 'rgba(255, 235, 59, 0.3) !important'; // أصفر شفاف
+                                this.style.setProperty('background', '#f8f9fa', 'important');
+                                this.style.setProperty('border-left', '3px solid #dee2e6', 'important');
                             }
                         };
                         resultDiv.onmouseleave = function() {
                             if (index !== InvoiceApp.selectedIndex) {
-                                this.style.background = 'white !important';
-                                this.style.borderLeft = 'none';
+                                this.style.setProperty('background', 'white', 'important');
+                                this.style.setProperty('border-left', 'none', 'important');
                             }
                         };
 
