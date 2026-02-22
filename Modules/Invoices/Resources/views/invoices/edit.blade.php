@@ -80,6 +80,26 @@
                 width: 100% !important;
                 z-index: 10;
             }
+            
+            /* Hide footer when modal is open */
+            .modal-open #invoice-fixed-footer {
+                z-index: 0 !important;
+                visibility: hidden !important;
+            }
+            
+            /* Ensure modals appear above footer */
+            .modal-backdrop {
+                z-index: 1050 !important;
+            }
+            
+            .modal {
+                z-index: 1055 !important;
+            }
+            
+            /* Ensure SweetAlert appears above everything */
+            .swal2-container {
+                z-index: 10000 !important;
+            }
 
             /* Header styling to match image */
             .invoice-header-card {
@@ -144,11 +164,25 @@
 
             /* Select2 dropdown positioning */
             .select2-container {
-                z-index: 9999 !important;
+                z-index: 1040 !important;
             }
 
             .select2-dropdown {
-                z-index: 99999 !important;
+                z-index: 1045 !important;
+            }
+            
+            /* When modal is open, Select2 inside modal should be above modal */
+            .modal .select2-container {
+                z-index: 1056 !important;
+            }
+            
+            .modal .select2-dropdown {
+                z-index: 1057 !important;
+            }
+            
+            /* But Select2 outside modal should be below modal */
+            body:not(.modal) .select2-container:not(.select2-container--open) {
+                z-index: 1040 !important;
             }
 
             /* Search dropdown must be above everything */
