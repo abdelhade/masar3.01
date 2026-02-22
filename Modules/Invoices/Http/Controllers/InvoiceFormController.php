@@ -202,12 +202,164 @@ class InvoiceFormController extends Controller
      */
     public function edit(int $invoiceId): View
     {
-        // Get invoice to determine type
-        $invoice = \App\Models\OperHead::findOrFail($invoiceId);
+        // Get invoice with items and their full relationships
+        // Disable global scope temporarily to ensure we get all items
+        $invoice = \App\Models\OperHead::withoutGlobalScope(\App\Models\Scopes\BranchScope::class)
+            ->with([
+                'operationItems' => function($query) {
+                    $query->withoutGlobalScope(\App\Models\Scopes\BranchScope::class)
+                          ->where('isdeleted', 0);
+                },
+                'operationItems.item.units',
+                'operationItems.unit'
+            ])
+            ->findOrFail($invoiceId);
+
+        $type = $invoice->pro_type;
+        $branchId = $invoice->branch_id;
+
+        // Get editable fields order from template or default
+        $editableFieldsOrder = ['unit', 'quantity', 'batch_number', 'expiry_date', 'price', 'discount', 'sub_value'];
+
+        // Get branches
+        $branches = \Modules\Branches\Models\Branch::all();
+
+        // Get acc1Options based on invoice type using codes
+        $acc1Options = [];
+        if (in_array($type, [10, 12, 14, 16, 19, 22])) {
+            // Sales invoices - Customers (code: 1103)
+            $acc1Options = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
+                ->where('is_basic', 0)
+                ->where('code', 'like', '1103%')
+                ->select('id', 'aname')
+                ->get();
+        } elseif (in_array($type, [11, 13, 15, 17, 20, 23, 24, 25])) {
+            // Purchase invoices - Suppliers (code: 2101)
+            $acc1Options = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
+                ->where('is_basic', 0)
+                ->where('code', 'like', '2101%')
+                ->select('id', 'aname')
+                ->get();
+        }
+
+        // Get stores (code: 1104)
+        $acc2List = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('code', 'like', '1104%')
+            ->select('id', 'aname')
+            ->get();
+
+        // Get employees
+        $employees = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('code', 'like', '210201%')
+            ->select('id', 'aname')
+            ->get();
+
+        // Get delivery delegates
+        $deliverys = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('code', 'like', '210201%')
+            ->select('id', 'aname')
+            ->get();
+
+        // Get cash accounts
+        $cashAccounts = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('code', 'like', '1102%')
+            ->select('id', 'aname')
+            ->get();
+
+        // Get price lists (for sales invoices only)
+        $priceLists = [];
+        if (in_array($type, [10, 12, 14, 16, 19, 22])) {
+            $priceLists = \DB::table('prices')
+                ->where('is_deleted', 0)
+                ->select('id', 'name')
+                ->get();
+        }
+
+        $canEditStore = auth()->user()->id == 1 || !auth()->user()->can('prevent_editing_store');
+
+        $userSettings = [
+            // General Settings
+            'multi_currency_enabled' => setting('multi_currency_enabled', false),
+            'allow_edit_transaction_date' => setting('allow_edit_transaction_date', true),
+            'use_system_date_for_transactions' => setting('use_system_date_for_transactions', true),
+
+            // Invoice Settings
+            'prevent_negative_invoice' => setting('prevent_negative_invoice', true),
+            'new_after_save' => setting('new_after_save', true),
+            'allow_edit_price_payments' => setting('allow_edit_price_payments', true),
+            'scrap_by_barcode_only' => setting('scrap_by_barcode_only', true),
+            'allow_zero_price_in_invoice' => setting('allow_zero_price_in_invoice', true),
+            'allow_zero_opening_balance' => setting('allow_zero_opening_balance', true),
+            'allow_zero_invoice_total' => setting('allow_zero_invoice_total', true),
+            'allow_edit_invoice_value' => setting('allow_edit_invoice_value', true),
+            'change_quantity_on_value_edit' => setting('change_quantity_on_value_edit', true),
+            'prevent_duplicate_items_in_sales' => setting('prevent_duplicate_items_in_sales', true),
+            'prevent_duplicate_items_in_purchases' => setting('prevent_duplicate_items_in_purchases', true),
+            'print_free_quantity_separately' => setting('print_free_quantity_separately', true),
+            'allow_purchase_price_change' => setting('allow_purchase_price_change', true),
+            'show_unit_with_conversion_factor' => setting('show_unit_with_conversion_factor', true),
+            'show_due_date_in_invoices' => setting('show_due_date_in_invoices', true),
+            'default_quantity_greater_than_zero' => setting('default_quantity_greater_than_zero', true),
+            'allow_hide_items_by_company' => setting('allow_hide_items_by_company', true),
+
+            // Display Settings
+            'invoice_show_item_details' => setting('invoice_show_item_details', true),
+            'invoice_show_recommended_items' => setting('invoice_show_recommended_items', false),
+            'show_print_mode_switch' => setting('show_print_mode_switch', true),
+
+            // Account Settings
+            'allowed_discount_account' => setting('allowed_discount_account', null),
+            'employee_adding_account' => setting('employee_adding_account', null),
+            'employee_salary_account' => setting('employee_salary_account', null),
+            'employee_discount_account' => setting('employee_discount_account', null),
+
+            // Tax Settings
+            'is_vat_enabled' => isVatEnabled(),
+            'vat_level' => getVatLevel(),
+            'is_withholding_tax_enabled' => isWithholdingTaxEnabled(),
+            'withholding_tax_level' => getWithholdingTaxLevel(),
+
+            // Expiry Date Settings
+            'expiry_mode' => [
+                'disabled' => setting('expiry_mode_disabled', false),
+                'nearest_first' => setting('expiry_mode_nearest_first', true),
+                'show_all' => setting('expiry_mode_show_all', false),
+            ],
+
+            // Permissions
+            'permissions' => [
+                'prevent_transactions_without_stock' => auth()->user()->can('prevent_transactions_without_stock'),
+                'prevent_editing_store' => !$canEditStore,
+                'allow_price_change' => auth()->user()->can('allow_price_change'),
+                'allow_discount_change' => auth()->user()->can('allow_discount_change'),
+                'allow_purchase_with_zero_price' => auth()->user()->can('allow_purchase_with_zero_price'),
+            ]
+        ];
 
         return view('invoices::invoices.edit', [
+            'invoice' => $invoice,
             'invoiceId' => $invoiceId,
-            'type' => $invoice->pro_type,
+            'type' => $type,
+            'hash' => '',
+            'branchId' => $branchId,
+            'nextProId' => $invoice->pro_id,
+            'editableFieldsOrder' => $editableFieldsOrder,
+            'branches' => $branches,
+            'acc1Options' => $acc1Options,
+            'acc2List' => $acc2List,
+            'employees' => $employees,
+            'deliverys' => $deliverys,
+            'cashAccounts' => $cashAccounts,
+            'priceLists' => $priceLists,
+            'userSettings' => $userSettings,
+            'defaultAcc1Id' => $invoice->acc1_id,
+            'defaultAcc2Id' => $invoice->acc2_id,
+            'canEditStore' => $canEditStore,
+            'isEditMode' => true,
         ]);
     }
 }
