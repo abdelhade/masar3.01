@@ -61,7 +61,7 @@ class ItemsQueryService
 
     /**
      * Get total quantity using SQL aggregation from operation_items
-     * Calculates actual inventory: qty_in - qty_out
+     * Calculates actual inventory: (qty_in - qty_out) * unit_value for each row
      */
     public function getTotalQuantity(string $search = '', ?int $selectedGroup = null, ?int $selectedCategory = null, ?int $warehouseId = null): float
     {
@@ -81,15 +81,12 @@ class ItemsQueryService
             $query->where('detail_store', $warehouseId);
         }
 
-        $totalIn = (clone $query)->sum('qty_in');
-        $totalOut = (clone $query)->sum('qty_out');
-
-        return $totalIn - $totalOut;
+        return (float) $query->sum(DB::raw('(qty_in - qty_out) * unit_value'));
     }
 
     /**
      * Get total amount using SQL aggregation
-     * Calculates: (qty_in - qty_out) * price for each item
+     * Calculates: (qty_in - qty_out) * unit_value * price for each item
      */
     public function getTotalAmount(string $search = '', ?int $selectedGroup = null, ?int $selectedCategory = null, string $priceType = 'average_cost', ?int $warehouseId = null): float
     {
@@ -100,12 +97,10 @@ class ItemsQueryService
             return 0;
         }
 
-        // Get quantities per item
+        // Get actual quantities in base units per item
         $quantities = DB::table('operation_items')
             ->select('item_id',
-                DB::raw('SUM(qty_in) as total_in'),
-                DB::raw('SUM(qty_out) as total_out'),
-                DB::raw('SUM(qty_in) - SUM(qty_out) as net_quantity')
+                DB::raw('SUM((qty_in - qty_out) * unit_value) as net_quantity')
             )
             ->whereIn('item_id', $itemIds)
             ->where('isdeleted', 0)
@@ -137,7 +132,7 @@ class ItemsQueryService
                 ->when($warehouseId, fn ($q) => $q->where('detail_store', $warehouseId))
                 ->groupBy('item_id');
 
-            // Join with operation_items to get the cost_price from those latest IDs  (last item cost from purchase invoice)
+            // Join with operation_items to get the cost_price from those latest IDs
             return DB::table('operation_items as oi')
                 ->joinSub($latestPurchaseIds, 'latest', function ($join) {
                     $join->on('oi.id', '=', 'latest.max_id');
@@ -149,16 +144,25 @@ class ItemsQueryService
                     return $qty * $item->cost_price;
                 });
         } else {
-            // Price from item_prices table
+            // Price from item_prices table (it's per specified unit in that table, we need to match it carefully)
+            // For now, assume it's per the base unit if not specified otherwise, 
+            // but usually item_prices are per specific units. 
+            // In the context of "index.blade.php", this priceType is the price_id from the prices table.
+            
             return DB::table('item_prices')
-                ->join('items', 'item_prices.item_id', '=', 'items.id')
+                ->join('item_units', function($join) {
+                    $join->on('item_prices.item_id', '=', 'item_units.item_id')
+                         ->on('item_prices.unit_id', '=', 'item_units.unit_id');
+                })
                 ->whereIn('item_prices.item_id', $itemIds)
-                ->where('item_prices.price_id', $priceType)
+                ->where('item_prices.price_id', (int) $priceType)
                 ->get()
                 ->sum(function ($item) use ($quantities) {
-                    $qty = $quantities[$item->item_id]->net_quantity ?? 0;
+                    $baseQty = $quantities[$item->item_id]->net_quantity ?? 0;
+                    // convert base quantity to the unit specified for this price
+                    $unitQty = $item->u_val > 0 ? $baseQty / $item->u_val : 0;
 
-                    return $qty * $item->price;
+                    return $unitQty * $item->price;
                 });
         }
     }
@@ -175,14 +179,15 @@ class ItemsQueryService
             return 0;
         }
 
-        // Count items that have actual stock (qty_in - qty_out > 0)
+        // Count items that have actual stock ((qty_in - qty_out) * unit_value > 0)
         return DB::table('operation_items')
             ->select('item_id')
             ->whereIn('item_id', $itemIds)
             ->where('isdeleted', 0)
             ->when($warehouseId, fn ($q) => $q->where('detail_store', $warehouseId))
             ->groupBy('item_id')
-            ->havingRaw('SUM(qty_in) - SUM(qty_out) > 0')
+            ->havingRaw('SUM((qty_in - qty_out) * unit_value) > 0')
+            ->get()
             ->count();
     }
 
@@ -197,15 +202,11 @@ class ItemsQueryService
         }
 
         $query = DB::table('operation_items as oi')
-            ->join('item_units as iu', function ($join) {
-                $join->on('iu.item_id', '=', 'oi.item_id')
-                    ->on('iu.unit_id', '=', 'oi.unit_id');
-            })
             ->where('oi.isdeleted', 0)
             ->whereIn('oi.item_id', $itemIds)
             ->select([
                 'oi.item_id',
-                DB::raw('SUM((oi.qty_in - oi.qty_out) * iu.u_val) as base_qty'),
+                DB::raw('SUM((oi.qty_in - oi.qty_out) * oi.unit_value) as base_qty'),
             ])
             ->groupBy('oi.item_id');
 
@@ -219,3 +220,4 @@ class ItemsQueryService
         return $results->pluck('base_qty', 'item_id')->toArray();
     }
 }
+

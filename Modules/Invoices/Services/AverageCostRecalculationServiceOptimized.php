@@ -115,7 +115,7 @@ class AverageCostRecalculationServiceOptimized
             $sql = '
                 SELECT
                     SUM(oi.qty_in - oi.qty_out) as total_qty,
-                    SUM(oi.detail_value) as total_value
+                    SUM(CASE WHEN oi.qty_in > 0 THEN oi.detail_value WHEN oi.qty_out > 0 THEN -oi.detail_value ELSE 0 END) as total_value
                 FROM operation_items oi
                 INNER JOIN operhead oh ON oi.pro_id = oh.id
                 WHERE oi.item_id = ?
@@ -238,7 +238,7 @@ class AverageCostRecalculationServiceOptimized
             SELECT
                 oi.item_id,
                 SUM(oi.qty_in - oi.qty_out) as total_qty,
-                SUM(oi.detail_value) as total_value
+                SUM(CASE WHEN oi.qty_in > 0 THEN oi.detail_value WHEN oi.qty_out > 0 THEN -oi.detail_value ELSE 0 END) as total_value
             FROM operation_items oi
             INNER JOIN operhead oh ON oi.pro_id = oh.id
             WHERE oi.item_id IN ({$placeholders})

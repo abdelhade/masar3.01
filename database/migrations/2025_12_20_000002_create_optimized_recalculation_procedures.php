@@ -34,7 +34,7 @@ return new class extends Migration
                 -- هذا يعادل SUM في single query بدلاً من loop
                 SELECT 
                     IFNULL(SUM(oi.qty_in - oi.qty_out), 0),
-                    IFNULL(SUM(oi.detail_value), 0)
+                    IFNULL(SUM(CASE WHEN oi.qty_in > 0 THEN oi.detail_value WHEN oi.qty_out > 0 THEN -oi.detail_value ELSE 0 END), 0)
                 INTO v_total_qty, v_total_value
                 FROM operation_items oi
                 INNER JOIN operhead oh ON oi.pro_id = oh.id
@@ -75,7 +75,7 @@ SQL);
                     SELECT 
                         oi.item_id,
                         IFNULL(SUM(oi.qty_in - oi.qty_out), 0) as total_qty,
-                        IFNULL(SUM(oi.detail_value), 0) as total_value
+                        IFNULL(SUM(CASE WHEN oi.qty_in > 0 THEN oi.detail_value WHEN oi.qty_out > 0 THEN -oi.detail_value ELSE 0 END), 0) as total_value
                     FROM operation_items oi
                     INNER JOIN operhead oh ON oi.pro_id = oh.id
                     WHERE FIND_IN_SET(oi.item_id, p_item_ids)
