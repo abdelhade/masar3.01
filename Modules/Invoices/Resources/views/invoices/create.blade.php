@@ -152,6 +152,15 @@
             }
 
             /* Search dropdown must be above everything */
+            #search-results-dropdown {
+                position: absolute !important;
+                top: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
+                max-width: 100% !important;
+                margin-top: 2px !important;
+            }
+            
             #search-results-dropdown * {
                 visibility: visible !important;
                 opacity: 1 !important;
