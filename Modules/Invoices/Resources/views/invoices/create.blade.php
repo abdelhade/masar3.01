@@ -80,22 +80,22 @@
                 width: 100% !important;
                 z-index: 10;
             }
-            
+
             /* Hide footer when modal is open */
             .modal-open #invoice-fixed-footer {
                 z-index: 0 !important;
                 visibility: hidden !important;
             }
-            
+
             /* Ensure modals appear above footer */
             .modal-backdrop {
                 z-index: 1050 !important;
             }
-            
+
             .modal {
                 z-index: 1055 !important;
             }
-            
+
             /* Ensure SweetAlert appears above everything */
             .swal2-container {
                 z-index: 10000 !important;
@@ -170,16 +170,16 @@
             .select2-dropdown {
                 z-index: 1045 !important;
             }
-            
+
             /* When modal is open, Select2 inside modal should be above modal */
             .modal .select2-container {
                 z-index: 1056 !important;
             }
-            
+
             .modal .select2-dropdown {
                 z-index: 1057 !important;
             }
-            
+
             /* But Select2 outside modal should be below modal */
             body:not(.modal) .select2-container:not(.select2-container--open) {
                 z-index: 1040 !important;
@@ -194,7 +194,7 @@
                 max-width: 100% !important;
                 margin-top: 2px !important;
             }
-            
+
             #search-results-dropdown * {
                 visibility: visible !important;
                 opacity: 1 !important;
@@ -1994,7 +1994,13 @@
                 // Recalculate remaining
                 this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(2));
 
-                // Update display
+                // Update display for received amount
+                const receivedDisplay = document.getElementById('display-received');
+                if (receivedDisplay) {
+                    receivedDisplay.textContent = this.receivedFromClient.toFixed(2);
+                }
+
+                // Update display for remaining
                 const remainingDisplay = document.getElementById('display-remaining');
                 if (remainingDisplay) {
                     remainingDisplay.textContent = this.remaining.toFixed(2);

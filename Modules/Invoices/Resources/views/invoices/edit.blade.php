@@ -80,22 +80,22 @@
                 width: 100% !important;
                 z-index: 10;
             }
-            
+
             /* Hide footer when modal is open */
             .modal-open #invoice-fixed-footer {
                 z-index: 0 !important;
                 visibility: hidden !important;
             }
-            
+
             /* Ensure modals appear above footer */
             .modal-backdrop {
                 z-index: 1050 !important;
             }
-            
+
             .modal {
                 z-index: 1055 !important;
             }
-            
+
             /* Ensure SweetAlert appears above everything */
             .swal2-container {
                 z-index: 10000 !important;
@@ -170,16 +170,16 @@
             .select2-dropdown {
                 z-index: 1045 !important;
             }
-            
+
             /* When modal is open, Select2 inside modal should be above modal */
             .modal .select2-container {
                 z-index: 1056 !important;
             }
-            
+
             .modal .select2-dropdown {
                 z-index: 1057 !important;
             }
-            
+
             /* But Select2 outside modal should be below modal */
             body:not(.modal) .select2-container:not(.select2-container--open) {
                 z-index: 1040 !important;
@@ -194,7 +194,7 @@
                 max-width: 100% !important;
                 margin-top: 2px !important;
             }
-            
+
             #search-results-dropdown * {
                 visibility: visible !important;
                 opacity: 1 !important;
@@ -212,28 +212,28 @@
             .invoice-item-row:hover {
                 background-color: rgba(255, 235, 59, 0.3) !important; /* أصفر شفاف */
             }
-            
+
             /* ✅ Validation States */
             .is-invalid {
                 border-color: #dc3545 !important;
                 background-color: #fff5f5 !important;
             }
-            
+
             .is-invalid:focus {
                 border-color: #dc3545 !important;
                 box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
             }
-            
+
             .is-warning {
                 border-color: #ffc107 !important;
                 background-color: #fffbf0 !important;
             }
-            
+
             .is-warning:focus {
                 border-color: #ffc107 !important;
                 box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
             }
-            
+
             .invalid-feedback {
                 display: block;
                 font-size: 0.875rem;
@@ -602,16 +602,16 @@
             // Load existing invoice data for edit mode
             loadInvoiceData() {
                 let invoiceData;
-                
+
                 try {
                     invoiceData = @json($invoice ?? null);
-                    
+
                     if (!invoiceData) {
                         console.error('❌ خطأ: لا توجد بيانات للفاتورة');
                         alert('خطأ: لا توجد بيانات للفاتورة');
                         return;
                     }
-                    
+
                     if (!invoiceData.operation_items || invoiceData.operation_items.length === 0) {
                         console.warn('⚠️ تحذير: لا توجد أصناف في هذه الفاتورة');
                         return;
@@ -621,36 +621,36 @@
                     alert('خطأ في تحميل بيانات الفاتورة: ' + error.message);
                     return;
                 }
-                
+
                 // Set invoice header data
                 if (invoiceData.acc1_id) {
                     $('#acc1-id').val(invoiceData.acc1_id).trigger('change');
                 }
-                
+
                 if (invoiceData.acc2_id) {
                     $('#acc2-id').val(invoiceData.acc2_id).trigger('change');
                 }
-                
+
                 if (invoiceData.emp_id) {
                     const empSelect = document.getElementById('emp-id');
                     if (empSelect) empSelect.value = invoiceData.emp_id;
                 }
-                
+
                 if (invoiceData.delivery_id) {
                     const deliverySelect = document.getElementById('delivery-id');
                     if (deliverySelect) deliverySelect.value = invoiceData.delivery_id;
                 }
-                
+
                 if (invoiceData.pro_date) {
                     const dateInput = document.getElementById('pro-date');
                     if (dateInput) dateInput.value = invoiceData.pro_date;
                 }
-                
+
                 if (invoiceData.notes) {
                     const notesInput = document.getElementById('notes');
                     if (notesInput) notesInput.value = invoiceData.notes;
                 }
-                
+
                 // Set discount inputs
                 const discountPercentageInput = document.getElementById('discount-percentage');
                 const discountValueInput = document.getElementById('discount-value');
@@ -660,7 +660,7 @@
                 if (discountValueInput) {
                     discountValueInput.value = invoiceData.discount_value || 0;
                 }
-                
+
                 // Set additional inputs
                 const additionalPercentageInput = document.getElementById('additional-percentage');
                 const additionalValueInput = document.getElementById('additional-value');
@@ -670,29 +670,29 @@
                 if (additionalValueInput) {
                     additionalValueInput.value = invoiceData.additional_value || 0;
                 }
-                
+
                 // Set received from client
                 const receivedInput = document.getElementById('received-from-client');
                 if (receivedInput) {
                     receivedInput.value = invoiceData.received_from_client || 0;
                 }
-                
+
                 // Set totals
                 this.discountPercentage = parseFloat(invoiceData.discount_percentage) || 0;
                 this.discountValue = parseFloat(invoiceData.discount_value) || 0;
                 this.additionalPercentage = parseFloat(invoiceData.additional_percentage) || 0;
                 this.additionalValue = parseFloat(invoiceData.additional_value) || 0;
                 this.receivedFromClient = parseFloat(invoiceData.received_from_client) || 0;
-                
+
                 // Clear existing items
                 this.invoiceItems = [];
-                
+
                 // Load invoice items
                 if (invoiceData.operation_items && invoiceData.operation_items.length > 0) {
                     invoiceData.operation_items.forEach((item, index) => {
                         // Determine quantity based on invoice type (sales use qty_out, purchases use qty_in)
                         const quantity = parseFloat(item.qty_out || item.qty_in || 0);
-                        
+
                         const invoiceItem = {
                             item_id: item.item_id,
                             item_name: item.item?.name || 'Unknown Item',
@@ -709,14 +709,14 @@
                             notes: item.notes || '',
                             units: item.item?.units || []
                         };
-                        
+
                         this.invoiceItems.push(invoiceItem);
                     });
                 }
-                
+
                 console.log('✅ Invoice data loaded:', this.invoiceItems.length, 'items');
                 console.log('📊 Invoice items:', this.invoiceItems);
-                
+
                 // Calculate totals and render
                 this.calculateTotals();
                 this.renderItems();
@@ -1298,7 +1298,7 @@
                                 this.calculateItemTotal(existingIndex);
                                 this.renderItems();
                                 this.updateStatus('✓ تم دمج الكميات', 'success');
-                                
+
                                 // Focus on the existing item
                                 setTimeout(() => {
                                     this.showItemDetails(existingIndex);
@@ -1631,21 +1631,21 @@
                             const index = parseInt(e.target.dataset.index);
                             const field = e.target.dataset.field;
                             const value = parseFloat(e.target.value) || 0;
-                            
+
                             // ✅ Real-time Validation
                             let isValid = true;
                             let errorMessage = '';
-                            
+
                             // Validate Quantity
                             if (field === 'quantity') {
                                 const item = this.invoiceItems[index];
-                                
+
                                 // Check if quantity is negative
                                 if (value < 0) {
                                     isValid = false;
                                     errorMessage = 'الكمية لا يمكن أن تكون سالبة';
                                 }
-                                
+
                                 // Check stock availability for sales invoices
                                 if (isValid && [10, 12, 14, 16, 22, 26].includes(this.type)) {
                                     if (this.settings.permissions.prevent_transactions_without_stock) {
@@ -1667,23 +1667,23 @@
                                     }
                                 }
                             }
-                            
+
                             // Validate Price
                             if (field === 'price') {
                                 const item = this.invoiceItems[index];
-                                
+
                                 // Check if price is negative
                                 if (value < 0) {
                                     isValid = false;
                                     errorMessage = 'السعر لا يمكن أن يكون سالباً';
                                 }
-                                
+
                                 // Check if price is zero (based on settings)
                                 if (isValid && value === 0 && !this.settings.allow_zero_price_in_invoice) {
                                     isValid = false;
                                     errorMessage = 'السعر لا يمكن أن يكون صفر';
                                 }
-                                
+
                                 // Check if price is less than cost (for sales)
                                 if (isValid && [10, 12, 14, 16, 22, 26].includes(this.type)) {
                                     if (item.cost_price && value < item.cost_price) {
@@ -1695,7 +1695,7 @@
                                     }
                                 }
                             }
-                            
+
                             // Validate Discount
                             if (field === 'discount_percentage') {
                                 if (value < 0) {
@@ -1706,7 +1706,7 @@
                                     errorMessage = 'الخصم لا يمكن أن يتجاوز 100%';
                                 }
                             }
-                            
+
                             // Show/Hide validation error
                             if (!isValid) {
                                 e.target.classList.add('is-invalid');
@@ -2266,7 +2266,13 @@
                 // Recalculate remaining
                 this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(2));
 
-                // Update display
+                // Update display for received amount
+                const receivedDisplay = document.getElementById('display-received');
+                if (receivedDisplay) {
+                    receivedDisplay.textContent = this.receivedFromClient.toFixed(2);
+                }
+
+                // Update display for remaining
                 const remainingDisplay = document.getElementById('display-remaining');
                 if (remainingDisplay) {
                     remainingDisplay.textContent = this.remaining.toFixed(2);
@@ -2625,39 +2631,39 @@
                     status.className = 'text-' + type;
                 }
             },
-            
+
             // ✅ Show validation error
             showValidationError(input, message) {
                 // Remove existing error
                 this.hideValidationError(input);
-                
+
                 // Create error element
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'invalid-feedback d-block';
                 errorDiv.style.cssText = 'font-size: 0.875rem; color: #dc3545; margin-top: 0.25rem;';
                 errorDiv.textContent = message;
                 errorDiv.dataset.validationError = 'true';
-                
+
                 // Insert after input
                 input.parentNode.appendChild(errorDiv);
             },
-            
+
             // ✅ Show validation warning
             showValidationWarning(input, message) {
                 // Remove existing warning
                 this.hideValidationError(input);
-                
+
                 // Create warning element
                 const warningDiv = document.createElement('div');
                 warningDiv.className = 'text-warning d-block';
                 warningDiv.style.cssText = 'font-size: 0.875rem; margin-top: 0.25rem;';
                 warningDiv.textContent = message;
                 warningDiv.dataset.validationError = 'true';
-                
+
                 // Insert after input
                 input.parentNode.appendChild(warningDiv);
             },
-            
+
             // ✅ Hide validation error
             hideValidationError(input) {
                 const parent = input.parentNode;
