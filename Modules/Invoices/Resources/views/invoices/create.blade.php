@@ -2092,7 +2092,7 @@
                     '';
                 document.getElementById('form-serial-number').value = document.getElementById('serial-number')?.value ||
                     '';
-                document.getElementById('form-cash-box-id').value = document.getElementById('cash-box-id')?.value || '';
+                document.getElementById('form-cash-box-id').value = document.getElementById('cash_box_id')?.value || '';
                 document.getElementById('form-notes').value = document.getElementById('notes')?.value || '';
                 document.getElementById('form-discount-percentage').value = this.discountPercentage;
                 document.getElementById('form-discount-value').value = this.discountValue;

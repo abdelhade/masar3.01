@@ -344,7 +344,7 @@
                     <th>الوحدة</th>
                     <th>الكمية</th>
                     <th>السعر</th>
-                    <th>الخصم</th>
+                    <th>الخصم %</th>
                     <th>القيمة</th>
                 </tr>
             </thead>
@@ -399,29 +399,43 @@
                         <span class="total-label">المجموع الفرعي:</span>
                         <span class="total-value">{{ number_format($subtotal ?? 0, 2) }} جنيه</span>
                     </div>
+                    @if(($discount_percentage ?? 0) > 0 || ($discount_value ?? 0) > 0)
                     <div class="total-row">
-                        <span class="total-label">الخصم:</span>
+                        <span class="total-label">
+                            الخصم
+                            @if(($discount_percentage ?? 0) > 0)
+                                ({{ number_format($discount_percentage, 2) }}%)
+                            @endif:
+                        </span>
                         <span class="total-value">
                             - {{ number_format($discount_value ?? 0, 2) }} جنيه
                         </span>
                     </div>
+                    @endif
+                    @if(($additional_percentage ?? 0) > 0 || ($additional_value ?? 0) > 0)
                     <div class="total-row">
-                        <span class="total-label">الإضافي:</span>
+                        <span class="total-label">
+                            الإضافي
+                            @if(($additional_percentage ?? 0) > 0)
+                                ({{ number_format($additional_percentage, 2) }}%)
+                            @endif:
+                        </span>
                         <span class="total-value">
                             + {{ number_format($additional_value ?? 0, 2) }} جنيه
                         </span>
                     </div>
-                    @if(isVatEnabled())
+                    @endif
+                    @if(($vat_percentage ?? 0) > 0)
                     <div class="total-row">
-                        <span class="total-label">ضريبة القيمة المضافة ({{ setting('default_vat_percentage', 0) }}%):</span>
+                        <span class="total-label">ضريبة القيمة المضافة ({{ number_format($vat_percentage, 2) }}%):</span>
                         <span class="total-value">
                             + {{ number_format($vat_value ?? 0, 2) }} جنيه
                         </span>
                     </div>
                     @endif
-                    @if(isWithholdingTaxEnabled())
+                    @if(($withholding_tax_percentage ?? 0) > 0)
                     <div class="total-row">
-                        <span class="total-label">الخصم من المنبع ({{ setting('default_withholding_tax_percentage', 0) }}%):</span>
+                        <span class="total-label">الخصم من المنبع ({{ number_format($withholding_tax_percentage, 2) }}%):</span>
                         <span class="total-value">
                             - {{ number_format($withholding_tax_value ?? 0, 2) }} جنيه
                         </span>
@@ -434,6 +448,7 @@
                         <span class="total-label">الإجمالي النهائي:</span>
                         <span class="total-value">{{ number_format($total ?? 0, 2) }} جنيه</span>
                     </div>
+                    @if(($paid_from_client ?? 0) > 0)
                     <div class="total-row">
                         <span class="total-label">المدفوع:</span>
                         <span class="total-value">{{ number_format($paid_from_client ?? 0, 2) }} جنيه</span>
@@ -445,6 +460,7 @@
                             جنيه
                         </span>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>

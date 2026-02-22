@@ -169,6 +169,34 @@
             .invoice-item-row:hover {
                 background-color: rgba(255, 235, 59, 0.3) !important; /* أصفر شفاف */
             }
+            
+            /* ✅ Validation States */
+            .is-invalid {
+                border-color: #dc3545 !important;
+                background-color: #fff5f5 !important;
+            }
+            
+            .is-invalid:focus {
+                border-color: #dc3545 !important;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+            }
+            
+            .is-warning {
+                border-color: #ffc107 !important;
+                background-color: #fffbf0 !important;
+            }
+            
+            .is-warning:focus {
+                border-color: #ffc107 !important;
+                box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
+            }
+            
+            .invalid-feedback {
+                display: block;
+                font-size: 0.875rem;
+                color: #dc3545;
+                margin-top: 0.25rem;
+            }
         </style>
     @endpush
     {{-- Pure HTML - No Alpine --}}
@@ -1204,16 +1232,36 @@
                     (isPurchases && this.settings.prevent_duplicate_items_in_purchases);
 
                 if (preventDuplicate) {
-                    const exists = this.invoiceItems.some(i => i.item_id === item.id);
-                    if (exists) {
+                    const existingIndex = this.invoiceItems.findIndex(i => i.item_id === item.id);
+                    if (existingIndex !== -1) {
+                        // Show options: Merge quantities or Cancel
                         Swal.fire({
-                            icon: 'warning',
-                            title: 'تنبيه',
-                            text: 'هذا الصنف مضاف بالفعل في الفاتورة، والإعدادات تمنع التكرار.',
-                            timer: 2000,
-                            showConfirmButton: false
+                            icon: 'question',
+                            title: 'الصنف موجود بالفعل',
+                            html: `
+                                <p>الصنف <strong>${item.name}</strong> موجود بالفعل في الفاتورة.</p>
+                                <p>الكمية الحالية: <strong>${this.invoiceItems[existingIndex].quantity}</strong></p>
+                                <p>هل تريد دمج الكميات؟</p>
+                            `,
+                            showCancelButton: true,
+                            confirmButtonText: 'دمج الكميات',
+                            cancelButtonText: 'إلغاء',
+                            confirmButtonColor: '#28a745',
+                            cancelButtonColor: '#6c757d'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Merge quantities
+                                this.invoiceItems[existingIndex].quantity += 1;
+                                this.calculateItemTotal(existingIndex);
+                                this.renderItems();
+                                this.updateStatus('✓ تم دمج الكميات', 'success');
+                                
+                                // Focus on the existing item
+                                setTimeout(() => {
+                                    this.showItemDetails(existingIndex);
+                                }, 100);
+                            }
                         });
-                        this.updateStatus('⚠️ الصنف مضاف بالفعل', 'warning');
                         return;
                     }
                 }
@@ -1540,6 +1588,91 @@
                             const index = parseInt(e.target.dataset.index);
                             const field = e.target.dataset.field;
                             const value = parseFloat(e.target.value) || 0;
+                            
+                            // ✅ Real-time Validation
+                            let isValid = true;
+                            let errorMessage = '';
+                            
+                            // Validate Quantity
+                            if (field === 'quantity') {
+                                const item = this.invoiceItems[index];
+                                
+                                // Check if quantity is negative
+                                if (value < 0) {
+                                    isValid = false;
+                                    errorMessage = 'الكمية لا يمكن أن تكون سالبة';
+                                }
+                                
+                                // Check stock availability for sales invoices
+                                if (isValid && [10, 12, 14, 16, 22, 26].includes(this.type)) {
+                                    if (this.settings.permissions.prevent_transactions_without_stock) {
+                                        // Fetch stock from API
+                                        const warehouseId = $('#acc2-id').val();
+                                        if (warehouseId && item.item_id) {
+                                            fetch(`/api/invoices/items/${item.item_id}/stock?warehouse_id=${warehouseId}&branch_id=${this.branchId}`)
+                                                .then(res => res.json())
+                                                .then(data => {
+                                                    if (data.success && data.stock < value) {
+                                                        e.target.classList.add('is-invalid');
+                                                        this.showValidationError(e.target, `المخزون المتاح: ${data.stock}`);
+                                                    } else {
+                                                        e.target.classList.remove('is-invalid');
+                                                        this.hideValidationError(e.target);
+                                                    }
+                                                });
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Validate Price
+                            if (field === 'price') {
+                                const item = this.invoiceItems[index];
+                                
+                                // Check if price is negative
+                                if (value < 0) {
+                                    isValid = false;
+                                    errorMessage = 'السعر لا يمكن أن يكون سالباً';
+                                }
+                                
+                                // Check if price is zero (based on settings)
+                                if (isValid && value === 0 && !this.settings.allow_zero_price_in_invoice) {
+                                    isValid = false;
+                                    errorMessage = 'السعر لا يمكن أن يكون صفر';
+                                }
+                                
+                                // Check if price is less than cost (for sales)
+                                if (isValid && [10, 12, 14, 16, 22, 26].includes(this.type)) {
+                                    if (item.cost_price && value < item.cost_price) {
+                                        e.target.classList.add('is-warning');
+                                        this.showValidationWarning(e.target, `تحذير: السعر أقل من التكلفة (${item.cost_price})`);
+                                    } else {
+                                        e.target.classList.remove('is-warning');
+                                        this.hideValidationError(e.target);
+                                    }
+                                }
+                            }
+                            
+                            // Validate Discount
+                            if (field === 'discount_percentage') {
+                                if (value < 0) {
+                                    isValid = false;
+                                    errorMessage = 'الخصم لا يمكن أن يكون سالباً';
+                                } else if (value > 100) {
+                                    isValid = false;
+                                    errorMessage = 'الخصم لا يمكن أن يتجاوز 100%';
+                                }
+                            }
+                            
+                            // Show/Hide validation error
+                            if (!isValid) {
+                                e.target.classList.add('is-invalid');
+                                this.showValidationError(e.target, errorMessage);
+                                return; // Don't update value if invalid
+                            } else {
+                                e.target.classList.remove('is-invalid');
+                                this.hideValidationError(e.target);
+                            }
 
                             this.invoiceItems[index][field] = value;
 
@@ -2231,7 +2364,7 @@
                     '';
                 document.getElementById('form-serial-number').value = document.getElementById('serial-number')?.value ||
                     '';
-                document.getElementById('form-cash-box-id').value = document.getElementById('cash-box-id')?.value || '';
+                document.getElementById('form-cash-box-id').value = document.getElementById('cash_box_id')?.value || '';
                 document.getElementById('form-notes').value = document.getElementById('notes')?.value || '';
                 document.getElementById('form-discount-percentage').value = this.discountPercentage;
                 document.getElementById('form-discount-value').value = this.discountValue;
@@ -2447,6 +2580,47 @@
                 if (status) {
                     status.innerHTML = text;
                     status.className = 'text-' + type;
+                }
+            },
+            
+            // ✅ Show validation error
+            showValidationError(input, message) {
+                // Remove existing error
+                this.hideValidationError(input);
+                
+                // Create error element
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'invalid-feedback d-block';
+                errorDiv.style.cssText = 'font-size: 0.875rem; color: #dc3545; margin-top: 0.25rem;';
+                errorDiv.textContent = message;
+                errorDiv.dataset.validationError = 'true';
+                
+                // Insert after input
+                input.parentNode.appendChild(errorDiv);
+            },
+            
+            // ✅ Show validation warning
+            showValidationWarning(input, message) {
+                // Remove existing warning
+                this.hideValidationError(input);
+                
+                // Create warning element
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'text-warning d-block';
+                warningDiv.style.cssText = 'font-size: 0.875rem; margin-top: 0.25rem;';
+                warningDiv.textContent = message;
+                warningDiv.dataset.validationError = 'true';
+                
+                // Insert after input
+                input.parentNode.appendChild(warningDiv);
+            },
+            
+            // ✅ Hide validation error
+            hideValidationError(input) {
+                const parent = input.parentNode;
+                const existingError = parent.querySelector('[data-validation-error="true"]');
+                if (existingError) {
+                    existingError.remove();
                 }
             },
 

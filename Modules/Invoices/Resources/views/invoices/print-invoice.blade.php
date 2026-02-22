@@ -710,7 +710,7 @@
                             @endif
                         </span>
                         <span class="detail-value">
-                            <span class="badge badge-success">{{ number_format($received_from_client ?? 0, 2) }}
+                            <span class="badge badge-success">{{ number_format($paid_from_client ?? 0, 2) }}
                                 جنيه</span>
                         </span>
                     </div>
@@ -729,7 +729,7 @@
                             <th>الوحدة</th>
                             <th>الكمية</th>
                             <th>السعر</th>
-                            <th>الخصم</th>
+                            <th>الخصم %</th>
                             <th>القيمة</th>
                         </tr>
                     </thead>
@@ -770,7 +770,7 @@
                             </td>
                             <td>
                                 <span class="text-danger">
-                                    {{ number_format($row['discount'], 2) }} جنيه
+                                    {{ number_format($row['discount'], 2) }}%
                                 </span>
                             </td>
                             <td>
@@ -797,37 +797,70 @@
                         <span class="total-value">{{ number_format($subtotal ?? 0, 2) }} جنيه</span>
                     </div>
 
+                    @if(($discount_percentage ?? 0) > 0 || ($discount_value ?? 0) > 0)
                     <div class="total-row">
-                        <span class="total-label">الخصم:</span>
+                        <span class="total-label">
+                            الخصم
+                            @if(($discount_percentage ?? 0) > 0)
+                                ({{ number_format($discount_percentage, 2) }}%)
+                            @endif:
+                        </span>
                         <span class="total-value text-danger">
                             - {{ number_format($discount_value ?? 0, 2) }} جنيه
                         </span>
                     </div>
+                    @endif
 
+                    @if(($additional_percentage ?? 0) > 0 || ($additional_value ?? 0) > 0)
                     <div class="total-row">
-                        <span class="total-label">الإضافي:</span>
+                        <span class="total-label">
+                            الإضافي
+                            @if(($additional_percentage ?? 0) > 0)
+                                ({{ number_format($additional_percentage, 2) }}%)
+                            @endif:
+                        </span>
                         <span class="total-value text-success">
                             + {{ number_format($additional_value ?? 0, 2) }} جنيه
                         </span>
                     </div>
+                    @endif
+
+                    @if(($vat_percentage ?? 0) > 0)
+                    <div class="total-row">
+                        <span class="total-label">ضريبة القيمة المضافة ({{ number_format($vat_percentage, 2) }}%):</span>
+                        <span class="total-value text-success">
+                            + {{ number_format($vat_value ?? 0, 2) }} جنيه
+                        </span>
+                    </div>
+                    @endif
+
+                    @if(($withholding_tax_percentage ?? 0) > 0)
+                    <div class="total-row">
+                        <span class="total-label">الخصم من المنبع ({{ number_format($withholding_tax_percentage, 2) }}%):</span>
+                        <span class="total-value text-danger">
+                            - {{ number_format($withholding_tax_value ?? 0, 2) }} جنيه
+                        </span>
+                    </div>
+                    @endif
 
                     <div class="total-row final-total">
                         <span class="total-label">الإجمالي النهائي:</span>
-                        <span class="total-value">{{ number_format($total_after_additional ?? 0, 2) }} جنيه</span>
+                        <span class="total-value">{{ number_format($total ?? 0, 2) }} جنيه</span>
                     </div>
 
+                    @if(($paid_from_client ?? 0) > 0)
                     <div class="total-row">
                         <span class="total-label">المدفوع:</span>
-                        <span class="total-value">{{ number_format($received_from_client ?? 0, 2) }} جنيه</span>
+                        <span class="total-value">{{ number_format($paid_from_client ?? 0, 2) }} جنيه</span>
                     </div>
 
                     <div class="total-row remaining">
                         <span class="total-label">الباقي:</span>
                         <span class="total-value">
-                            {{ number_format(max(($total_after_additional ?? 0) - ($received_from_client ?? 0), 0), 2) }}
-                            جنيه
+                            {{ number_format($remaining ?? 0, 2) }} جنيه
                         </span>
                     </div>
+                    @endif
                 </div>
             </div>
 
