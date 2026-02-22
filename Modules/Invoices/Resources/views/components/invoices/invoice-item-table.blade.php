@@ -222,7 +222,7 @@
                         style="min-height: 36px; font-size: 0.85rem;" autocomplete="off">
 
                     {{-- Search Results Dropdown --}}
-                    <div id="search-results-dropdown" class="search-results-dropdown" style="display: none; position: fixed; z-index: 999999;">
+                    <div id="search-results-dropdown" class="search-results-dropdown" style="display: none; position: absolute; z-index: 999999; left: 0; right: 0;">
                     </div>
                 </td>
 

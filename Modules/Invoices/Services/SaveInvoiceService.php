@@ -345,26 +345,35 @@ class SaveInvoiceService
                 );
             }
 
-            // ✅ إنشاء سند القبض/الدفع إذا كان هناك مبلغ مدفوع
+            // ✅ إنشاء أو تحديث سند القبض/الدفع
             $receivedFromClient = $data->received_from_client ?? 0;
             $cashBoxId = $data->cash_box_id ?? null;
             
-            logger()->info('Checking voucher creation conditions', [
+            logger()->info('💰 Voucher Creation Check', [
                 'receivedFromClient' => $receivedFromClient,
                 'cashBoxId' => $cashBoxId,
                 'isReceipt' => $isReceipt,
                 'isPayment' => $isPayment,
                 'operation_type' => $data->type,
+                'isEdit' => $isEdit,
+                'operationId' => $operationId ?? null,
             ]);
             
-            if ($receivedFromClient > 0 && $cashBoxId) {
-                logger()->info('Creating voucher...');
-                $this->createVoucher($data, $operation, $isReceipt, $isPayment);
+            if ($isEdit && $operationId) {
+                // في حالة التعديل، نستخدم syncVoucher
+                logger()->info('📝 Calling syncVoucher for edit');
+                $this->syncVoucher($operation, $data);
             } else {
-                logger()->warning('Voucher not created - conditions not met', [
-                    'receivedFromClient' => $receivedFromClient,
-                    'cashBoxId' => $cashBoxId,
-                ]);
+                // في حالة الإنشاء، نستخدم createVoucher
+                if ($receivedFromClient > 0 && $cashBoxId) {
+                    logger()->info('✅ Creating new voucher');
+                    $this->createVoucher($data, $operation, $isReceipt, $isPayment);
+                } else {
+                    logger()->warning('⚠️ Voucher not created - conditions not met', [
+                        'receivedFromClient' => $receivedFromClient,
+                        'cashBoxId' => $cashBoxId,
+                    ]);
+                }
             }
 
             // ✅ إعادة حساب average_cost والأرباح للعمليات اللاحقة (Ripple Effect)
